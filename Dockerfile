@@ -1,4 +1,4 @@
-FROM node:20-alpine AS ui
+FROM node:24-alpine AS ui
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
