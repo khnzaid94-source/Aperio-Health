@@ -95,14 +95,14 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 
 ## Phase 2 — Frontend API Layer & Honest UI [P0]
 
-- [ ] 2.1 New `src/api/client.ts`: `API_BASE = import.meta.env.VITE_API_BASE || ''`;
+- [x] 2.1 New `src/api/client.ts`: `API_BASE = import.meta.env.VITE_API_BASE || ''`;
       apiFetch wrapper (auth header, JSON parse, shape check, 401 → clear session)
-- [ ] 2.2 Replace all ~16 hardcoded localhost:8000 fetch URLs with client
-- [ ] 2.3 LandingView: real register/login against API; store token+email; hide Google
+- [x] 2.2 Replace all ~16 hardcoded localhost:8000 fetch URLs with client
+- [x] 2.3 LandingView: real register/login against API; store token+email; hide Google
       button until Phase 5; remove fake setTimeout flows
-- [ ] 2.4 App.tsx: logout wipes ALL `aperio_*` keys; cache is cache-only (server wins)
-- [ ] 2.5 ProfileView: real password change; working logout-all-devices; REMOVE 2FA toggle
-- [ ] 2.6 Reword claims: remove HIPAA/encryption/zero-knowledge text (SidebarLayout,
+- [x] 2.4 App.tsx: logout wipes ALL `aperio_*` keys; cache is cache-only (server wins)
+- [x] 2.5 ProfileView: real password change; working logout-all-devices; REMOVE 2FA toggle
+- [x] 2.6 Reword claims: remove HIPAA/encryption/zero-knowledge text (SidebarLayout,
       OnboardingView, landing badges) → honest wording
 
 **Verify:** tsc build green; manual register/login/logout round-trip.

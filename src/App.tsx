@@ -22,6 +22,7 @@ import {
 import { CATALOG, getUrgency } from './constants/catalog';
 import { getLanguageDirection } from './utils/language';
 import { CVQualityData, MLInsightsData } from './components/MLInsightsCard';
+import { apiFetch, ApiError, clearToken, getToken } from './api/client';
 
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes in milliseconds
 
@@ -358,6 +359,10 @@ export function App() {
 
     // Sign Out Handler
     const handleSignOut = useCallback(() => {
+        const token = getToken();
+        if (token) {
+            apiFetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
+        }
         setUserEmail(null);
         setUserProfile(null);
         setIsOnboarding(false);
@@ -368,7 +373,10 @@ export function App() {
         setCurrentRawText('');
         setCurrentCvQuality(null);
         setCurrentMlInsights(null);
-        localStorage.removeItem('aperio_current_user');
+        clearToken();
+        Object.keys(localStorage)
+            .filter((key) => key.startsWith('aperio_'))
+            .forEach((key) => localStorage.removeItem(key));
         setCurrentTab('dashboard');
     }, []);
 
@@ -447,47 +455,47 @@ export function App() {
                 }
             }
 
-            if (DEMO_PRESET_PROFILES[userEmail]) {
-                const preset = DEMO_PRESET_PROFILES[userEmail];
-                setUserProfile(preset);
-                setIsOnboarding(false);
-                localStorage.setItem(`aperio_profile_${userEmail}`, JSON.stringify(preset));
-                return;
-            }
-
             try {
-                const res = await fetch(`http://localhost:8000/api/profile/${encodeURIComponent(userEmail)}`);
-                if (res.ok) {
-                    const serverProf = await res.json();
-                    const formattedProf: UserProfile = {
-                        fullName: serverProf.full_name,
-                        dateOfBirth: serverProf.date_of_birth || '',
-                        gender: serverProf.gender || '',
-                        email: serverProf.user_email,
-                        bloodType: serverProf.blood_type || '',
-                        language: serverProf.language || 'en',
-                        measurementUnits: serverProf.measurement_units || 'Conventional',
-                        timezone: serverProf.timezone || 'UTC',
-                        phoneNumber: serverProf.phone_number || '',
-                        chronicConditions: serverProf.chronic_conditions || [],
-                        otherChronicConditions: serverProf.other_chronic_conditions || '',
-                        medications: serverProf.medications || '',
-                        allergies: serverProf.allergies || '',
-                        primaryDoctorName: serverProf.primary_doctor_name || '',
-                        primaryDoctorContact: serverProf.primary_doctor_contact || '',
-                        lastLogin: serverProf.last_login || 'Recently',
-                        consentEducation: true,
-                        consentPrivacy: true,
-                        onboardingCompleted: Boolean(serverProf.onboarding_completed)
-                    };
-                    setUserProfile(formattedProf);
-                    setIsOnboarding(!formattedProf.onboardingCompleted);
-                    localStorage.setItem(`aperio_profile_${userEmail}`, JSON.stringify(formattedProf));
-                    if (formattedProf.language) setCurrentLang(formattedProf.language);
+                const serverProf = await apiFetch<any>(`/api/profile`);
+                const formattedProf: UserProfile = {
+                    fullName: serverProf.full_name,
+                    dateOfBirth: serverProf.date_of_birth || '',
+                    gender: serverProf.gender || '',
+                    email: serverProf.user_email,
+                    bloodType: serverProf.blood_type || '',
+                    language: serverProf.language || 'en',
+                    measurementUnits: serverProf.measurement_units || 'Conventional',
+                    timezone: serverProf.timezone || 'UTC',
+                    phoneNumber: serverProf.phone_number || '',
+                    chronicConditions: serverProf.chronic_conditions || [],
+                    otherChronicConditions: serverProf.other_chronic_conditions || '',
+                    medications: serverProf.medications || '',
+                    allergies: serverProf.allergies || '',
+                    primaryDoctorName: serverProf.primary_doctor_name || '',
+                    primaryDoctorContact: serverProf.primary_doctor_contact || '',
+                    lastLogin: serverProf.last_login || 'Recently',
+                    consentEducation: true,
+                    consentPrivacy: true,
+                    onboardingCompleted: Boolean(serverProf.onboarding_completed)
+                };
+                setUserProfile(formattedProf);
+                setIsOnboarding(!formattedProf.onboardingCompleted);
+                localStorage.setItem(`aperio_profile_${userEmail}`, JSON.stringify(formattedProf));
+                if (formattedProf.language) setCurrentLang(formattedProf.language);
+                return;
+            } catch (err) {
+                if (err instanceof ApiError && err.status === 401) {
+                    handleSignOut();
                     return;
                 }
-            } catch {
-                // Backend offline
+                if (err instanceof ApiError && err.status === 404 && DEMO_PRESET_PROFILES[userEmail]) {
+                    const preset = DEMO_PRESET_PROFILES[userEmail];
+                    setUserProfile(preset);
+                    setIsOnboarding(false);
+                    localStorage.setItem(`aperio_profile_${userEmail}`, JSON.stringify(preset));
+                    if (preset.language) setCurrentLang(preset.language);
+                    return;
+                }
             }
 
             setUserProfile(null);
@@ -505,17 +513,18 @@ export function App() {
             }
 
             try {
-                const res = await fetch(`http://localhost:8000/api/history/${encodeURIComponent(userEmail)}`);
-                if (res.ok) {
-                    const serverReports = await res.json();
-                    if (Array.isArray(serverReports) && serverReports.length > 0) {
-                        setSavedReports(serverReports);
-                        localStorage.setItem(`aperio_history_${userEmail}`, JSON.stringify(serverReports));
-                        return;
-                    }
+                const serverReports = await apiFetch<any[]>(`/api/history`);
+                if (Array.isArray(serverReports)) {
+                    setSavedReports(serverReports);
+                    localStorage.setItem(`aperio_history_${userEmail}`, JSON.stringify(serverReports));
+                    return;
                 }
-            } catch {
-                // Offline
+            } catch (err) {
+                if (err instanceof ApiError && err.status === 401) {
+                    handleSignOut();
+                    return;
+                }
+                // Offline / waking up -> fall back to local cache below
             }
 
             const stored = localStorage.getItem(`aperio_history_${userEmail}`);
@@ -541,17 +550,17 @@ export function App() {
             }
 
             try {
-                const res = await fetch(`http://localhost:8000/api/journal/${encodeURIComponent(userEmail)}`);
-                if (res.ok) {
-                    const serverEntries = await res.json();
-                    if (Array.isArray(serverEntries)) {
-                        setJournalEntries(serverEntries);
-                        localStorage.setItem(`aperio_journal_${userEmail}`, JSON.stringify(serverEntries));
-                        return;
-                    }
+                const serverEntries = await apiFetch<any[]>(`/api/journal`);
+                if (Array.isArray(serverEntries)) {
+                    setJournalEntries(serverEntries);
+                    localStorage.setItem(`aperio_journal_${userEmail}`, JSON.stringify(serverEntries));
+                    return;
                 }
-            } catch {
-                // Offline
+            } catch (err) {
+                if (err instanceof ApiError && err.status === 401) {
+                    handleSignOut();
+                    return;
+                }
             }
 
             const storedJournal = localStorage.getItem(`aperio_journal_${userEmail}`);
@@ -589,19 +598,20 @@ export function App() {
             if (reports.length > 0) {
                 const latest = reports[0];
                 try {
-                    await fetch('http://localhost:8000/api/history', {
+                    await apiFetch('/api/history', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            user_email: userEmail,
+                        json: {
                             id: latest.id,
                             date: latest.date,
                             label: latest.label,
                             results: latest.results
-                        })
+                        }
                     });
-                } catch {
-                    // Offline
+                } catch (err) {
+                    if (err instanceof ApiError && err.status === 401) {
+                        handleSignOut();
+                    }
+                    // Offline / waking up -> local copy already saved
                 }
             }
         }
@@ -648,11 +658,9 @@ export function App() {
             localStorage.setItem(`aperio_profile_${userEmail}`, JSON.stringify(profile));
 
             try {
-                await fetch('http://localhost:8000/api/profile', {
+                await apiFetch('/api/profile', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_email: userEmail,
+                    json: {
                         full_name: profile.fullName,
                         date_of_birth: profile.dateOfBirth,
                         gender: profile.gender,
@@ -669,10 +677,10 @@ export function App() {
                         primary_doctor_contact: profile.primaryDoctorContact,
                         last_login: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                         onboarding_completed: true
-                    })
+                    }
                 });
-            } catch {
-                // Offline
+            } catch (err) {
+                if (err instanceof ApiError && err.status === 401) handleSignOut();
             }
 
             // Sync medications into health journal
@@ -707,11 +715,9 @@ export function App() {
         if (userEmail) {
             localStorage.setItem(`aperio_profile_${userEmail}`, JSON.stringify(updatedProfile));
             try {
-                await fetch('http://localhost:8000/api/profile', {
+                await apiFetch('/api/profile', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_email: userEmail,
+                    json: {
                         full_name: updatedProfile.fullName,
                         date_of_birth: updatedProfile.dateOfBirth,
                         gender: updatedProfile.gender,
@@ -728,10 +734,10 @@ export function App() {
                         primary_doctor_contact: updatedProfile.primaryDoctorContact,
                         last_login: updatedProfile.lastLogin,
                         onboarding_completed: true
-                    })
+                    }
                 });
-            } catch {
-                // Offline
+            } catch (err) {
+                if (err instanceof ApiError && err.status === 401) handleSignOut();
             }
         }
     };
@@ -757,17 +763,16 @@ export function App() {
     const handleDeleteAccount = async () => {
         if (!userEmail) return;
         try {
-            await fetch(`http://localhost:8000/api/profile/delete/${encodeURIComponent(userEmail)}`, {
-                method: 'DELETE'
-            });
-        } catch {
-            // Offline
+            await apiFetch('/api/profile/delete', { method: 'DELETE' });
+        } catch (err) {
+            if (!(err instanceof ApiError && err.status === 401)) {
+                // Still clear local data even if server unreachable
+            }
         }
 
-        localStorage.removeItem(`aperio_profile_${userEmail}`);
-        localStorage.removeItem(`aperio_history_${userEmail}`);
-        localStorage.removeItem(`aperio_journal_${userEmail}`);
-        localStorage.removeItem(`aperio_last_active_${userEmail}`);
+        Object.keys(localStorage)
+            .filter((key) => key.startsWith('aperio_'))
+            .forEach((key) => localStorage.removeItem(key));
 
         handleSignOut();
     };
@@ -782,11 +787,9 @@ export function App() {
         if (userEmail) {
             localStorage.removeItem(`aperio_history_${userEmail}`);
             try {
-                await fetch(`http://localhost:8000/api/history/${encodeURIComponent(userEmail)}`, {
-                    method: 'DELETE'
-                });
-            } catch {
-                // Offline
+                await apiFetch(`/api/history`, { method: 'DELETE' });
+            } catch (err) {
+                if (err instanceof ApiError && err.status === 401) handleSignOut();
             }
         }
     };
@@ -797,12 +800,9 @@ export function App() {
         if (userEmail) {
             localStorage.setItem(`aperio_history_${userEmail}`, JSON.stringify(updated));
             try {
-                await fetch(
-                    `http://localhost:8000/api/history/${encodeURIComponent(userEmail)}/report/${encodeURIComponent(reportId)}`,
-                    { method: 'DELETE' }
-                );
-            } catch {
-                // Offline
+                await apiFetch(`/api/history/report/${encodeURIComponent(reportId)}`, { method: 'DELETE' });
+            } catch (err) {
+                if (err instanceof ApiError && err.status === 401) handleSignOut();
             }
         }
     };
@@ -820,12 +820,12 @@ export function App() {
         if (userEmail) {
             localStorage.setItem(`aperio_history_${userEmail}`, JSON.stringify(updated));
             try {
-                await fetch(
-                    `http://localhost:8000/api/history/${encodeURIComponent(userEmail)}/result/${encodeURIComponent(reportId)}/${encodeURIComponent(testId)}`,
+                await apiFetch(
+                    `/api/history/result/${encodeURIComponent(reportId)}/${encodeURIComponent(testId)}`,
                     { method: 'DELETE' }
                 );
-            } catch {
-                // Offline
+            } catch (err) {
+                if (err instanceof ApiError && err.status === 401) handleSignOut();
             }
         }
     };
@@ -841,13 +841,18 @@ export function App() {
         if (userEmail) {
             localStorage.setItem(`aperio_journal_${userEmail}`, JSON.stringify(updated));
             try {
-                await fetch('http://localhost:8000/api/journal', {
+                await apiFetch('/api/journal', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newEntry)
+                    json: {
+                        entry_type: newEntry.entry_type,
+                        name: newEntry.name,
+                        dosage: newEntry.dosage ?? null,
+                        start_date: newEntry.start_date ?? null,
+                        notes: newEntry.notes ?? null
+                    }
                 });
-            } catch {
-                // Offline
+            } catch (err) {
+                if (err instanceof ApiError && err.status === 401) handleSignOut();
             }
         }
     };
@@ -858,11 +863,9 @@ export function App() {
         if (userEmail) {
             localStorage.setItem(`aperio_journal_${userEmail}`, JSON.stringify(updated));
             try {
-                await fetch(`http://localhost:8000/api/journal/${encodeURIComponent(id)}`, {
-                    method: 'DELETE'
-                });
-            } catch {
-                // Offline
+                await apiFetch(`/api/journal/${encodeURIComponent(id)}`, { method: 'DELETE' });
+            } catch (err) {
+                if (err instanceof ApiError && err.status === 401) handleSignOut();
             }
         }
     };
@@ -956,11 +959,9 @@ export function App() {
 
             {currentTab === 'upload' && (
                 <UploadView
-                    userEmail={userEmail}
                     currentLang={currentLang}
                     onReportExtracted={handleReportExtracted}
                     onBatchReportsExtracted={handleBatchReportsExtracted}
-                    onSaveToHistory={handleSaveReport}
                     currentRawText={currentRawText}
                     onUpdateRawText={setCurrentRawText}
                 />

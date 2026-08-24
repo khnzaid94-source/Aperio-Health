@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
     User,
-    Mail,
     Phone,
     ShieldCheck,
     Pill,
@@ -27,6 +26,7 @@ import {
     JournalEntry
 } from '../types';
 import { SUPPORTED_LANGUAGES } from '../constants/translations';
+import { apiFetch, ApiError } from '../api/client';
 
 interface ProfileViewProps {
     userEmail: string;
@@ -74,6 +74,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     onSaveProfile,
     onExportData,
     onDeleteAccount,
+    onSignOut,
     currentLang
 }) => {
     // Detect system timezone
@@ -116,18 +117,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     // Security & Modal States
     const [isSavedSuccess, setIsSavedSuccess] = useState(false);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-    const [showChangeEmailModal, setShowChangeEmailModal] = useState(false);
     const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-    const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
     // Password Form
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [passwordMsg, setPasswordMsg] = useState<string | null>(null);
-
-    // Email Form
-    const [newEmail, setNewEmail] = useState('');
-    const [emailMsg, setEmailMsg] = useState<string | null>(null);
+    const [passwordIsError, setPasswordIsError] = useState(false);
+    const [passwordBusy, setPasswordBusy] = useState(false);
+    const [logoutAllBusy, setLogoutAllBusy] = useState(false);
 
     const calculateAge = (dob: string): number | null => {
         if (!dob) return null;
@@ -184,37 +182,50 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         setTimeout(() => setIsSavedSuccess(false), 3000);
     };
 
-    const handlePasswordChangeSubmit = (e: React.FormEvent) => {
+    const handlePasswordChangeSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!currentPassword || !newPassword) {
+            setPasswordIsError(true);
             setPasswordMsg('Please fill in both current and new passwords.');
             return;
         }
-        if (newPassword.length < 6) {
-            setPasswordMsg('New password must be at least 6 characters.');
+        if (newPassword.length < 8) {
+            setPasswordIsError(true);
+            setPasswordMsg('New password must be at least 8 characters.');
             return;
         }
-        setPasswordMsg('Password updated successfully!');
-        setTimeout(() => {
-            setShowChangePasswordModal(false);
-            setCurrentPassword('');
-            setNewPassword('');
-            setPasswordMsg(null);
-        }, 1200);
+        setPasswordBusy(true);
+        setPasswordMsg(null);
+        try {
+            await apiFetch('/api/auth/password', {
+                method: 'PUT',
+                json: { current_password: currentPassword, new_password: newPassword }
+            });
+            setPasswordIsError(false);
+            setPasswordMsg('Password updated successfully.');
+            setTimeout(() => {
+                setShowChangePasswordModal(false);
+                setCurrentPassword('');
+                setNewPassword('');
+                setPasswordMsg(null);
+            }, 1200);
+        } catch (err) {
+            const message = err instanceof ApiError ? err.message : 'Could not update password. Please try again.';
+            setPasswordIsError(true);
+            setPasswordMsg(message);
+        } finally {
+            setPasswordBusy(false);
+        }
     };
 
-    const handleEmailChangeSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newEmail || !newEmail.includes('@')) {
-            setEmailMsg('Please enter a valid email address.');
-            return;
+    const handleLogoutAllDevices = async () => {
+        setLogoutAllBusy(true);
+        try {
+            await apiFetch('/api/auth/logout-all', { method: 'POST' });
+            onSignOut();
+        } catch {
+            setLogoutAllBusy(false);
         }
-        setEmailMsg('Verification email sent to ' + newEmail);
-        setTimeout(() => {
-            setShowChangeEmailModal(false);
-            setNewEmail('');
-            setEmailMsg(null);
-        }, 1500);
     };
 
     return (
@@ -488,21 +499,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
                         <div>
                             <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
-                            <div className="flex items-center space-x-2">
-                                <input
-                                    type="email"
-                                    value={userEmail}
-                                    disabled
-                                    className="flex-1 bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-500 cursor-not-allowed font-medium"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowChangeEmailModal(true)}
-                                    className="text-xs font-bold text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 px-3 py-2 rounded-xl transition-colors"
-                                >
-                                    Change
-                                </button>
-                            </div>
+                            <input
+                                type="email"
+                                value={userEmail}
+                                disabled
+                                className="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-500 cursor-not-allowed font-medium"
+                            />
                         </div>
 
                         <div>
@@ -558,7 +560,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         </div>
                         <div>
                             <h3 className="text-base font-extrabold text-slate-900">Account &amp; Security Settings</h3>
-                            <p className="text-xs text-slate-500">Manage credentials, active sessions, and 2-factor authentication</p>
+                            <p className="text-xs text-slate-500">Manage your password and active sign-in sessions</p>
                         </div>
                     </div>
 
@@ -567,15 +569,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         <div className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                             <div>
                                 <span className="font-bold text-slate-800 block">Email Address</span>
-                                <span className="text-slate-500 text-[11px]">{userEmail}</span>
+                                <span className="text-slate-500 text-[11px]">{userEmail} (used to sign in — cannot be changed)</span>
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => setShowChangeEmailModal(true)}
-                                className="text-xs font-bold text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-xl transition-colors"
-                            >
-                                Change
-                            </button>
                         </div>
 
                         {/* Password */}
@@ -593,42 +588,22 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             </button>
                         </div>
 
-                        {/* Two-Factor Auth */}
-                        <div className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                            <div>
-                                <span className="font-bold text-slate-800 block">Two-Factor Authentication (2FA)</span>
-                                <span className="text-slate-500 text-[11px]">
-                                    {twoFactorEnabled ? 'Enabled via Authenticator App' : 'Disabled (Recommended for sensitive lab records)'}
-                                </span>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
-                                className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-colors ${
-                                    twoFactorEnabled
-                                        ? 'bg-rose-50 text-rose-700 hover:bg-rose-100'
-                                        : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                                }`}
-                            >
-                                {twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
-                            </button>
-                        </div>
-
-                        {/* Last Login & Sessions */}
+                        {/* Active Sessions */}
                         <div className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                             <div>
                                 <span className="font-bold text-slate-800 block">Active Device Sessions</span>
                                 <span className="text-slate-500 text-[11px] flex items-center space-x-2">
                                     <Clock className="w-3 h-3 text-slate-400 inline" />
-                                    <span>Last login: {userProfile?.lastLogin || 'Today'} • 1 Active Session (Current Device)</span>
+                                    <span>Last login: {userProfile?.lastLogin || 'Today'} • Signing out everywhere includes this device</span>
                                 </span>
                             </div>
                             <button
                                 type="button"
-                                onClick={() => alert('All other device sessions have been logged out.')}
-                                className="text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl transition-colors"
+                                onClick={handleLogoutAllDevices}
+                                disabled={logoutAllBusy}
+                                className="text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl transition-colors disabled:opacity-50"
                             >
-                                Log Out All Other Devices
+                                {logoutAllBusy ? 'Signing Out…' : 'Log Out All Devices'}
                             </button>
                         </div>
                     </div>
@@ -720,7 +695,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             <span>Change Password</span>
                         </h3>
                         {passwordMsg && (
-                            <div className="text-xs p-2.5 rounded-xl bg-teal-950/80 border border-teal-800 text-teal-200">
+                            <div className={`text-xs p-2.5 rounded-xl border ${
+                                passwordIsError
+                                    ? 'bg-rose-950/80 border-rose-800 text-rose-200'
+                                    : 'bg-teal-950/80 border-teal-800 text-teal-200'
+                            }`}>
                                 {passwordMsg}
                             </div>
                         )}
@@ -736,7 +715,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold text-slate-300 mb-1">New Password</label>
+                                <label className="block text-xs font-semibold text-slate-300 mb-1">New Password (min 8 characters)</label>
                                 <input
                                     type="password"
                                     value={newPassword}
@@ -747,50 +726,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             </div>
                             <button
                                 type="submit"
-                                className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold py-2.5 rounded-xl text-xs transition-colors"
+                                disabled={passwordBusy}
+                                className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold py-2.5 rounded-xl text-xs transition-colors disabled:opacity-50"
                             >
-                                Update Password
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Change Email Modal */}
-            {showChangeEmailModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-                    <div className="bg-slate-900 border border-slate-800 text-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl relative">
-                        <button
-                            onClick={() => setShowChangeEmailModal(false)}
-                            className="absolute top-4 right-4 text-slate-400 hover:text-white"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-                        <h3 className="text-lg font-bold flex items-center space-x-2">
-                            <Mail className="w-5 h-5 text-teal-400" />
-                            <span>Change Email Address</span>
-                        </h3>
-                        {emailMsg && (
-                            <div className="text-xs p-2.5 rounded-xl bg-teal-950/80 border border-teal-800 text-teal-200">
-                                {emailMsg}
-                            </div>
-                        )}
-                        <form onSubmit={handleEmailChangeSubmit} className="space-y-3">
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-300 mb-1">New Email Address</label>
-                                <input
-                                    type="email"
-                                    value={newEmail}
-                                    onChange={(e) => setNewEmail(e.target.value)}
-                                    placeholder="new.email@example.com"
-                                    className="w-full bg-slate-800 border border-slate-700 text-xs rounded-xl p-2.5 text-white focus:outline-none focus:ring-2 focus:ring-teal-400"
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold py-2.5 rounded-xl text-xs transition-colors"
-                            >
-                                Send Verification Email
+                                {passwordBusy ? 'Updating…' : 'Update Password'}
                             </button>
                         </form>
                     </div>

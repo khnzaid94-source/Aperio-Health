@@ -628,7 +628,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                             <span>Data Privacy &amp; Local Vault Policy <span className="text-emerald-400">*</span></span>
                                         </div>
                                         <p className="text-[11px] text-slate-400 leading-relaxed">
-                                            Your health data is encrypted and stored in your private patient vault. We maintain zero-knowledge principles and <strong>never sell, harvest, or train third-party generative AI models</strong> on your private medical reports.
+                                            Your reports are stored behind your password-protected account and are visible only to you. This is an educational health-literacy demo — <strong>please upload sample or non-identifiable reports, never sensitive medical documents</strong>.
                                         </p>
                                     </div>
                                 </div>

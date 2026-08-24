@@ -11,10 +11,11 @@ import {
     ChevronUp,
     Edit3
 } from 'lucide-react';
-import { TestResult, SupportedLanguage, SavedReport } from '../types';
+import { TestResult, SupportedLanguage } from '../types';
 import { parseLabReportText } from '../utils/parser';
 import { getTranslation } from '../utils/language';
 import { CVQualityData, MLInsightsData } from './MLInsightsCard';
+import { apiFetch, ApiError } from '../api/client';
 
 export interface ExtractedReportItem {
     results: TestResult[];
@@ -26,7 +27,6 @@ export interface ExtractedReportItem {
 }
 
 interface UploadViewProps {
-    userEmail: string;
     currentLang: SupportedLanguage;
     onReportExtracted: (
         results: TestResult[],
@@ -36,7 +36,6 @@ interface UploadViewProps {
         mlInsights: MLInsightsData | null
     ) => void;
     onBatchReportsExtracted?: (reports: ExtractedReportItem[]) => void;
-    onSaveToHistory: (report: SavedReport) => void;
     currentRawText: string;
     onUpdateRawText: (text: string) => void;
 }
@@ -45,7 +44,6 @@ export const UploadView: React.FC<UploadViewProps> = ({
     currentLang,
     onReportExtracted,
     onBatchReportsExtracted,
-    onSaveToHistory,
     currentRawText,
     onUpdateRawText
 }) => {
@@ -118,55 +116,57 @@ export const UploadView: React.FC<UploadViewProps> = ({
             }
 
             let fileProcessed = false;
-            const apiEndpoints = ['/api/upload-file', 'http://localhost:8000/api/upload-file', 'http://127.0.0.1:8000/api/upload-file'];
 
-            for (const endpoint of apiEndpoints) {
-                try {
-                    const formData = new FormData();
-                    formData.append('file', file);
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
 
-                    const res = await fetch(endpoint, {
-                        method: 'POST',
-                        body: formData
-                    });
+                const data = await apiFetch<any>('/api/upload-file', {
+                    method: 'POST',
+                    body: formData
+                });
+                fileProcessed = true;
 
-                    if (res.ok) {
-                        const data = await res.json();
-                        fileProcessed = true;
+                const reportsArray = data.reports && data.reports.length > 0 ? data.reports : [data];
 
-                        const reportsArray = data.reports && data.reports.length > 0 ? data.reports : [data];
-
-                        for (const rep of reportsArray) {
-                            if (rep.is_valid_report && rep.results && rep.results.length > 0) {
-                                const reportDate = rep.date || new Date().toISOString().split('T')[0];
-                                const reportItem: ExtractedReportItem = {
-                                    results: rep.results,
-                                    sourceLabel: rep.label || `Uploaded: ${fileName}`,
-                                    rawText: rep.extractedText || '',
-                                    cvQuality: rep.cv_quality || null,
-                                    mlInsights: rep.ml_insights || null,
-                                    date: reportDate
-                                };
-                                extractedReportItems.push(reportItem);
-
-                                const savedRep: SavedReport = {
-                                    id: rep.id || `rep-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-                                    date: reportDate,
-                                    label: rep.label || `Uploaded: ${fileName}`,
-                                    results: rep.results
-                                };
-                                onSaveToHistory(savedRep);
-                            }
-                        }
-
-                        if (data.cv_quality) setCvQuality(data.cv_quality);
-                        if (data.extractedText) onUpdateRawText(data.extractedText);
-                        if (data.note) setExtractedNote(data.note);
-                        if (data.page_count) setPageCount(data.page_count);
-                        break;
+                for (const rep of reportsArray) {
+                    if (rep.is_valid_report && rep.results && rep.results.length > 0) {
+                        const reportDate = rep.date || new Date().toISOString().split('T')[0];
+                        const reportItem: ExtractedReportItem = {
+                            results: rep.results,
+                            sourceLabel: rep.label || `Uploaded: ${fileName}`,
+                            rawText: rep.extractedText || '',
+                            cvQuality: rep.cv_quality || null,
+                            mlInsights: rep.ml_insights || null,
+                            date: reportDate
+                        };
+                        extractedReportItems.push(reportItem);
                     }
-                } catch {
-                    // Try next endpoint
+                }
+
+                if (data.cv_quality) setCvQuality(data.cv_quality);
+                if (data.extractedText) onUpdateRawText(data.extractedText);
+                if (data.note) setExtractedNote(data.note);
+                if (data.page_count) setPageCount(data.page_count);
+
+                if (Array.isArray(data.skipped_files) && data.skipped_files.length > 0) {
+                    const reasons = data.skipped_files
+                        .map((s: { filename: string; reason: string }) => `"${s.filename}" (${s.reason.replace(/_/g, ' ')})`)
+                        .join(', ');
+                    setAnalysisError(`Some files were skipped by the server: ${reasons}.`);
+                }
+            } catch (err) {
+                if (err instanceof ApiError && err.status === 401) {
+                    setAnalysisError('Your session has expired. Please sign in again and re-upload the files.');
+                    setIsAnalyzing(false);
+                    return;
+                }
+                if (!/\.txt$/i.test(fileName) && !file.type.startsWith('text/')) {
+                    setAnalysisError(
+                        err instanceof ApiError
+                            ? err.message
+                            : `Could not process "${fileName}". The server may be offline or waking up — please try again.`
+                    );
                 }
             }
 
@@ -177,13 +177,6 @@ export const UploadView: React.FC<UploadViewProps> = ({
                         onUpdateRawText(text);
                         const clientResults = parseLabReportText(text);
                         if (clientResults.length > 0) {
-                            const savedRep: SavedReport = {
-                                id: `rep-${Date.now()}-${idx}`,
-                                date: new Date().toISOString().split('T')[0],
-                                label: `Uploaded: ${fileName}`,
-                                results: clientResults
-                            };
-                            onSaveToHistory(savedRep);
                             extractedReportItems.push({
                                 results: clientResults,
                                 sourceLabel: `Uploaded: ${fileName}`,
@@ -193,7 +186,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                             });
                         }
                     } catch {
-                        // Ignore
+                        // Ignore unreadable text file
                     }
                 }
             }
@@ -241,37 +234,36 @@ export const UploadView: React.FC<UploadViewProps> = ({
         setSuccessMessage(null);
 
         try {
-            const res = await fetch('http://localhost:8000/api/analyze-text', {
+            const data = await apiFetch<any>('/api/analyze-text', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: currentRawText, label: lastUploadedName || 'Pasted Report' })
+                json: { text: currentRawText, label: lastUploadedName || 'Pasted Report' }
             });
+            setIsAnalyzing(false);
 
-            if (res.ok) {
-                const data = await res.json();
-                setIsAnalyzing(false);
-
-                if (!data.is_valid_report || !data.results || data.results.length === 0) {
-                    setAnalysisError(
-                        'No supported blood test parameters or reference ranges were detected in this text. Please check the spelling or format.'
-                    );
-                    setExtractedCount(0);
-                    return;
-                }
-
-                setExtractedCount(data.results.length);
-                setSuccessMessage(`Successfully recognized ${data.results.length} clinical biomarkers!`);
-                onReportExtracted(
-                    data.results,
-                    lastUploadedName || 'Pasted Report',
-                    currentRawText,
-                    cvQuality,
-                    data.ml_insights || null
+            if (!data.is_valid_report || !data.results || data.results.length === 0) {
+                setAnalysisError(
+                    'No supported blood test parameters or reference ranges were detected in this text. Please check the spelling or format.'
                 );
+                setExtractedCount(0);
                 return;
             }
-        } catch {
-            // Client fallback
+
+            setExtractedCount(data.results.length);
+            setSuccessMessage(`Successfully recognized ${data.results.length} clinical biomarkers!`);
+            onReportExtracted(
+                data.results,
+                lastUploadedName || 'Pasted Report',
+                currentRawText,
+                cvQuality,
+                data.ml_insights || null
+            );
+            return;
+        } catch (err) {
+            if (err instanceof ApiError && err.status === 401) {
+                setIsAnalyzing(false);
+                setAnalysisError('Your session has expired. Please sign in again.');
+                return;
+            }
         }
 
         setTimeout(() => {

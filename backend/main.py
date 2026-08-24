@@ -651,11 +651,11 @@ if DIST_DIR.exists():
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        if not full_path or full_path.startswith("api"):
+        if full_path.startswith("api"):
             raise HTTPException(status_code=404, detail="Not found")
 
         dist_real = os.path.realpath(str(DIST_DIR))
-        candidate = os.path.realpath(os.path.join(dist_real, full_path))
-        if candidate.startswith(dist_real + os.sep) and os.path.isfile(candidate):
+        candidate = os.path.realpath(os.path.join(dist_real, full_path)) if full_path else ""
+        if full_path and candidate.startswith(dist_real + os.sep) and os.path.isfile(candidate):
             return FileResponse(candidate)
         return FileResponse(os.path.join(dist_real, "index.html"))

@@ -17,6 +17,7 @@ import {
     ArrowUpRight
 } from 'lucide-react';
 import { SupportedLanguage } from '../types';
+import { apiFetch, ApiError, setToken } from '../api/client';
 
 interface LandingViewProps {
     onSignIn: (email: string) => void;
@@ -30,6 +31,8 @@ const MOCK_PROFILES = [
     { name: 'David Chen', email: 'david.chen@example.com', badge: 'Lipid & Cardiovascular Panel' },
     { name: 'Maya Patel', email: 'maya.patel@example.com', badge: 'Thyroid & Iron Studies' }
 ];
+
+const DEMO_PASSWORD = 'demo1234';
 
 export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
     const [authModal, setAuthModal] = useState<AuthMode>(null);
@@ -56,7 +59,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
         setErrorMessage(null);
     };
 
-    const handleFormSubmit = (e: React.FormEvent) => {
+    const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrorMessage(null);
 
@@ -79,31 +82,50 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                 setErrorMessage('Passwords do not match.');
                 return;
             }
+            if (password.length < 8) {
+                setErrorMessage('Password must be at least 8 characters long.');
+                return;
+            }
         }
 
         setIsLoading(true);
-        setTimeout(() => {
+        try {
+            const data =
+                authModal === 'signup'
+                    ? await apiFetch<{ token: string; user_email: string }>('/api/auth/register', {
+                          method: 'POST',
+                          json: { email: email.trim(), password, full_name: fullName.trim() }
+                      })
+                    : await apiFetch<{ token: string; user_email: string }>('/api/auth/login', {
+                          method: 'POST',
+                          json: { email: email.trim(), password }
+                      });
+            setToken(data.token);
+            onSignIn(data.user_email);
+        } catch (err) {
+            setErrorMessage(
+                err instanceof ApiError ? err.message : 'Could not reach the server. Please try again.'
+            );
             setIsLoading(false);
-            onSignIn(email.trim().toLowerCase());
-        }, 350);
+        }
     };
 
-    const handleGoogleAuth = () => {
+    const handleProfileSelect = async (selectedEmail: string) => {
         setIsLoading(true);
         setErrorMessage(null);
-        setTimeout(() => {
+        try {
+            const data = await apiFetch<{ token: string; user_email: string }>('/api/auth/login', {
+                method: 'POST',
+                json: { email: selectedEmail, password: DEMO_PASSWORD }
+            });
+            setToken(data.token);
+            onSignIn(data.user_email);
+        } catch (err) {
+            setErrorMessage(
+                err instanceof ApiError ? err.message : 'Demo sign-in failed. Is the server running?'
+            );
             setIsLoading(false);
-            onSignIn('google.user@example.com');
-        }, 300);
-    };
-
-    const handleProfileSelect = (selectedEmail: string) => {
-        setIsLoading(true);
-        setErrorMessage(null);
-        setTimeout(() => {
-            setIsLoading(false);
-            onSignIn(selectedEmail);
-        }, 250);
+        }
     };
 
     return (
@@ -143,7 +165,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                 <div className="flex items-center space-x-3 rtl:space-x-reverse">
                     <span className="hidden md:flex items-center space-x-1.5 text-emerald-400 font-semibold bg-emerald-950/40 border border-emerald-800/40 px-3 py-1 rounded-full text-xs mr-2">
                         <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>HIPAA Aligned</span>
+                        <span>Password Protected</span>
                     </span>
 
                     <a
@@ -291,43 +313,6 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                             </p>
                         </div>
 
-                        {/* Google Social Auth Button */}
-                        <div className="space-y-4">
-                            <button
-                                type="button"
-                                onClick={handleGoogleAuth}
-                                disabled={isLoading}
-                                className="w-full flex items-center justify-center space-x-3 rtl:space-x-reverse bg-white hover:bg-slate-100 text-slate-900 font-bold py-2.5 px-4 rounded-xl shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:opacity-50 text-xs sm:text-sm"
-                            >
-                                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                                    <path
-                                        fill="#4285F4"
-                                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                                    />
-                                    <path
-                                        fill="#34A853"
-                                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                    />
-                                    <path
-                                        fill="#FBBC05"
-                                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                                    />
-                                    <path
-                                        fill="#EA4335"
-                                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                                    />
-                                </svg>
-                                <span>Continue with Google</span>
-                            </button>
-
-                            <div className="relative flex items-center justify-center">
-                                <div className="border-t border-slate-800 w-full" />
-                                <span className="bg-slate-900 px-3 text-[10px] text-slate-500 font-bold uppercase tracking-wider absolute">
-                                    OR WITH EMAIL
-                                </span>
-                            </div>
-                        </div>
-
                         {/* Error Notice */}
                         {errorMessage && (
                             <div className="mt-4 bg-rose-950/50 border border-rose-800/80 text-rose-300 text-xs p-3 rounded-xl">
@@ -372,18 +357,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                             </div>
 
                             <div>
-                                <div className="flex items-center justify-between mb-1">
-                                    <label className="text-xs font-semibold text-slate-300">Password</label>
-                                    {authModal === 'login' && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setErrorMessage('Password reset link sent to demo environment.')}
-                                            className="text-[11px] text-teal-400 hover:underline"
-                                        >
-                                            Forgot password?
-                                        </button>
-                                    )}
-                                </div>
+                                <label className="text-xs font-semibold text-slate-300 mb-1">Password</label>
                                 <div className="relative">
                                     <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                                     <input

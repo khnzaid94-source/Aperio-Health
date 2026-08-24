@@ -284,7 +284,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                         </span>
                     </div>
                     <span className="hidden md:inline text-[10px] text-teal-300 font-bold uppercase tracking-wider">
-                        100% Private &amp; Offline Resilient
+                        Secure Account • Your Reports Stay Yours
                     </span>
                 </div>
 
@@ -298,9 +298,9 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                     <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
                         <div>© {new Date().getFullYear()} Aperio Health. All rights reserved.</div>
                         <div className="flex items-center space-x-3 text-[11px] text-slate-400">
-                            <span>No Data Used for AI Model Training</span>
+                            <span>Educational Demo — Not Medical Advice</span>
                             <span>•</span>
-                            <span>GDPR &amp; HIPAA Aligned</span>
+                            <span>Reports visible only to your signed-in account</span>
                         </div>
                     </div>
                 </footer>
