@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { SidebarTab, SupportedLanguage, UserProfile } from '../types';
 import { SUPPORTED_LANGUAGES } from '../constants/translations';
+import { getTranslation } from '../utils/language';
 
 interface SidebarLayoutProps {
     currentTab: SidebarTab;
@@ -48,31 +49,31 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
     const NAV_ITEMS = [
         {
             id: 'dashboard' as SidebarTab,
-            label: 'Dashboard',
+            labelKey: 'nav.dashboard',
             icon: LayoutDashboard,
             badge: null
         },
         {
             id: 'upload' as SidebarTab,
-            label: 'Upload Report',
+            labelKey: 'nav.uploadReport',
             icon: UploadCloud,
             badge: null
         },
         {
             id: 'analyze' as SidebarTab,
-            label: 'Analyze Report',
+            labelKey: 'nav.analyzeReport',
             icon: FileSearch,
             badge: 'AI'
         },
         {
             id: 'history' as SidebarTab,
-            label: 'History & Trends',
+            labelKey: 'nav.historyTrends',
             icon: LineChart,
             badge: savedReportsCount > 0 ? String(savedReportsCount) : null
         },
         {
             id: 'journal' as SidebarTab,
-            label: 'Health Journal',
+            labelKey: 'nav.healthJournal',
             icon: BookOpen,
             badge: journalCount > 0 ? String(journalCount) : null
         }
@@ -81,21 +82,21 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
     const getTabTitle = (tab: SidebarTab) => {
         switch (tab) {
             case 'dashboard':
-                return 'Dashboard';
+                return getTranslation('title.dashboard', currentLang);
             case 'upload':
-                return 'Upload & Extract Report';
+                return getTranslation('title.upload', currentLang);
             case 'analyze':
-                return 'Report Analysis & Biomarker Evaluation';
+                return getTranslation('title.analyze', currentLang);
             case 'history':
-                return 'History & Trajectory Trends';
+                return getTranslation('title.history', currentLang);
             case 'journal':
-                return 'Health & Medication Journal';
+                return getTranslation('title.journal', currentLang);
             case 'about':
-                return 'About & Clinical Scope Notice';
+                return getTranslation('title.about', currentLang);
             case 'profile':
-                return 'Patient Profile & Vault Settings';
+                return getTranslation('title.profile', currentLang);
             default:
-                return 'Dashboard';
+                return getTranslation('title.dashboard', currentLang);
         }
     };
 
@@ -143,7 +144,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                     {/* Navigation Items */}
                     <div className="px-3 py-4 space-y-1">
                         <div className="px-3 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                            Main Menu
+                            {getTranslation('sidebar.mainMenu', currentLang)}
                         </div>
                         {NAV_ITEMS.map((item) => {
                             const Icon = item.icon;
@@ -163,7 +164,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                                 >
                                     <div className="flex items-center space-x-3 rtl:space-x-reverse">
                                         <Icon className={`w-4 h-4 ${isActive ? 'text-teal-400' : 'text-slate-400'}`} />
-                                        <span>{item.label}</span>
+                                        <span>{getTranslation(item.labelKey, currentLang)}</span>
                                     </div>
                                     {item.badge && (
                                         <span
@@ -196,7 +197,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                         }`}
                     >
                         <User className="w-4 h-4 text-slate-400" />
-                        <span>Profile &amp; Settings</span>
+                        <span>{getTranslation('sidebar.profileSettings', currentLang)}</span>
                     </button>
 
                     <button
@@ -211,7 +212,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                         }`}
                     >
                         <Info className="w-4 h-4 text-slate-400" />
-                        <span>About &amp; Disclaimers</span>
+                        <span>{getTranslation('sidebar.aboutDisclaimers', currentLang)}</span>
                     </button>
 
                     <button
@@ -219,7 +220,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                         className="w-full flex items-center space-x-3 rtl:space-x-reverse px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 transition-colors"
                     >
                         <LogOut className="w-4 h-4 text-rose-400" />
-                        <span>Sign Out</span>
+                        <span>{getTranslation('signOut', currentLang)}</span>
                     </button>
                 </div>
             </aside>
@@ -280,11 +281,11 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                     <div className="flex items-center space-x-2 rtl:space-x-reverse truncate">
                         <ShieldCheck className="w-3.5 h-3.5 text-teal-300 flex-shrink-0" />
                         <span className="truncate">
-                            Educational &amp; Health Literacy Tool — Non-Diagnostic Clinical Informatics Suite
+                            {getTranslation('notice.educational', currentLang)}
                         </span>
                     </div>
                     <span className="hidden md:inline text-[10px] text-teal-300 font-bold uppercase tracking-wider">
-                        Secure Account • Your Reports Stay Yours
+                        {getTranslation('notice.secure', currentLang)}
                     </span>
                 </div>
 
@@ -296,11 +297,11 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                 {/* Footer */}
                 <footer className="bg-white border-t border-slate-200 py-6 px-4 sm:px-8 text-xs text-slate-500 mt-auto">
                     <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-                        <div>© {new Date().getFullYear()} Aperio Health. All rights reserved.</div>
+                        <div>© {new Date().getFullYear()} Aperio Health. {getTranslation('footer.rights', currentLang)}</div>
                         <div className="flex items-center space-x-3 text-[11px] text-slate-400">
-                            <span>Educational Demo — Not Medical Advice</span>
+                            <span>{getTranslation('footer.demo', currentLang)}</span>
                             <span>•</span>
-                            <span>Reports visible only to your signed-in account</span>
+                            <span>{getTranslation('footer.private', currentLang)}</span>
                         </div>
                     </div>
                 </footer>
