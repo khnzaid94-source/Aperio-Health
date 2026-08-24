@@ -77,8 +77,8 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 
 **Prod:** https://aperio-health.onrender.com (Render free tier, autoDeploy on push)
 **Repo:** github.com/khnzaid94-source/Aperio-Health (private) · branch `main`
-**HEAD:** `ea8c9d5` — all work below is pushed
-**Next up:** Phase 8 Stage 3 — Profile deep sections + AnalyzeView headings/tier copy (~75 keys)
+**HEAD:** `5e728ea` — all work below is pushed
+**Next up:** Phase 8 Stage 4 — Upload remainder + History compare/chart microcopy (~75 keys)
 
 ## ✅ Completed work ledger (this chat)
 
@@ -102,6 +102,8 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 | 16 | **i18n Stage 2** onboarding wizard + dashboard banner/KPI/Delta-Pulse strings (115 keys ×10 langs) | `ea8c9d5` |
 | 17 | Pinned Saved-Reports investigation: deploy currency verified, pinned note's code claim disproven via git archaeology, prod API round-trip QA passed, clobber hypothesis documented | — |
 | 18 | **Pinned RESOLVED via owner screenshot**: root cause = tab was never implemented (list below fold); third "Saved Reports" pill + view wrapper added to HistoryAndTrends | `7933a07` |
+| 19 | **i18n Stage 3**: Profile deep sections + AnalyzeView headings/tier copy localized (123 new keys ×10 langs) | `5e728ea` |
+| 20 | Stages 1–3 remediation audit: `nav.selectLanguage` aria-labels (sidebar+landing), delete-confirm `<strong>` split, `prof.today` fallback, tier-3 hint casing; scripted sweep clean (+4 keys/lang → 304×10) | `5e728ea` |
 
 **Test posture at HEAD:** Vitest 26/26 · pytest 13/13 · ESLint clean · tsc build green.
 
@@ -123,11 +125,13 @@ Shipped pieces are live (see ledger #13–15): parity guard, sidebar + landing l
 - [x] Stage 1a: SidebarLayout (20 keys) — pushed
 - [x] Stage 1b: LandingView (42 keys) — pushed
 - [x] **Stage 2 (scope expanded per owner): Onboarding wizard + Dashboard welcome-banner/KPI strings (~85 keys)** — shipped `ea8c9d5`: 115 new keys (`onb.*` ×72, `dash.*` ×43) authored across all 10 languages; OnboardingView fully wired (wizard live-switches language via its own Language Preference select); DashboardView fully wired (welcome banner, Delta Pulse strip, KPI widgets, Latest Report card, quick-nav cards). Stored VALUES stay English by design (gender/blood/condition strings feed ML strata + filters); display-only translation via label helpers. Vitest 26/26 parity green, tsc build green, ESLint clean, pytest 13/13.
-- [ ] Stage 3: Profile deep sections + AnalyzeView headings/tier copy (~75)
+- [x] **Stage 3** — shipped (uncommitted): 123 new keys (`prof.*` ×66, `an.*` ×57) across all 10 languages; ProfileView fully wired (all 6 cards + hero chips + password/delete modals), gender/blood/condition display via label helpers reusing `onb.opt*` / `onb.cond_*` vocab — stored values stay English by design; AnalyzeView fully wired (tier headers/badges/subcopy, urgency+category filters, symptom bar, postprandial/exercise/med-context/discussion-prompt chips, Range/Target lines, empty state, search). Exact-match reuse of `dash.nonFasting`, `dash.postWorkout`, `dash.ctaUploadNow`. Applied via verified codemod (60/60 patterns). Vitest 26/26 parity green, tsc build green, ESLint clean, pytest 13/13.
 - [ ] Stage 4: Upload remainder + History compare/chart microcopy (~75)
 - [ ] Stage 5: JournalView + AboutView + misc (~50)
 
 Notes: translations are AI-authored (native review recommended pre-promotion); clinical term dictionaries fall back to English names where untranslated; parity test must be extended to any new dictionary added.
+
+**Stages 1–3 remediation audit (this session):** scripted sweep of dictionaries + call sites found: 0 duplicate keys, 0 `{param}` mismatches across all 10 langs, 0 param'd keys called bare, carry-over guard verified at all 4 profile-load sites. Fixed: hardcoded `aria-label="Select display language"` in SidebarLayout + LandingView → new `nav.selectLanguage` key; delete-confirm modal restored `<strong>` bolding via `prof.deleteConfirmLead/Bold/Tail` split; last-login fallback `'Today'` restored via `prof.today`; tier-3 hint action word lowercased. Net +4 keys/lang (304 ×10). All six wired views now scan clean of hardcoded English.
 
 ---
 
