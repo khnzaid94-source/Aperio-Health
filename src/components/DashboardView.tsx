@@ -17,6 +17,7 @@ import {
 import { SavedReport, JournalEntry, SidebarTab, SupportedLanguage, UserProfile } from '../types';
 import { computeDeltaAnalysis } from '../utils/deltas';
 import { getLocalizedTestName } from '../utils/language';
+import { getTranslation } from '../utils/language';
 import { EkgMonitorCanvas } from './EkgMonitorCanvas';
 
 interface DashboardViewProps {
@@ -36,6 +37,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     onNavigate,
     currentLang
 }) => {
+    const t = (key: string, params?: Record<string, string>): string =>
+        getTranslation(key, currentLang, params);
     const displayName = userProfile?.fullName || (userEmail ? userEmail.split('@')[0] : 'Patient');
 
     // Calculate age from dateOfBirth if available
@@ -109,14 +112,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div className="space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
                             <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight">
-                                Welcome back, <span className="text-teal-400">{displayName}</span>
+                                {t('dash.welcomeBack', { name: displayName })}
                             </h1>
 
                             {/* Demographic Chips */}
                             <div className="flex flex-wrap items-center gap-1.5">
                                 {userAge !== null && (
                                     <span className="bg-slate-800/90 border border-slate-700 px-2 py-0.5 rounded-lg text-[11px] font-medium text-slate-200">
-                                        {userAge} yrs
+                                        {t('dash.yrsChip', { age: String(userAge) })}
                                     </span>
                                 )}
                                 {userProfile?.gender && (
@@ -126,7 +129,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                                 )}
                                 {userProfile?.bloodType && userProfile.bloodType !== 'Prefer not to say' && (
                                     <span className="bg-rose-950/60 border border-rose-800/50 text-rose-300 px-2 py-0.5 rounded-lg text-[11px] font-bold">
-                                        Blood: {userProfile.bloodType}
+                                        {t('dash.bloodChip', { type: userProfile.bloodType })}
                                     </span>
                                 )}
                                 {chronicConditionsList.length > 0 && (
@@ -138,7 +141,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         </div>
 
                         <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-                            Track blood biomarkers, monitor multi-test interactions, and log daily medications and lifestyle context in one secure dashboard.
+                            {t('dash.bannerTagline')}
                         </p>
                     </div>
                         </div>
@@ -152,7 +155,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             className="bg-teal-600 hover:bg-teal-500 active:scale-95 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-xs transition-all inline-flex items-center space-x-1.5 rtl:space-x-reverse whitespace-nowrap w-full sm:w-auto"
                         >
                             <UploadCloud className="w-4 h-4" />
-                            <span>Upload New Report</span>
+                            <span>{t('dash.ctaUploadNew')}</span>
                         </button>
 
                         <button
@@ -160,7 +163,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             className="bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700 font-bold text-xs py-2 px-3.5 rounded-xl transition-all inline-flex items-center space-x-1.5 rtl:space-x-reverse whitespace-nowrap w-full sm:w-auto"
                         >
                             <BookOpen className="w-4 h-4" />
-                            <span>Log Context</span>
+                            <span>{t('dash.ctaLogContext')}</span>
                         </button>
                     </div>
                     </div>
@@ -177,20 +180,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                                     <GitCompare className="w-4 h-4" />
                                 </div>
                                 <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
-                                    Delta Pulse
+                                    {t('dash.deltaPulseTitle')}
                                 </h2>
                                 <span className="text-[10px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30 px-2 py-0.5 rounded-full">
-                                    Visit-over-Visit
+                                    {t('dash.visitOverVisit')}
                                 </span>
                                 <span className="text-xs text-slate-400 hidden sm:inline">•</span>
                                 <span className="text-xs text-slate-400">
-                                    Latest Visit (<span className="text-teal-300 font-medium">{deltaAnalysis.latestDate}</span>) vs Previous (<span className="text-slate-300 font-medium">{deltaAnalysis.prevDate}</span>)
+                                    {t('dash.compareLine', { latest: deltaAnalysis.latestDate, prev: deltaAnalysis.prevDate })}
                                 </span>
                             </div>
 
                             {/* Key Highlights: 2-3 most critical shifts */}
                             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Key Shifts:</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('dash.keyShifts')}</span>
                                 {deltaAnalysis.deltas.length > 0 ? (
                                     deltaAnalysis.deltas.slice(0, 3).map((d) => {
                                         const isVariance = d.status === 'variance';
@@ -220,7 +223,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                                         );
                                     })
                                 ) : (
-                                    <span className="text-xs text-slate-400">No overlapping biomarkers to calculate deltas.</span>
+                                    <span className="text-xs text-slate-400">{t('dash.noOverlaps')}</span>
                                 )}
                             </div>
                         </div>
@@ -230,15 +233,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             <div className="flex items-center gap-1.5 text-xs">
                                 <span className="inline-flex items-center space-x-1 rtl:space-x-reverse bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 px-2.5 py-1 rounded-full font-medium text-[11px]">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                    <span>{deltaAnalysis.improvedCount} Improved</span>
+                                    <span>{t('dash.improvedBadge', { count: String(deltaAnalysis.improvedCount) })}</span>
                                 </span>
                                 <span className="inline-flex items-center space-x-1 rtl:space-x-reverse bg-rose-950/60 border border-rose-800/60 text-rose-300 px-2.5 py-1 rounded-full font-medium text-[11px]">
                                     <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
-                                    <span>{deltaAnalysis.varianceCount} New Variances</span>
+                                    <span>{t('dash.varianceBadge', { count: String(deltaAnalysis.varianceCount) })}</span>
                                 </span>
                                 <span className="inline-flex items-center space-x-1 rtl:space-x-reverse bg-slate-800 border border-slate-700 text-slate-300 px-2.5 py-1 rounded-full font-medium text-[11px]">
                                     <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                                    <span>{deltaAnalysis.stableCount} Stable</span>
+                                    <span>{t('dash.stableBadge', { count: String(deltaAnalysis.stableCount) })}</span>
                                 </span>
                             </div>
 
@@ -246,7 +249,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                                 onClick={() => onNavigate('history')}
                                 className="bg-teal-600 hover:bg-teal-500 active:scale-95 text-white font-bold text-xs py-1.5 px-3 rounded-xl shadow-xs transition-all inline-flex items-center space-x-1.5 rtl:space-x-reverse flex-shrink-0"
                             >
-                                <span>View Full Breakdown</span>
+                                <span>{t('dash.viewBreakdown')}</span>
                                 <ArrowRight className="w-3.5 h-3.5" />
                             </button>
                         </div>
@@ -258,14 +261,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div className="flex items-center space-x-2.5 rtl:space-x-reverse text-slate-300">
                         <GitCompare className="w-4 h-4 text-teal-400 flex-shrink-0" />
                         <span>
-                            <strong className="text-white font-semibold">Delta Pulse:</strong> Upload a second report to unlock automatic visit-over-visit trajectory tracking and variance detection.
+                            <strong className="text-white font-semibold">{t('dash.deltaPulseTitle')}:</strong> {t('dash.deltaUnlock')}
                         </span>
                     </div>
                     <button
                         onClick={() => onNavigate('upload')}
                         className="text-teal-400 hover:text-teal-300 font-bold text-xs inline-flex items-center space-x-1 rtl:space-x-reverse flex-shrink-0"
                     >
-                        <span>Upload Second Report</span>
+                        <span>{t('dash.uploadSecondReport')}</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                 </div>
@@ -276,45 +279,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 {/* Reports Logged */}
                 <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all space-y-1.5">
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Reports Logged</span>
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{t('dash.kpiReportsLogged')}</span>
                         <div className="p-2 bg-teal-50 text-teal-600 rounded-xl">
                             <FileSpreadsheet className="w-4 h-4" />
                         </div>
                     </div>
                     <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{totalReports}</div>
-                    <div className="text-[11px] text-slate-400 font-medium">Total laboratory visits saved</div>
+                    <div className="text-[11px] text-slate-400 font-medium">{t('dash.kpiReportsSub')}</div>
                 </div>
 
                 {/* Unique Biomarkers */}
                 <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all space-y-1.5">
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Unique Biomarkers</span>
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{t('dash.kpiUniqueMarkers')}</span>
                         <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
                             <Activity className="w-4 h-4" />
                         </div>
                     </div>
                     <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{allUniqueTests.size}</div>
-                    <div className="text-[11px] text-slate-400 font-medium">Across 11 medical panel categories</div>
+                    <div className="text-[11px] text-slate-400 font-medium">{t('dash.kpiUniqueSub')}</div>
                 </div>
 
                 {/* Active Prescriptions */}
                 <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all space-y-1.5">
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Active Prescriptions</span>
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{t('dash.kpiActiveRx')}</span>
                         <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
                             <BookOpen className="w-4 h-4" />
                         </div>
                     </div>
                     <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{activeMedsCount + activeSuppsCount}</div>
                     <div className="text-[11px] text-slate-400 font-medium">
-                        {activeMedsCount} medication(s), {activeSuppsCount} supplement(s)
+                        {t('dash.kpiRxSub', { meds: String(activeMedsCount), supps: String(activeSuppsCount) })}
                     </div>
                 </div>
 
                 {/* Flagged Deviations */}
                 <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all space-y-1.5">
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Flagged Deviations</span>
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{t('dash.kpiFlagged')}</span>
                         <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
                             <LineChart className="w-4 h-4" />
                         </div>
@@ -322,7 +325,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div className={`text-2xl sm:text-3xl font-black tracking-tight ${totalFlaggedBiomarkers > 0 ? 'text-amber-600' : 'text-slate-900'}`}>
                         {totalFlaggedBiomarkers}
                     </div>
-                    <div className="text-[11px] text-slate-400 font-medium">Values outside standard reference bands</div>
+                    <div className="text-[11px] text-slate-400 font-medium">{t('dash.kpiFlaggedSub')}</div>
                 </div>
             </div>
 
@@ -333,14 +336,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                         <div className="flex items-center space-x-2 rtl:space-x-reverse">
                             <Calendar className="w-4 h-4 text-teal-600" />
-                            <h3 className="text-sm font-bold text-slate-900">Latest Report Overview</h3>
+                            <h3 className="text-sm font-bold text-slate-900">{t('dash.latestOverview')}</h3>
                         </div>
                         {latestReport && (
                             <button
                                 onClick={() => onNavigate('analyze')}
                                 className="text-xs font-bold text-teal-600 hover:text-teal-700 inline-flex items-center space-x-1 rtl:space-x-reverse"
                             >
-                                <span>Open Full Analysis</span>
+                                <span>{t('dash.openFullAnalysis')}</span>
                                 <ChevronRight className="w-3.5 h-3.5" />
                             </button>
                         )}
@@ -352,27 +355,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                                 <div>
                                     <div className="text-xs font-bold text-slate-900">{latestReport.label}</div>
                                     <div className="text-[11px] text-slate-500 flex items-center space-x-2 mt-0.5">
-                                        <span>Date: {latestReport.date}</span>
+                                        <span>{t('dash.dateLabel', { date: latestReport.date })}</span>
                                         <span className="text-[10px] px-1.5 py-0.2 rounded font-black tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
                                             {latestReport.sampleCondition?.toLowerCase() === 'non-fasting'
-                                                ? 'Non-Fasting'
+                                                ? t('dash.nonFasting')
                                                 : latestReport.sampleCondition?.toLowerCase() === 'post-exercise'
-                                                ? 'Post-Workout'
-                                                : 'Fasting'}
+                                                ? t('dash.postWorkout')
+                                                : t('dash.fasting')}
                                         </span>
                                     </div>
                                 </div>
                                 <span className="text-xs font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
-                                    {latestReport.results.length} Tests Recorded
+                                    {t('dash.testsRecorded', { count: String(latestReport.results.length) })}
                                 </span>
                             </div>
 
                             <div className="space-y-2">
-                                <div className="text-xs font-semibold text-slate-600">Key Out-of-Range Markers:</div>
+                                <div className="text-xs font-semibold text-slate-600">{t('dash.keyOutOfRange')}</div>
                                 {latestAbnormals.length === 0 ? (
                                     <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl border border-emerald-200 text-xs flex items-center space-x-2 rtl:space-x-reverse">
                                         <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                                        <span>All parameters in your latest report are within normal range.</span>
+                                        <span>{t('dash.allNormalLatest')}</span>
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -398,15 +401,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             <div className="w-12 h-12 bg-slate-100 text-slate-400 rounded-xl flex items-center justify-center mx-auto">
                                 <UploadCloud className="w-6 h-6" />
                             </div>
-                            <div className="text-xs font-bold text-slate-700">No laboratory reports saved yet</div>
+                            <div className="text-xs font-bold text-slate-700">{t('dash.emptyReportsTitle')}</div>
                             <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
-                                Upload your blood test or select an example report to populate your personal dashboard.
+                                {t('dash.emptyReportsSub')}
                             </p>
                             <button
                                 onClick={() => onNavigate('upload')}
                                 className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs py-2 px-4 rounded-xl shadow-xs transition-colors"
                             >
-                                Upload Report Now
+                                {t('dash.ctaUploadNow')}
                             </button>
                         </div>
                     )}
@@ -424,10 +427,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             </div>
                             <div>
                                 <div className="text-xs font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
-                                    Analyze &amp; Plain Language
+                                    {t('dash.qnAnalyzeTitle')}
                                 </div>
                                 <div className="text-[11px] text-slate-400">
-                                    Review ML balance score &amp; range gauges
+                                    {t('dash.qnAnalyzeSub')}
                                 </div>
                             </div>
                         </div>
@@ -444,10 +447,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             </div>
                             <div>
                                 <div className="text-xs font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">
-                                    Biomarker Trajectory Trends
+                                    {t('dash.qnTrendsTitle')}
                                 </div>
                                 <div className="text-[11px] text-slate-400">
-                                    Interactive Recharts graph with reference bands
+                                    {t('dash.qnTrendsSub')}
                                 </div>
                             </div>
                         </div>
@@ -464,10 +467,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             </div>
                             <div>
                                 <div className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
-                                    Medication &amp; Context Journal
+                                    {t('dash.qnJournalTitle')}
                                 </div>
                                 <div className="text-[11px] text-slate-400">
-                                    Log supplements, fasting &amp; lifestyle changes
+                                    {t('dash.qnJournalSub')}
                                 </div>
                             </div>
                         </div>

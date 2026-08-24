@@ -25,6 +25,7 @@ import {
     MeasurementUnitPreference
 } from '../types';
 import { SUPPORTED_LANGUAGES } from '../constants/translations';
+import { getTranslation } from '../utils/language';
 
 interface OnboardingViewProps {
     userEmail: string;
@@ -92,6 +93,19 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
     const [consentEducation, setConsentEducation] = useState<boolean>(false);
     const [consentPrivacy, setConsentPrivacy] = useState<boolean>(true);
 
+    // UI translation helper — driven by the form's language selection so the wizard live-switches
+    const t = (key: string, params?: Record<string, string>): string =>
+        getTranslation(key, language || initialLanguage || 'en', params);
+
+    const genderLabel = (g: GenderType): string => {
+        if (g === 'Male') return t('onb.optMale');
+        if (g === 'Female') return t('onb.optFemale');
+        return t('onb.optPreferNot');
+    };
+
+    const bloodTypeLabel = (bt: BloodType): string =>
+        bt === 'Prefer not to say' ? t('onb.optPreferNot') : bt;
+
     // Pre-populate name if email has recognizable names
     useEffect(() => {
         if (userEmail && !fullName) {
@@ -142,15 +156,15 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
 
         if (step === 1) {
             if (!fullName.trim()) {
-                setErrorMsg('Please enter your full name to personalize your clinical reports.');
+                setErrorMsg('onb.errName');
                 return;
             }
             if (!dateOfBirth) {
-                setErrorMsg('Please select your date of birth for age-specific reference ranges.');
+                setErrorMsg('onb.errDob');
                 return;
             }
             if (!gender) {
-                setErrorMsg('Please select your gender.');
+                setErrorMsg('onb.errGender');
                 return;
             }
             goToStep(2);
@@ -164,11 +178,11 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
 
         if (step === 3) {
             if (!consentEducation) {
-                setErrorMsg('Please acknowledge that Aperio Health is an educational and literacy tool.');
+                setErrorMsg('onb.errConsentEdu');
                 return;
             }
             if (!consentPrivacy) {
-                setErrorMsg('Please acknowledge the privacy policy.');
+                setErrorMsg('onb.errConsentPrivacy');
                 return;
             }
             goToStep(4);
@@ -228,21 +242,21 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                     <div>
                         <span className="text-lg font-black text-white tracking-tight">Aperio Health</span>
                         <span className="text-[10px] ml-2 bg-teal-500/20 text-teal-300 font-bold px-2 py-0.5 rounded-full border border-teal-500/30">
-                            Patient Setup
+                            {t('onb.badge')}
                         </span>
                     </div>
                 </div>
 
                 <div className="flex items-center space-x-4">
                     <span className="text-xs text-slate-400 font-medium hidden sm:inline">
-                        Step <span className="text-teal-400 font-bold">{step}</span> of 4
+                        {t('onb.stepCounter', { step: String(step) })}
                     </span>
                     {onSignOut && (
                         <button
                             onClick={onSignOut}
                             className="text-xs text-slate-400 hover:text-rose-400 transition-colors"
                         >
-                            Sign Out
+                            {t('signOut')}
                         </button>
                     )}
                 </div>
@@ -262,10 +276,10 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                     {/* Step Visual Indicator Pills */}
                     <div className="grid grid-cols-4 gap-2 mb-8 border-b border-slate-800/80 pb-6">
                         {[
-                            { num: 1, title: 'Profile', icon: User },
-                            { num: 2, title: 'Medical Context', icon: HeartPulse },
-                            { num: 3, title: 'Consent', icon: ShieldCheck },
-                            { num: 4, title: 'Ready', icon: CheckCircle2 }
+                            { num: 1, titleKey: 'onb.tabProfile', icon: User },
+                            { num: 2, titleKey: 'onb.tabMedical', icon: HeartPulse },
+                            { num: 3, titleKey: 'onb.tabConsent', icon: ShieldCheck },
+                            { num: 4, titleKey: 'onb.tabReady', icon: CheckCircle2 }
                         ].map((s) => {
                             const isCurrent = step === s.num;
                             const isPassed = step > s.num;
@@ -278,7 +292,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                     disabled={!isUnlocked}
                                     onClick={() => {
                                         if (!isUnlocked) {
-                                            setErrorMsg('Please complete the current step before jumping ahead.');
+                                            setErrorMsg('onb.jumpAheadError');
                                             return;
                                         }
                                         setErrorMsg(null);
@@ -304,8 +318,8 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                         {isPassed ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Icon className="w-3.5 h-3.5" />}
                                     </div>
                                     <div className="hidden sm:block">
-                                        <div className="text-[10px] uppercase tracking-wider text-slate-500">Step 0{s.num}</div>
-                                        <div className="text-xs">{s.title}</div>
+                                        <div className="text-[10px] uppercase tracking-wider text-slate-500">{t('onb.stepNum', { n: String(s.num) })}</div>
+                                        <div className="text-xs">{t(s.titleKey)}</div>
                                     </div>
                                 </button>
                             );
@@ -316,7 +330,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                     {errorMsg && (
                         <div className="mb-6 bg-rose-950/60 border border-rose-800/80 text-rose-200 text-xs p-3.5 rounded-2xl flex items-center space-x-2 rtl:space-x-reverse">
                             <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
-                            <span>{errorMsg}</span>
+                            <span>{errorMsg ? t(errorMsg) : ''}</span>
                         </div>
                     )}
 
@@ -325,10 +339,10 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                         <div className="space-y-6 animate-in fade-in duration-200">
                             <div>
                                 <h2 className="text-2xl font-black text-white tracking-tight">
-                                    Let's build your health profile
+                                    {t('onb.s1Title')}
                                 </h2>
                                 <p className="text-xs text-slate-400 mt-1">
-                                    Laboratory reference ranges (e.g. hemoglobin, fasting glucose) depend heavily on your age, sex, and measurement system.
+                                    {t('onb.s1Subtitle')}
                                 </p>
                             </div>
 
@@ -336,7 +350,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                 {/* Full Name */}
                                 <div className="sm:col-span-2">
                                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                                        Full Name <span className="text-teal-400">*</span>
+                                        {t('onb.fullName')} <span className="text-teal-400">*</span>
                                     </label>
                                     <div className="relative">
                                         <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
@@ -344,7 +358,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                             type="text"
                                             value={fullName}
                                             onChange={(e) => setFullName(e.target.value)}
-                                            placeholder="e.g. Jane Doe"
+                                            placeholder={t('onb.namePlaceholder')}
                                             className="w-full bg-slate-800/80 border border-slate-700 text-xs rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-500"
                                         />
                                     </div>
@@ -353,7 +367,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                 {/* Email Address (Readonly/Prefilled) */}
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                                        Email Address
+                                        {t('onb.emailAddress')}
                                     </label>
                                     <div className="relative">
                                         <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
@@ -370,11 +384,11 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                 <div>
                                     <div className="flex items-center justify-between mb-1.5">
                                         <label className="text-xs font-semibold text-slate-300">
-                                            Date of Birth <span className="text-teal-400">*</span>
+                                            {t('onb.dob')} <span className="text-teal-400">*</span>
                                         </label>
                                         {calculateAge(dateOfBirth) !== null && (
                                             <span className="text-[11px] font-bold text-teal-400 bg-teal-950/80 px-2 py-0.5 rounded-md border border-teal-800/60">
-                                                Age: {calculateAge(dateOfBirth)} yrs
+                                                {t('onb.ageYears', { age: String(calculateAge(dateOfBirth)) })}
                                             </span>
                                         )}
                                     </div>
@@ -393,17 +407,17 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                 {/* Sex */}
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                                        Sex <span className="text-teal-400">*</span>
+                                        {t('onb.sex')} <span className="text-teal-400">*</span>
                                     </label>
                                     <select
                                         value={gender}
                                         onChange={(e) => setGender(e.target.value as GenderType)}
-                                        aria-label="Sex"
+                                        aria-label={t('onb.sex')}
                                         className="w-full bg-slate-800/80 border border-slate-700 text-xs rounded-xl px-3.5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer"
                                     >
                                         {GENDER_OPTIONS.map((g) => (
                                             <option key={g} value={g}>
-                                                {g}
+                                                {genderLabel(g)}
                                             </option>
                                         ))}
                                     </select>
@@ -412,19 +426,19 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                 {/* Blood Type */}
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                                        Blood Type (Optional)
+                                        {t('onb.bloodTypeOptional')}
                                     </label>
                                     <div className="relative">
                                         <Droplet className="w-4 h-4 text-rose-400 absolute left-3.5 top-3.5 pointer-events-none" />
                                         <select
                                             value={bloodType}
                                             onChange={(e) => setBloodType(e.target.value as BloodType)}
-                                            aria-label="Blood Type"
+                                            aria-label={t('onb.bloodTypeOptional')}
                                             className="w-full bg-slate-800/80 border border-slate-700 text-xs rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer"
                                         >
                                             {BLOOD_TYPES.map((bt) => (
                                                 <option key={bt} value={bt}>
-                                                    {bt}
+                                                    {bloodTypeLabel(bt)}
                                                 </option>
                                             ))}
                                         </select>
@@ -434,14 +448,14 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                 {/* Preferred Language */}
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                                        Language Preference
+                                        {t('onb.langPreference')}
                                     </label>
                                     <div className="relative">
                                         <Globe className="w-4 h-4 text-teal-400 absolute left-3.5 top-3.5 pointer-events-none" />
                                         <select
                                             value={language}
                                             onChange={(e) => setLanguage(e.target.value as SupportedLanguage)}
-                                            aria-label="Language Preference"
+                                            aria-label={t('onb.langPreference')}
                                             className="w-full bg-slate-800/80 border border-slate-700 text-xs rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer"
                                         >
                                             {SUPPORTED_LANGUAGES.map((lang) => (
@@ -456,18 +470,18 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                 {/* Measurement Units */}
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                                        Measurement System
+                                        {t('onb.measurementSystem')}
                                     </label>
                                     <div className="relative">
                                         <Scale className="w-4 h-4 text-cyan-400 absolute left-3.5 top-3.5 pointer-events-none" />
                                         <select
                                             value={measurementUnits}
                                             onChange={(e) => setMeasurementUnits(e.target.value as MeasurementUnitPreference)}
-                                            aria-label="Measurement System"
+                                            aria-label={t('onb.measurementSystem')}
                                             className="w-full bg-slate-800/80 border border-slate-700 text-xs rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer"
                                         >
-                                            <option value="Conventional">Conventional / US (mg/dL, g/dL)</option>
-                                            <option value="Metric">Metric / SI Units (mmol/L, g/L)</option>
+                                            <option value="Conventional">{t('onb.unitsConventional')}</option>
+                                            <option value="Metric">{t('onb.unitsMetric')}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -481,20 +495,20 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                             <div>
                                 <div className="inline-flex items-center space-x-1.5 text-teal-400 bg-teal-950/60 border border-teal-800/50 px-2.5 py-0.5 rounded-full text-[11px] font-bold mb-2">
                                     <Sparkles className="w-3.5 h-3.5" />
-                                    <span>Improves AI Explanations</span>
+                                    <span>{t('onb.s2Badge')}</span>
                                 </div>
                                 <h2 className="text-2xl font-black text-white tracking-tight">
-                                    Medical context &amp; background
+                                    {t('onb.s2Title')}
                                 </h2>
                                 <p className="text-xs text-slate-400 mt-1">
-                                    Sharing existing conditions and medications allows our ML engine to provide relevant, context-aware biomarker explanations.
+                                    {t('onb.s2Subtitle')}
                                 </p>
                             </div>
 
                             {/* Chronic Conditions Pills */}
                             <div className="space-y-2">
                                 <label className="block text-xs font-semibold text-slate-300">
-                                    Do you have any diagnosed chronic conditions?
+                                    {t('onb.conditionsQuestion')}
                                 </label>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                     {CHRONIC_CONDITIONS.map((c) => {
@@ -510,7 +524,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                                         : 'bg-slate-800/60 border-slate-700/80 text-slate-300 hover:border-slate-600'
                                                 }`}
                                             >
-                                                <span>{c.label}</span>
+                                                <span>{t(`onb.cond_${c.id}`)}</span>
                                                 <div
                                                     className={`w-4 h-4 rounded-md border flex items-center justify-center text-[10px] ${
                                                         isSelected
@@ -528,13 +542,13 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                 {/* Other unlisted conditions field */}
                                 <div className="pt-2">
                                     <label className="block text-xs font-semibold text-slate-300 mb-1">
-                                        Other Diagnosed Condition(s) (Optional)
+                                        {t('onb.otherConditions')}
                                     </label>
                                     <input
                                         type="text"
                                         value={otherChronicConditions}
                                         onChange={(e) => setOtherChronicConditions(e.target.value)}
-                                        placeholder="e.g., Gout, PCOS, Asthma, Rheumatoid Arthritis, Celiac..."
+                                        placeholder={t('onb.otherPlaceholder')}
                                         className="w-full bg-slate-800/80 border border-slate-700 text-xs rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-500"
                                     />
                                 </div>
@@ -543,17 +557,17 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                             {/* Current Medications */}
                             <div>
                                 <label className="block text-xs font-semibold text-slate-300 mb-1">
-                                    Current Medications (Optional)
+                                    {t('onb.medications')}
                                 </label>
                                 <div className="text-[11px] text-slate-400 mb-2 flex items-center space-x-1.5">
                                     <Pill className="w-3.5 h-3.5 text-teal-400" />
-                                    <span>e.g., Metformin 500mg, Atorvastatin 20mg, Levothyroxine 50mcg</span>
+                                    <span>{t('onb.medsHint')}</span>
                                 </div>
                                 <textarea
                                     value={medications}
                                     onChange={(e) => setMedications(e.target.value)}
                                     rows={2}
-                                    placeholder="Enter your daily prescription medications or supplements..."
+                                    placeholder={t('onb.medsPlaceholder')}
                                     className="w-full bg-slate-800/80 border border-slate-700 text-xs rounded-xl p-3.5 text-white focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-500"
                                 />
                             </div>
@@ -561,13 +575,13 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                             {/* Known Allergies */}
                             <div>
                                 <label className="block text-xs font-semibold text-slate-300 mb-1">
-                                    Known Allergies (Optional)
+                                    {t('onb.allergies')}
                                 </label>
                                 <input
                                     type="text"
                                     value={allergies}
                                     onChange={(e) => setAllergies(e.target.value)}
-                                    placeholder="e.g. Penicillin, Sulfa drugs, Latex (or None)"
+                                    placeholder={t('onb.allergiesPlaceholder')}
                                     className="w-full bg-slate-800/80 border border-slate-700 text-xs rounded-xl px-3.5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-500"
                                 />
                             </div>
@@ -579,10 +593,10 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                         <div className="space-y-6 animate-in fade-in duration-200">
                             <div>
                                 <h2 className="text-2xl font-black text-white tracking-tight">
-                                    Consent &amp; Privacy Agreement
+                                    {t('onb.s3Title')}
                                 </h2>
                                 <p className="text-xs text-slate-400 mt-1">
-                                    Please take 15 seconds to review our educational scope and local-first privacy commitments.
+                                    {t('onb.s3Subtitle')}
                                 </p>
                             </div>
 
@@ -608,10 +622,10 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                     <div className="space-y-1">
                                         <div className="text-xs font-bold text-slate-200 flex items-center space-x-1.5">
                                             <FileCheck2 className="w-4 h-4 text-teal-400" />
-                                            <span>Educational &amp; Literacy Scope Notice <span className="text-teal-400">*</span></span>
+                                            <span>{t('onb.consentEduTitle')} <span className="text-teal-400">*</span></span>
                                         </div>
                                         <p className="text-[11px] text-slate-400 leading-relaxed">
-                                            I understand this application is for <strong>educational and health literacy purposes only</strong>. It is not a clinical diagnostic device, does not provide medical diagnoses or treatment prescriptions, and is not a substitute for a qualified physician or laboratory professional.
+                                            {t('onb.consentEduA')} <strong>{t('onb.consentEduBold')}</strong>{t('onb.consentEduB')}
                                         </p>
                                     </div>
                                 </div>
@@ -637,10 +651,10 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                     <div className="space-y-1">
                                         <div className="text-xs font-bold text-slate-200 flex items-center space-x-1.5">
                                             <Lock className="w-4 h-4 text-emerald-400" />
-                                            <span>Data Privacy &amp; Local Vault Policy <span className="text-emerald-400">*</span></span>
+                                            <span>{t('onb.consentPrivacyTitle')} <span className="text-emerald-400">*</span></span>
                                         </div>
                                         <p className="text-[11px] text-slate-400 leading-relaxed">
-                                            Your reports are stored behind your password-protected account and are visible only to you. This is an educational health-literacy demo — <strong>please upload sample or non-identifiable reports, never sensitive medical documents</strong>.
+                                            {t('onb.consentPrivacyA')} <strong>{t('onb.consentPrivacyBold')}</strong>{t('onb.consentPrivacyB')}
                                         </p>
                                     </div>
                                 </div>
@@ -657,29 +671,29 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
 
                             <div className="space-y-2">
                                 <h2 className="text-3xl font-black text-white tracking-tight">
-                                    You're all set, {fullName}!
+                                    {t('onb.s4Title', { name: fullName })}
                                 </h2>
                                 <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto">
-                                    Your personalized health profile has been configured. You can now upload your laboratory blood report or explore your dashboard.
+                                    {t('onb.s4Subtitle')}
                                 </p>
                             </div>
 
                             {/* Summary Badge Cards */}
                             <div className="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 max-w-lg mx-auto text-left rtl:text-right grid grid-cols-2 gap-3 text-xs">
                                 <div>
-                                    <span className="text-slate-500 text-[10px] block font-bold uppercase tracking-wider">Patient Name</span>
+                                    <span className="text-slate-500 text-[10px] block font-bold uppercase tracking-wider">{t('onb.sumPatientName')}</span>
                                     <span className="font-bold text-white">{fullName}</span>
                                 </div>
                                 <div>
-                                    <span className="text-slate-500 text-[10px] block font-bold uppercase tracking-wider">Sex &amp; Blood Type</span>
-                                    <span className="font-bold text-teal-300">{gender || 'Not specified'} • {bloodType || 'Prefer not to say'}</span>
+                                    <span className="text-slate-500 text-[10px] block font-bold uppercase tracking-wider">{t('onb.sumSexBlood')}</span>
+                                    <span className="font-bold text-teal-300">{gender ? genderLabel(gender) : t('onb.notSpecified')} • {bloodType ? bloodTypeLabel(bloodType) : t('onb.optPreferNot')}</span>
                                 </div>
                                 <div>
-                                    <span className="text-slate-500 text-[10px] block font-bold uppercase tracking-wider">Language</span>
+                                    <span className="text-slate-500 text-[10px] block font-bold uppercase tracking-wider">{t('onb.sumLanguage')}</span>
                                     <span className="font-bold text-white uppercase">{language}</span>
                                 </div>
                                 <div>
-                                    <span className="text-slate-500 text-[10px] block font-bold uppercase tracking-wider">Units</span>
+                                    <span className="text-slate-500 text-[10px] block font-bold uppercase tracking-wider">{t('onb.sumUnits')}</span>
                                     <span className="font-bold text-cyan-300">{measurementUnits}</span>
                                 </div>
                             </div>
@@ -690,7 +704,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                     onClick={() => handleFinish('upload')}
                                     className="w-full sm:w-auto flex-1 bg-gradient-to-r from-teal-500 to-emerald-400 hover:from-teal-400 hover:to-emerald-300 text-slate-950 font-extrabold py-3.5 px-6 rounded-xl text-xs shadow-lg shadow-teal-500/25 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2 rtl:space-x-reverse"
                                 >
-                                    <span>Upload First Lab Report</span>
+                                    <span>{t('onb.ctaUploadFirst')}</span>
                                     <ArrowRight className="w-4 h-4" />
                                 </button>
 
@@ -698,7 +712,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                     onClick={() => handleFinish('dashboard')}
                                     className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 px-5 rounded-xl text-xs border border-slate-700 transition-colors"
                                 >
-                                    Go to Dashboard
+                                    {t('onb.ctaDashboard')}
                                 </button>
                             </div>
 
@@ -709,7 +723,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                     className="text-xs text-teal-400 hover:text-teal-300 font-medium hover:underline inline-flex items-center space-x-1"
                                 >
                                     <ArrowLeft className="w-3.5 h-3.5" />
-                                    <span>Review &amp; Edit Profile Details</span>
+                                    <span>{t('onb.reviewEdit')}</span>
                                 </button>
                             </div>
                         </div>
@@ -728,7 +742,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                     className="flex items-center space-x-1.5 text-xs text-slate-400 hover:text-white font-bold px-3 py-2 rounded-xl hover:bg-slate-800 transition-colors"
                                 >
                                     <ArrowLeft className="w-4 h-4" />
-                                    <span>Back</span>
+                                    <span>{t('onb.back')}</span>
                                 </button>
                             ) : (
                                 <div />
@@ -744,7 +758,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                         }}
                                         className="text-xs text-slate-400 hover:text-slate-200 font-medium px-3 py-2"
                                     >
-                                        Skip for now
+                                        {t('onb.skipForNow')}
                                     </button>
                                 )}
 
@@ -753,7 +767,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                                     onClick={handleNextStep}
                                     className="bg-gradient-to-r from-teal-500 to-emerald-400 hover:from-teal-400 hover:to-emerald-300 text-slate-950 font-extrabold px-6 py-3 rounded-xl text-xs shadow-md shadow-teal-500/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center space-x-2 rtl:space-x-reverse"
                                 >
-                                    <span>{step === 3 ? 'Complete Setup' : 'Continue'}</span>
+                                    <span>{step === 3 ? t('onb.completeSetup') : t('onb.continue')}</span>
                                     <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>
@@ -764,7 +778,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
 
             {/* Bottom Subtle Tagline */}
             <footer className="relative z-10 py-4 text-center text-xs text-slate-500">
-                🔒 100% Private Health Vault • Educational Reference Architecture
+                {t('onb.footerTagline')}
             </footer>
         </div>
     );
