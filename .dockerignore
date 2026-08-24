@@ -1,0 +1,17 @@
+node_modules
+dist
+.git
+.gitignore
+*.db
+.env
+.env.local
+*.local
+__pycache__
+**/__pycache__
+Transcript
+final session transcript.md
+session-ses_*.md
+memory-bank.md
+LabLens_OpenCode_Reference.md
+functional_specification.md
+nhanes_cache

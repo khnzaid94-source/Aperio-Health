@@ -151,8 +151,8 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 
 ## Phase 7 — Deploy & Verify (Render)
 
-- [ ] 7.1 Dockerfile: python slim + tesseract-ocr + node build stage → uvicorn :8000
-- [ ] 7.2 Env checklist: SECRET_KEY, ALLOWED_ORIGIN, GOOGLE_CLIENT_ID, VITE_* build args;
+- [x] 7.1 Dockerfile: python slim + tesseract-ocr + node build stage → uvicorn :8000
+- [x] 7.2 Env checklist (service name LOCKED: Aperio-Health -> https://aperio-health.onrender.com; render.yaml blueprint added; .env.production carries public VITE client id): SECRET_KEY, ALLOWED_ORIGIN, GOOGLE_CLIENT_ID, VITE_* build args;
       USER pastes GEMINI_API_KEY personally
 - [ ] 7.3 Seed-on-startup verified; cold-start "waking up…" loading state
 - [ ] 7.4 Manual QA all screens · README rewritten honestly
