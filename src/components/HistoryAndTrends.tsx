@@ -423,7 +423,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
 
                                             <div className="text-[11px] text-slate-500 text-center mt-2 flex items-center justify-center space-x-2">
                                                 <span className="w-3 h-3 bg-emerald-200 border border-emerald-400 rounded-xs inline-block" />
-                                                <span>Highlighted band indicates the normal reference range</span>
+                                                <span>{getTranslation('hist.bandCaption', currentLang)}</span>
                                             </div>
                                         </div>
                                     )}

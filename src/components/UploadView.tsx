@@ -487,7 +487,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                                 <Eye className="w-4 h-4" />
                             </div>
                             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                                Computer Vision Quality Diagnostics
+                                {getTranslation('up.cvTitle', currentLang)}
                             </h3>
                         </div>
                         <span

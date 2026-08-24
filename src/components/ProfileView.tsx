@@ -474,7 +474,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         <div>
                             <div className="flex items-center space-x-1.5 mb-1">
                                 <Pill className="w-3.5 h-3.5 text-emerald-600" />
-                                <label className="text-xs font-bold text-slate-700">Current Medications &amp; Supplements</label>
+                                <label className="text-xs font-bold text-slate-700">{t('prof.medsLabel')}</label>
                             </div>
                             <textarea
                                 value={medications}

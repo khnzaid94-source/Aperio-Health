@@ -283,7 +283,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn, currentLang,
                             <Activity className="w-5 h-5" />
                         </div>
                         <div className="text-sm font-bold text-white">{t('landing.pillar1Title')}</div>
-                        <div className="text-xs text-slate-400 leading-relaxed">{t('pillar1Desc')}</div>
+                        <div className="text-xs text-slate-400 leading-relaxed">{t('landing.pillar1Desc')}</div>
                     </div>
 
                     <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl backdrop-blur-md space-y-2 hover:border-slate-700 transition-colors">
@@ -291,7 +291,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn, currentLang,
                             <Cpu className="w-5 h-5" />
                         </div>
                         <div className="text-sm font-bold text-white">{t('landing.pillar2Title')}</div>
-                        <div className="text-xs text-slate-400 leading-relaxed">{t('pillar2Desc')}</div>
+                        <div className="text-xs text-slate-400 leading-relaxed">{t('landing.pillar2Desc')}</div>
                     </div>
 
                     <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl backdrop-blur-md space-y-2 hover:border-slate-700 transition-colors">
@@ -299,7 +299,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn, currentLang,
                             <Globe className="w-5 h-5" />
                         </div>
                         <div className="text-sm font-bold text-white">{t('landing.pillar3Title')}</div>
-                        <div className="text-xs text-slate-400 leading-relaxed">{t('pillar3Desc')}</div>
+                        <div className="text-xs text-slate-400 leading-relaxed">{t('landing.pillar3Desc')}</div>
                     </div>
 
                     <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl backdrop-blur-md space-y-2 hover:border-slate-700 transition-colors">
@@ -307,7 +307,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn, currentLang,
                             <FileText className="w-5 h-5" />
                         </div>
                         <div className="text-sm font-bold text-white">{t('landing.pillar4Title')}</div>
-                        <div className="text-xs text-slate-400 leading-relaxed">{t('pillar4Desc')}</div>
+                        <div className="text-xs text-slate-400 leading-relaxed">{t('landing.pillar4Desc')}</div>
                     </div>
                 </div>
             </main>

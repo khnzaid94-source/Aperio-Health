@@ -77,8 +77,8 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 
 **Prod:** https://aperio-health.onrender.com (Render free tier, autoDeploy on push)
 **Repo:** github.com/khnzaid94-source/Aperio-Health (private) · branch `main`
-**HEAD:** Stage 5 code = `1de3095` (this snapshot ships in the docs commit right after it) — ALL PUSHED to origin/main
-**Next up:** Phase 8 Scope A i18n COMPLETE (Stages 1a/1b/2/3/4/5 all shipped). New session options: (a) owner prod QA battery incl. Journal/About in non-EN languages, (b) native-speaker review of AI-authored translations, (c) clinical-term dictionary coverage (falls back to EN), (d) publish gate: flip repo public after final QA pass
+**HEAD:** Stage 5 code = `1de3095` + docs `c7aa2f5` pushed; **post-sweep i18n defect fixes are LOCAL & UNCOMMITTED** (awaiting owner approval)
+**Next up:** commit+push sweep fixes → prod re-QA → owner manual QA battery (`docs/QA-BATTERY.md`) → native-speaker review → publish gate
 
 ## ✅ Completed work ledger (this chat)
 
@@ -106,8 +106,9 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 | 20 | Stages 1–3 remediation audit: `nav.selectLanguage` aria-labels (sidebar+landing), delete-confirm `<strong>` split, `prof.today` fallback, tier-3 hint casing; scripted sweep clean (+4 keys/lang → 304×10) | `5e728ea` |
 | 21 | **i18n Stage 4**: UploadView + HistoryAndTrends fully localized (110 new keys ×10 langs: `up.*` ×45, `hist.*` ×65); reused `dash.nonFasting/postWorkout`, `an.allWithCount/filterAll`, `normal/high/lowBadge`, `processingText`, `getLocalizedCategory` | `2504c3a` |
 | 22 | **i18n Stage 5**: JournalView + AboutView + misc (MLInsightsCard, RangeGauge, ConfirmDialog defaults) fully localized — 91 new keys ×10 langs (`jrn.*` ×35, `ab.*` ×35, `ml.*` ×14, `gauge.*` ×5, `ui.*` ×2); AboutView HIPAA badge reworded honest; dictionary now 505 keys ×10 | `1de3095` |
+| 23 | **Pre-QA scripted i18n sweep + defect fixes (uncommitted)**: deploy currency verified (prod = HEAD assets). App-wide hardcoded-English scan found 5 user-visible defects, all fixed: (1) LandingView pillar descriptions called `t('pillar1Desc')` etc. missing `landing.` prefix → raw key names rendered on prod since Stage 1b; (2) HistoryAndTrends band caption hardcoded EN → wired existing `hist.bandCaption`; (3) ProfileView "Current Medications & Supplements" hardcoded → wired orphaned `prof.medsLabel`; (4) UploadView CV strip title hardcoded → wired orphaned `up.cvTitle`; (5) `up.processingNofM` called with `{current,total}` but never defined in ANY language → batch progress showed raw key string; added to all 10 langs (dictionary now **506 keys ×10**). Permanent CI hardening in translations.test.ts: `{param}` parity per language + call-site key-existence scan via import.meta.glob (this guard would have auto-caught defects 1 & 5). Vitest 36/36 · tsc build green · ESLint clean · pytest 13/13. Known accepted EN-by-design: brand lockups ("Aperio Health"/"Health Intelligence"), example placeholders, clinical content constants (samples/symptoms/drugInteractions), deltas.ts trajectory explanations + questionGenerator doctor questions + language.ts retrospective summary + client.ts network-error strings (→ Phase 8 Scope B candidates), pdfExport PDF report. | — |
 
-**Test posture at HEAD:** Vitest 26/26 · pytest 13/13 · ESLint clean · tsc build green. Stage 5 (`1de3095`) re-verified: same battery all green; dictionary now 505 keys ×10.
+**Test posture:** Vitest 36/36 (was 26; +9 param-parity, +1 call-site scan) · pytest 13/13 · ESLint clean · tsc build green. Sweep fixes verified: dictionary 506 keys ×10, param parity + call-site scan green.
 
 ## ⛔ Pinned — RESOLVED 2026-08-24: "Saved Reports tab invisible on prod"
 
