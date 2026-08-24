@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { SidebarLayout } from './components/SidebarLayout';
 import { LandingView } from './components/LandingView';
 import { OnboardingView } from './components/OnboardingView';
@@ -338,6 +338,13 @@ export function App() {
     // Navigation & Language
     const [currentTab, setCurrentTab] = useState<SidebarTab>('dashboard');
     const [currentLang, setCurrentLang] = useState<SupportedLanguage>('en');
+    const langChosenRef = useRef(false);
+
+    // Explicit in-app language choice always wins over stored profile preferences
+    const chooseLanguage = useCallback((lang: SupportedLanguage) => {
+        langChosenRef.current = true;
+        setCurrentLang(lang);
+    }, []);
 
     // Data State
     const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
@@ -372,6 +379,7 @@ export function App() {
         setCurrentRawText('');
         setCurrentMlInsights(null);
         clearToken();
+        langChosenRef.current = false;
         Object.keys(localStorage)
             .filter((key) => key.startsWith('aperio_'))
             .forEach((key) => localStorage.removeItem(key));
@@ -446,7 +454,7 @@ export function App() {
                     const parsed = JSON.parse(stored);
                     setUserProfile(parsed);
                     setIsOnboarding(!parsed.onboardingCompleted);
-                    if (parsed.language) setCurrentLang(parsed.language);
+                    if (parsed.language && !langChosenRef.current) setCurrentLang(parsed.language);
                     return;
                 } catch {
                     // Stored corrupted
@@ -479,7 +487,7 @@ export function App() {
                 setUserProfile(formattedProf);
                 setIsOnboarding(!formattedProf.onboardingCompleted);
                 localStorage.setItem(`aperio_profile_${userEmail}`, JSON.stringify(formattedProf));
-                if (formattedProf.language) setCurrentLang(formattedProf.language);
+                if (formattedProf.language && !langChosenRef.current) setCurrentLang(formattedProf.language);
                 return;
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) {
@@ -491,7 +499,7 @@ export function App() {
                     setUserProfile(preset);
                     setIsOnboarding(false);
                     localStorage.setItem(`aperio_profile_${userEmail}`, JSON.stringify(preset));
-                    if (preset.language) setCurrentLang(preset.language);
+                    if (preset.language && !langChosenRef.current) setCurrentLang(preset.language);
                     return;
                 }
             }
@@ -626,7 +634,7 @@ export function App() {
                 const parsed = JSON.parse(storedProf);
                 setUserProfile(parsed);
                 setIsOnboarding(!parsed.onboardingCompleted);
-                if (parsed.language) setCurrentLang(parsed.language);
+                if (parsed.language && !langChosenRef.current) setCurrentLang(parsed.language);
                 setCurrentTab('dashboard');
                 return;
             } catch {
@@ -702,6 +710,7 @@ export function App() {
         }
 
         if (profile.language) {
+            langChosenRef.current = true;
             setCurrentLang(profile.language);
         }
 
@@ -926,7 +935,7 @@ export function App() {
 
     // 1. Not Logged In -> Show Landing Page
     if (!userEmail) {
-        return <LandingView onSignIn={handleSignIn} currentLang={currentLang} onLanguageChange={setCurrentLang} />;
+        return <LandingView onSignIn={handleSignIn} currentLang={currentLang} onLanguageChange={chooseLanguage} />;
     }
 
     // 2. Logged In, but Needs Onboarding -> Show Onboarding Page
@@ -949,7 +958,7 @@ export function App() {
             userEmail={userEmail}
             userProfile={userProfile}
             currentLang={currentLang}
-            onLanguageChange={setCurrentLang}
+            onLanguageChange={chooseLanguage}
             onSignOut={handleSignOut}
             savedReportsCount={savedReports.length}
             journalCount={journalEntries.length}

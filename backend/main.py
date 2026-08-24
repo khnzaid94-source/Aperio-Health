@@ -93,6 +93,13 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
+class ImmutableStaticFiles(StaticFiles):
+    def file_response(self, *args: Any, **kwargs: Any):
+        response = super().file_response(*args, **kwargs)
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        return response
+
+
 app.include_router(auth_router)
 
 
@@ -698,7 +705,7 @@ DIST_DIR = BASE_DIR / "dist"
 if DIST_DIR.exists():
     assets_dir = DIST_DIR / "assets"
     if assets_dir.exists():
-        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+        app.mount("/assets", ImmutableStaticFiles(directory=str(assets_dir)), name="assets")
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
@@ -708,5 +715,7 @@ if DIST_DIR.exists():
         dist_real = os.path.realpath(str(DIST_DIR))
         candidate = os.path.realpath(os.path.join(dist_real, full_path)) if full_path else ""
         if full_path and candidate.startswith(dist_real + os.sep) and os.path.isfile(candidate):
-            return FileResponse(candidate)
-        return FileResponse(os.path.join(dist_real, "index.html"))
+            return FileResponse(candidate, headers={"Cache-Control": "no-cache"})
+        return FileResponse(
+            os.path.join(dist_real, "index.html"), headers={"Cache-Control": "no-cache"}
+        )
