@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Printer,
     CheckCircle2,
@@ -123,6 +123,17 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
         });
         return initial;
     });
+
+    useEffect(() => {
+        const initial: Record<string, boolean> = {};
+        parsedResults.forEach((r) => {
+            if (r.classification !== 'Normal') initial[r.testId] = true;
+        });
+        setExpandedExplanationMap(initial);
+        setExpandedDrugInteractions({});
+        setSelectedSymptomIds([]);
+    }, [parsedResults]);
+
     const [expandedDrugInteractions, setExpandedDrugInteractions] = useState<Record<string, boolean>>({});
     const [isSymptomBarExpanded, setIsSymptomBarExpanded] = useState(false);
     const [selectedSymptomIds, setSelectedSymptomIds] = useState<string[]>([]);
@@ -130,8 +141,8 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
     const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('ALL');
     const [urgencyFilter, setUrgencyFilter] = useState<UrgencyQuickFilter>('ALL');
 
-    // Tier accordion collapse states (Tier 1 & 2 open by default, Tier 3 collapsed by default to prevent clutter)
-    const [tier1Expanded, setTier1Expanded] = useState(false);
+    // Tier accordion collapse states (Tier 1 & 2 open by default — critical findings first)
+    const [tier1Expanded, setTier1Expanded] = useState(true);
     const [tier2Expanded, setTier2Expanded] = useState(true);
     const [tier3Expanded, setTier3Expanded] = useState(false);
 

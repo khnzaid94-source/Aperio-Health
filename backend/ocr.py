@@ -386,6 +386,8 @@ def parse_report_text_python(text: str) -> List[Dict[str, Any]]:
     for idx, line in enumerate(raw_lines):
         matched_test_id = None
         matched_synonym = ""
+        matched_index = -1
+        matched_length = 0
 
         # Test synonym matching
         for test_id, synonyms in TEST_SYNONYMS.items():
@@ -422,6 +424,8 @@ def parse_report_text_python(text: str) -> List[Dict[str, Any]]:
 
                     matched_test_id = test_id
                     matched_synonym = syn
+                    matched_index = m.start()
+                    matched_length = m.end() - m.start()
                     break
             if matched_test_id:
                 break
@@ -439,10 +443,9 @@ def parse_report_text_python(text: str) -> List[Dict[str, Any]]:
         ext_max = None
         found_unit = catalog_entry.unit
 
-        # 1. First check remainder of the same line after synonym
-        lower_line = line.lower()
-        syn_pos = lower_line.find(matched_synonym.lower())
-        rest_of_line = line[syn_pos + len(matched_synonym):].strip() if syn_pos != -1 else line
+        # 1. First check remainder of the same line after the actual regex match position
+        slice_from = matched_index + matched_length if matched_index >= 0 else 0
+        rest_of_line = line[slice_from:].strip()
 
         val_match = re.search(r'(\d+(?:,\d+)*(?:\.\d+)?)', rest_of_line)
         if val_match:
@@ -551,7 +554,7 @@ def parse_report_text_python(text: str) -> List[Dict[str, Any]]:
         close_min = ref_min - 0.2 * range_width
         close_max = ref_max + 0.2 * range_width
 
-        if raw_val > 4.0 * std_max and not (matched_test_id in ['wbc', 'platelets'] and raw_val > 500):
+        if raw_val > 4.0 * std_max and not ((matched_test_id in ['wbc', 'platelets']) and raw_val > 500):
             corrected = raw_val / 10.0
             if close_min <= corrected <= close_max:
                 measured_val = corrected

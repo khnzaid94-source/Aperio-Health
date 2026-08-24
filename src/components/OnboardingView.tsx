@@ -53,6 +53,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
     onSignOut
 }) => {
     const [step, setStep] = useState<number>(1);
+    const [maxStepReached, setMaxStepReached] = useState<number>(1);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     // Auto-detect browser language and units
@@ -131,6 +132,11 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
         return age >= 0 ? age : null;
     };
 
+    const goToStep = (next: number) => {
+        setMaxStepReached((m) => Math.max(m, next));
+        setStep(next);
+    };
+
     const handleNextStep = () => {
         setErrorMsg(null);
 
@@ -147,12 +153,12 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                 setErrorMsg('Please select your biological sex or gender.');
                 return;
             }
-            setStep(2);
+            goToStep(2);
             return;
         }
 
         if (step === 2) {
-            setStep(3);
+            goToStep(3);
             return;
         }
 
@@ -165,7 +171,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                 setErrorMsg('Please acknowledge the privacy policy.');
                 return;
             }
-            setStep(4);
+            goToStep(4);
             return;
         }
     };
@@ -263,12 +269,18 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                         ].map((s) => {
                             const isCurrent = step === s.num;
                             const isPassed = step > s.num;
+                            const isUnlocked = s.num <= maxStepReached;
                             const Icon = s.icon;
                             return (
                                 <button
                                     key={s.num}
                                     type="button"
+                                    disabled={!isUnlocked}
                                     onClick={() => {
+                                        if (!isUnlocked) {
+                                            setErrorMsg('Please complete the current step before jumping ahead.');
+                                            return;
+                                        }
                                         setErrorMsg(null);
                                         setStep(s.num);
                                     }}

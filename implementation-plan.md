@@ -109,19 +109,19 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 
 ## Phase 3 — Bug Fixes [P0/P1]
 
-- [ ] 3.1 UploadView: delete per-report onSaveToHistory calls; batch persistence owned
+- [x] 3.1 UploadView: delete per-report onSaveToHistory calls; batch persistence owned
       solely by App.handleBatchReportsExtracted
-- [ ] 3.2 ReportAnalyzer: delete FileReader fake-report fallback + identical readAsText
+- [x] 3.2 ReportAnalyzer: delete FileReader fake-report fallback + identical readAsText
       branches; always POST /api/upload-file; error state on failure; clear stale cvQuality
-- [ ] 3.3 Backend POST /api/history/bulk (list merge); frontend persists ALL new reports once
-- [ ] 3.4 Guard `(mlInsights?.risk_clusters ?? [])` in MLInsightsCard + shape-check in client
-- [ ] 3.5 AbortController per upload/analysis; disable inputs while busy; stale-response guards
-- [ ] 3.6 OnboardingView: maxCompletedStep gating on pill navigation
-- [ ] 3.7 AnalyzeView: reset expansion map on parsedResults change; Tier-1 expanded default
-- [ ] 3.8 parser.ts:315 paren fix; match-index slicing instead of indexOf (parser.ts:189);
+- [x] 3.3 Backend POST /api/history/bulk (list merge); frontend persists ALL new reports once
+- [x] 3.4 Guard `(mlInsights?.risk_clusters ?? [])` in MLInsightsCard + shape-check in client
+- [x] 3.5 AbortController per upload/analysis; disable inputs while busy; stale-response guards
+- [x] 3.6 OnboardingView: maxCompletedStep gating on pill navigation
+- [x] 3.7 AnalyzeView: reset expansion map on parsedResults change; Tier-1 expanded default
+- [x] 3.8 parser.ts:315 paren fix; match-index slicing instead of indexOf (parser.ts:189);
       mirror in ocr.py:444
-- [ ] 3.9 HistoryAndTrends: Number.isFinite filter + domain guard; block self-compare
-- [ ] 3.10 pdfExport.ts: escapeHtml() applied to every interpolation
+- [x] 3.9 HistoryAndTrends: Number.isFinite filter + domain guard; block self-compare
+- [x] 3.10 pdfExport.ts: escapeHtml() applied to every interpolation
 
 ## Phase 4 — Parser Consolidation + ML Tiers 1+2
 

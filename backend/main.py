@@ -402,6 +402,10 @@ async def upload_file(
     }
 
 
+class BulkHistoryRequest(BaseModel):
+    reports: List[SaveReportRequest]
+
+
 @app.get("/api/history")
 def get_user_history(
     current_user: str = Depends(get_current_user),
@@ -442,6 +446,27 @@ def save_user_report(
     db.merge(db_report)
     db.commit()
     return {"status": "saved", "id": payload.id}
+
+
+@app.post("/api/history/bulk")
+def save_reports_bulk(
+    payload: BulkHistoryRequest,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    saved_ids = []
+    for report in payload.reports[:50]:
+        db_report = SavedReportModel(
+            id=report.id,
+            user_email=current_user,
+            date=report.date,
+            label=report.label,
+            results_json=json.dumps([r.model_dump() for r in report.results]),
+        )
+        db.merge(db_report)
+        saved_ids.append(report.id)
+    db.commit()
+    return {"status": "saved", "count": len(saved_ids), "ids": saved_ids}
 
 
 @app.delete("/api/history/report/{report_id}")

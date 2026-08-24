@@ -141,7 +141,7 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                                     </span>
                                 </div>
                                 <span className="text-xs font-extrabold text-teal-400">
-                                    {mlInsights.balance_index}% — {mlInsights.balance_badge}
+                                    {mlInsights.balance_index ?? '—'}% — {mlInsights.balance_badge ?? 'Unknown'}
                                 </span>
                             </div>
 
@@ -149,7 +149,7 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                             <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden relative border border-slate-700/60">
                                 <div
                                     className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-rose-500 via-amber-400 to-teal-400"
-                                    style={{ width: `${Math.min(100, Math.max(5, mlInsights.balance_index))}%` }}
+                                    style={{ width: `${Math.min(100, Math.max(5, mlInsights.balance_index || 0))}%` }}
                                 />
                             </div>
 
@@ -167,7 +167,7 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                                 <span>Multi-Biomarker Synergistic Interaction Clusters:</span>
                             </div>
 
-                            {mlInsights.risk_clusters.length === 0 ? (
+                            {(mlInsights.risk_clusters ?? []).length === 0 ? (
                                 <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-300 flex items-center space-x-2.5 rtl:space-x-reverse">
                                     <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                                     <span>
@@ -176,7 +176,7 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {mlInsights.risk_clusters.map((cluster, idx) => (
+                                    {(mlInsights.risk_clusters ?? []).map((cluster, idx) => (
                                         <div
                                             key={idx}
                                             className="bg-slate-900/90 border border-indigo-900/60 p-4 rounded-xl space-y-2"

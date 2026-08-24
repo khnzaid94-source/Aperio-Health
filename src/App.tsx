@@ -886,10 +886,10 @@ export function App() {
         setCurrentTab('analyze');
     };
 
-    const handleBatchReportsExtracted = (reports: ExtractedReportItem[]) => {
+    const handleBatchReportsExtracted = async (reports: ExtractedReportItem[]) => {
         if (!reports || reports.length === 0) return;
 
-        // Save extracted visits into savedReports and persist to SQLite /api/history
+        // Save extracted visits into savedReports and persist ALL of them to /api/history/bulk
         const newReports: SavedReport[] = reports.map((rep, idx) => ({
             id: `rep-${Date.now()}-${idx}`,
             date: rep.date || new Date().toISOString().split('T')[0],
@@ -898,7 +898,19 @@ export function App() {
         }));
 
         const updatedHistory = [...newReports, ...savedReports];
-        persistReports(updatedHistory);
+        setSavedReports(updatedHistory);
+        if (userEmail) {
+            localStorage.setItem(`aperio_history_${userEmail}`, JSON.stringify(updatedHistory));
+            try {
+                await apiFetch('/api/history/bulk', { method: 'POST', json: { reports: newReports } });
+            } catch (err) {
+                if (err instanceof ApiError && err.status === 401) {
+                    handleSignOut();
+                    return;
+                }
+                // Offline / waking up -> local copies already saved; server catches up on next save
+            }
+        }
 
         // Load primary/latest report into active AnalyzeView state
         const primary = reports[0];

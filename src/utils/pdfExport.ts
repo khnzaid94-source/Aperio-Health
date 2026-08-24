@@ -1,6 +1,14 @@
 import { SavedReport, SupportedLanguage, UserProfile } from '../types';
 import { getLocalizedTestName, getLocalizedCategory, getLocalizedExplanation } from './language';
 
+const esc = (value: unknown): string =>
+    String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
 export function exportDoctorSummaryPDF(
     report: SavedReport,
     userEmail: string,
@@ -36,7 +44,7 @@ export function exportDoctorSummaryPDF(
     <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Aperio Health — Clinical Summary - ${report.label}</title>
+        <title>Aperio Health — Clinical Summary - ${esc(report.label)}</title>
         <style>
             @page {
                 size: portrait;
@@ -91,9 +99,9 @@ export function exportDoctorSummaryPDF(
 
         <div class="meta">
             <div class="meta-grid">
-                <div><strong>Patient Account:</strong> ${userEmail}</div>
-                <div><strong>Report Source:</strong> ${report.label}</div>
-                <div><strong>Report Date:</strong> ${report.date}</div>
+                <div><strong>Patient Account:</strong> ${esc(userEmail)}</div>
+                <div><strong>Report Source:</strong> ${esc(report.label)}</div>
+                <div><strong>Report Date:</strong> ${esc(report.date)}</div>
                 <div><strong>Sample Context:</strong> ${
                     (report.sampleCondition?.toLowerCase() === 'non-fasting')
                         ? 'Non-Fasting / Random'
@@ -125,7 +133,7 @@ export function exportDoctorSummaryPDF(
                 💬 Key Questions Prepared for Doctor Consultation
             </div>
             <ul style="margin: 0; padding-left: 18px; font-size: 10px; color: #334155; line-height: 1.35;">
-                ${questions.map((q) => `<li style="margin-bottom: 2px;">${q}</li>`).join('')}
+                ${questions.map((q) => `<li style="margin-bottom: 2px;">${esc(q)}</li>`).join('')}
             </ul>
         </div>
         ` : ''}
@@ -152,13 +160,13 @@ export function exportDoctorSummaryPDF(
                     return `
                     <tr>
                         <td>
-                            <strong>${testName}</strong>
-                            <div style="font-size: 9.5px; color: #64748b;">${catName}</div>
-                            ${explanation ? `<div class="explanation-box">${explanation}</div>` : ''}
+                            <strong>${esc(testName)}</strong>
+                            <div style="font-size: 9.5px; color: #64748b;">${esc(catName)}</div>
+                            ${explanation ? `<div class="explanation-box">${esc(explanation)}</div>` : ''}
                         </td>
-                        <td style="font-weight: bold;">${r.measuredValue} ${r.unit}</td>
-                        <td style="color: #64748b;">${r.referenceMin} – ${r.referenceMax} ${r.unit}</td>
-                        <td><span class="${badgeClass}">${r.classification}</span></td>
+                        <td style="font-weight: bold;">${esc(r.measuredValue)} ${esc(r.unit)}</td>
+                        <td style="color: #64748b;">${esc(r.referenceMin)} – ${esc(r.referenceMax)} ${esc(r.unit)}</td>
+                        <td><span class="${badgeClass}">${esc(r.classification)}</span></td>
                         <td>${r.urgency === 'Doctor' ? 'Discuss Soon' : r.urgency === 'Monitor' ? 'Worth Monitoring' : 'Normal'}</td>
                     </tr>
                     `;

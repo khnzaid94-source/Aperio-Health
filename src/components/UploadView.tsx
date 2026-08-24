@@ -65,6 +65,8 @@ export const UploadView: React.FC<UploadViewProps> = ({
     const [batchStatusMessage, setBatchStatusMessage] = useState<string>('');
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent) => {
+        if (isAnalyzing) return;
+
         let filesList: File[] = [];
         if ('dataTransfer' in e && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             e.preventDefault();
@@ -224,6 +226,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
     };
 
     const handleReRunRawText = async () => {
+        if (isAnalyzing) return;
         if (!currentRawText.trim()) {
             setAnalysisError('Please enter or paste report text to analyze.');
             return;
@@ -339,8 +342,9 @@ export const UploadView: React.FC<UploadViewProps> = ({
                         multiple
                         accept=".pdf,.png,.jpg,.jpeg,.txt"
                         onChange={handleFileUpload}
+                        disabled={isAnalyzing}
                         aria-label="Upload laboratory report files"
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10 disabled:cursor-not-allowed"
                     />
 
                     <div className="space-y-3.5 pointer-events-none">

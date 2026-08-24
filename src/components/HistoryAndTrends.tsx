@@ -122,8 +122,10 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
     }, [savedReports, activeReportBId]);
 
     // Delta Analysis between Visit A (Baseline/Previous) and Visit B (Follow-up/Latest)
+    const isSelfComparison = Boolean(activeReportAId) && activeReportAId === activeReportBId;
+
     const deltaAnalysis = useMemo(() => {
-        if (!reportA?.results || !reportB?.results) {
+        if (!reportA?.results || !reportB?.results || activeReportAId === activeReportBId) {
             return null;
         }
 
@@ -325,7 +327,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
 
         sortedReports.forEach((rep) => {
             const match = rep.results.find((r) => r.testId === activeTrendTestId);
-            if (match) {
+            if (match && typeof match.measuredValue === 'number' && Number.isFinite(match.measuredValue)) {
                 points.push({
                     date: rep.date,
                     rawDate: rep.date,
@@ -677,9 +679,12 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                 </div>
                             </div>
 
-                            {activeReportAId === activeReportBId && (
-                                <div className="text-[11px] text-amber-600 bg-amber-50 border border-amber-100 rounded-lg p-2 text-center font-medium">
-                                    💡 Tip: Select two different dates/visits to trace biomarker changes over time.
+                            {isSelfComparison && (
+                                <div className="text-[11px] text-amber-800 bg-amber-50 border border-amber-300 rounded-xl p-3.5 text-center font-bold flex items-center justify-center space-x-2">
+                                    <Info className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                                    <span>
+                                        You've selected the same visit for both sides. Pick two different dates above to see meaningful biomarker changes.
+                                    </span>
                                 </div>
                             )}
 
@@ -738,7 +743,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                     </span>
                                                 </li>
                                             )}
-                                            {(!deltaAnalysis || deltaAnalysis.totalCompared === 0) && (
+                                            {!isSelfComparison && (!deltaAnalysis || deltaAnalysis.totalCompared === 0) && (
                                                 <li className="text-slate-400 text-xs">
                                                     No overlapping biomarkers found between the selected visits to calculate deltas.
                                                 </li>

@@ -130,7 +130,8 @@ export function parseLabReportText(text: string): TestResult[] {
     for (let idx = 0; idx < rawLines.length; idx++) {
         const line = rawLines[idx];
         let matchedTestId: string | null = null;
-        let matchedSynonym = '';
+        let matchedIndex = -1;
+        let matchedLength = 0;
 
         // Match test synonym in this line
         for (const [testId, synonyms] of Object.entries(TEST_SYNONYMS)) {
@@ -138,7 +139,8 @@ export function parseLabReportText(text: string): TestResult[] {
 
             for (const syn of synonyms) {
                 const pattern = buildSynonymPattern(syn);
-                if (pattern.test(line)) {
+                const m = pattern.exec(line);
+                if (m && m.index !== undefined) {
                     const cleanSyn = syn.toLowerCase().trim();
 
                     // CRITICAL OCR COLLISION GUARD:
@@ -167,7 +169,8 @@ export function parseLabReportText(text: string): TestResult[] {
                     }
 
                     matchedTestId = testId;
-                    matchedSynonym = syn;
+                    matchedIndex = m.index;
+                    matchedLength = m[0].length;
                     break;
                 }
             }
@@ -184,10 +187,9 @@ export function parseLabReportText(text: string): TestResult[] {
         let extMax: number | null = null;
         let foundUnit = catalogEntry.unit;
 
-        // 1. First check the rest of the same line after synonym
-        const lowerLine = line.toLowerCase();
-        const synIdx = lowerLine.indexOf(matchedSynonym.toLowerCase());
-        const restOfLine = synIdx !== -1 ? line.substring(synIdx + matchedSynonym.length).trim() : line;
+        // 1. First check the rest of the same line after the actual regex match position
+        const sliceFrom = matchedIndex >= 0 ? matchedIndex + matchedLength : 0;
+        const restOfLine = line.substring(sliceFrom).trim();
 
         const valMatch = restOfLine.match(/(\d+(?:,\d+)*(?:\.\d+)?)/);
         if (valMatch && valMatch.index !== undefined) {
@@ -312,7 +314,7 @@ export function parseLabReportText(text: string): TestResult[] {
         const closeMin = refMin - 0.2 * rangeWidth;
         const closeMax = refMax + 0.2 * rangeWidth;
 
-        if (rawVal > 4.0 * standardMax && !(matchedTestId === 'wbc' || matchedTestId === 'platelets' && rawVal > 500)) {
+        if (rawVal > 4.0 * standardMax && !((matchedTestId === 'wbc' || matchedTestId === 'platelets') && rawVal > 500)) {
             const correctedValue = rawVal / 10.0;
             if (correctedValue >= closeMin && correctedValue <= closeMax) {
                 measuredValue = correctedValue;
