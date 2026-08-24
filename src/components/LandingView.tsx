@@ -18,12 +18,14 @@ import {
     ArrowUpRight
 } from 'lucide-react';
 import { SupportedLanguage } from '../types';
+import { SUPPORTED_LANGUAGES } from '../constants/translations';
 import { getTranslation } from '../utils/language';
 import { apiFetch, ApiError, setToken } from '../api/client';
 
 interface LandingViewProps {
     onSignIn: (email: string) => void;
     currentLang: SupportedLanguage;
+    onLanguageChange: (lang: SupportedLanguage) => void;
 }
 
 type AuthMode = 'login' | 'signup' | null;
@@ -38,7 +40,7 @@ const DEMO_PASSWORD = 'demo1234';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 
-export const LandingView: React.FC<LandingViewProps> = ({ onSignIn, currentLang }) => {
+export const LandingView: React.FC<LandingViewProps> = ({ onSignIn, currentLang, onLanguageChange }) => {
     const t = (key: string) => getTranslation(key, currentLang);
     const [authModal, setAuthModal] = useState<AuthMode>(null);
     const [email, setEmail] = useState('');
@@ -184,8 +186,24 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn, currentLang 
                     </div>
                 </div>
 
-                {/* Right Header Navigation: Log In & Sign Up Buttons */}
-                <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                {/* Right Header Navigation: Language · Log In · Sign Up */}
+                <div className="flex items-center gap-2.5 rtl:space-x-reverse">
+                    <div className="relative flex items-center">
+                        <Globe className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
+                        <select
+                            value={currentLang}
+                            onChange={(e) => onLanguageChange(e.target.value as SupportedLanguage)}
+                            aria-label="Select display language"
+                            className="bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/80 text-slate-200 text-xs font-semibold rounded-xl pl-8 pr-6 py-2 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
+                        >
+                            {SUPPORTED_LANGUAGES.map((l) => (
+                                <option key={l.code} value={l.code}>
+                                    {l.nativeName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <span className="hidden md:flex items-center space-x-1.5 text-emerald-400 font-semibold bg-emerald-950/40 border border-emerald-800/40 px-3 py-1 rounded-full text-xs mr-2">
                         <ShieldCheck className="w-3.5 h-3.5" />
                         <span>{t('landing.passwordProtected')}</span>

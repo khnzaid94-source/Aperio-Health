@@ -926,7 +926,7 @@ export function App() {
 
     // 1. Not Logged In -> Show Landing Page
     if (!userEmail) {
-        return <LandingView onSignIn={handleSignIn} currentLang={currentLang} />;
+        return <LandingView onSignIn={handleSignIn} currentLang={currentLang} onLanguageChange={setCurrentLang} />;
     }
 
     // 2. Logged In, but Needs Onboarding -> Show Onboarding Page
