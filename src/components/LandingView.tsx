@@ -18,6 +18,7 @@ import {
     ArrowUpRight
 } from 'lucide-react';
 import { SupportedLanguage } from '../types';
+import { getTranslation } from '../utils/language';
 import { apiFetch, ApiError, setToken } from '../api/client';
 
 interface LandingViewProps {
@@ -37,7 +38,8 @@ const DEMO_PASSWORD = 'demo1234';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 
-export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
+export const LandingView: React.FC<LandingViewProps> = ({ onSignIn, currentLang }) => {
+    const t = (key: string) => getTranslation(key, currentLang);
     const [authModal, setAuthModal] = useState<AuthMode>(null);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -67,26 +69,26 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
         setErrorMessage(null);
 
         if (!email.trim() || !email.includes('@')) {
-            setErrorMessage('Please enter a valid email address.');
+            setErrorMessage(t('landing.errEmail'));
             return;
         }
 
         if (!password.trim()) {
-            setErrorMessage('Please enter your password.');
+            setErrorMessage(t('landing.errPassword'));
             return;
         }
 
         if (authModal === 'signup') {
             if (!fullName.trim()) {
-                setErrorMessage('Please enter your full name.');
+                setErrorMessage(t('landing.errName'));
                 return;
             }
             if (password !== confirmPassword) {
-                setErrorMessage('Passwords do not match.');
+                setErrorMessage(t('landing.errMismatch'));
                 return;
             }
             if (password.length < 8) {
-                setErrorMessage('Password must be at least 8 characters long.');
+                setErrorMessage(t('landing.errMinLen'));
                 return;
             }
         }
@@ -107,7 +109,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
             onSignIn(data.user_email);
         } catch (err) {
             setErrorMessage(
-                err instanceof ApiError ? err.message : 'Could not reach the server. Please try again.'
+                err instanceof ApiError ? err.message : t('landing.errServer')
             );
             setIsLoading(false);
         }
@@ -125,7 +127,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
             onSignIn(data.user_email);
         } catch (err) {
             setErrorMessage(
-                err instanceof ApiError ? err.message : 'Google sign-in failed. Please try again.'
+                err instanceof ApiError ? err.message : t('landing.errGoogle')
             );
             setIsLoading(false);
         }
@@ -143,7 +145,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
             onSignIn(data.user_email);
         } catch (err) {
             setErrorMessage(
-                err instanceof ApiError ? err.message : 'Demo sign-in failed. Is the server running?'
+                err instanceof ApiError ? err.message : t('landing.errDemo')
             );
             setIsLoading(false);
         }
@@ -178,7 +180,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                                 Health Intelligence
                             </span>
                         </div>
-                        <p className="text-xs text-slate-400">The intelligence behind your bloodwork.</p>
+                        <p className="text-xs text-slate-400">{t('appSubtitle')}</p>
                     </div>
                 </div>
 
@@ -186,7 +188,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                 <div className="flex items-center space-x-3 rtl:space-x-reverse">
                     <span className="hidden md:flex items-center space-x-1.5 text-emerald-400 font-semibold bg-emerald-950/40 border border-emerald-800/40 px-3 py-1 rounded-full text-xs mr-2">
                         <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>Password Protected</span>
+                        <span>{t('landing.passwordProtected')}</span>
                     </span>
 
                     <a
@@ -205,14 +207,14 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                         onClick={() => openAuth('login')}
                         className="text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/80 px-4 py-2 rounded-xl text-xs font-bold transition-all"
                     >
-                        Log In
+                        {t('landing.login')}
                     </button>
 
                     <button
                         onClick={() => openAuth('signup')}
                         className="bg-gradient-to-r from-teal-500 to-emerald-400 hover:from-teal-400 hover:to-emerald-300 text-slate-950 font-extrabold px-4 py-2 rounded-xl text-xs shadow-lg shadow-teal-500/20 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                     >
-                        Sign Up
+                        {t('landing.signup')}
                     </button>
                 </div>
             </header>
@@ -221,20 +223,19 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
             <main className="relative z-10 max-w-6xl mx-auto w-full px-6 py-6 sm:py-8 flex-1 flex flex-col justify-center items-center text-center space-y-5 sm:space-y-6">
                 <div className="inline-flex items-center space-x-2 rtl:space-x-reverse bg-slate-800/80 border border-slate-700/80 px-4 py-1.5 rounded-full text-xs font-semibold text-teal-300 backdrop-blur-md">
                     <Sparkles className="w-4 h-4 text-teal-400" />
-                    <span>Machine Learning &amp; Computer Vision Powered</span>
+                    <span>{t('landing.badge')}</span>
                 </div>
 
                 <div className="max-w-3xl space-y-3">
                     <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-[1.08]">
-                        Understand your blood tests in{' '}
+                        {t('landing.heroLine1')}{' '}
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-300 to-cyan-400">
-                            plain language
+                            {t('landing.heroAccent')}
                         </span>
-                        .
                     </h1>
 
                     <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-                        Aperio Health reads your multi-page lab reports using computer vision, translates 63 clinical biomarkers into plain everyday language, detects connected multi-marker health patterns using machine learning, and tracks your biological balance across visits — so you walk into every doctor's appointment fully prepared.
+                        {t('landing.heroParagraph')} — so you walk into every doctor's appointment fully prepared.
                     </p>
                 </div>
 
@@ -244,7 +245,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                         onClick={() => openAuth('signup')}
                         className="bg-gradient-to-r from-teal-500 to-emerald-400 hover:from-teal-400 hover:to-emerald-300 text-slate-950 font-extrabold px-6 py-3.5 rounded-xl text-sm shadow-xl shadow-teal-500/25 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center space-x-2 rtl:space-x-reverse"
                     >
-                        <span>Get Started Free</span>
+                        <span>{t('landing.ctaStart')}</span>
                         <ArrowRight className="w-4 h-4" />
                     </button>
 
@@ -252,7 +253,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                         onClick={() => openAuth('login')}
                         className="bg-slate-800/90 hover:bg-slate-800 text-white font-bold px-6 py-3.5 rounded-xl text-sm border border-slate-700 hover:border-slate-600 transition-all flex items-center space-x-2 rtl:space-x-reverse"
                     >
-                        <span>Sign In to Portal</span>
+                        <span>{t('landing.ctaSignIn')}</span>
                         <ArrowUpRight className="w-4 h-4 text-slate-400" />
                     </button>
                 </div>
@@ -263,40 +264,32 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                         <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center border border-teal-500/20">
                             <Activity className="w-5 h-5" />
                         </div>
-                        <div className="text-sm font-bold text-white">63 Clinical Biomarkers</div>
-                        <div className="text-xs text-slate-400 leading-relaxed">
-                            Full coverage across CBC, Lipid, Thyroid, LFT, KFT, Glucose, HbA1c, Iron, Vitamins, Hormones, and Inflammation panels.
-                        </div>
+                        <div className="text-sm font-bold text-white">{t('landing.pillar1Title')}</div>
+                        <div className="text-xs text-slate-400 leading-relaxed">{t('pillar1Desc')}</div>
                     </div>
 
                     <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl backdrop-blur-md space-y-2 hover:border-slate-700 transition-colors">
                         <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
                             <Cpu className="w-5 h-5" />
                         </div>
-                        <div className="text-sm font-bold text-white">Isolation Forest ML Engine</div>
-                        <div className="text-xs text-slate-400 leading-relaxed">
-                            Scikit-Learn anomaly scoring calculates your Metabolic Balance Index, detects cross-marker physiological synergy patterns, and powers automated multi-page visit segmentation.
-                        </div>
+                        <div className="text-sm font-bold text-white">{t('landing.pillar2Title')}</div>
+                        <div className="text-xs text-slate-400 leading-relaxed">{t('pillar2Desc')}</div>
                     </div>
 
                     <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl backdrop-blur-md space-y-2 hover:border-slate-700 transition-colors">
                         <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20">
                             <Globe className="w-5 h-5" />
                         </div>
-                        <div className="text-sm font-bold text-white">10 Regional &amp; World Languages</div>
-                        <div className="text-xs text-slate-400 leading-relaxed">
-                            Full interface translation across English, Hindi, Marathi, Bengali, Telugu, Tamil, Gujarati, Spanish, French, and Mandarin Chinese.
-                        </div>
+                        <div className="text-sm font-bold text-white">{t('landing.pillar3Title')}</div>
+                        <div className="text-xs text-slate-400 leading-relaxed">{t('pillar3Desc')}</div>
                     </div>
 
                     <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl backdrop-blur-md space-y-2 hover:border-slate-700 transition-colors">
                         <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
                             <FileText className="w-5 h-5" />
                         </div>
-                        <div className="text-sm font-bold text-white">Doctor Consultation Brief</div>
-                        <div className="text-xs text-slate-400 leading-relaxed">
-                            One-click printable PDF summary with biomarker trajectories, active prescriptions context, and pre-formulated physician discussion questions.
-                        </div>
+                        <div className="text-sm font-bold text-white">{t('landing.pillar4Title')}</div>
+                        <div className="text-xs text-slate-400 leading-relaxed">{t('pillar4Desc')}</div>
                     </div>
                 </div>
             </main>
@@ -325,12 +318,12 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                                 <Microscope className="w-5 h-5" />
                             </div>
                             <h2 className="text-2xl font-extrabold text-white">
-                                {authModal === 'signup' ? 'Create an Account' : 'Welcome Back'}
+                                {authModal === 'signup' ? t('landing.modalSignupTitle') : t('landing.modalLoginTitle')}
                             </h2>
                             <p className="text-xs text-slate-400">
                                 {authModal === 'signup'
-                                    ? 'Enter your details below to create your Aperio Health account.'
-                                    : 'Enter your credentials to access your Aperio Health portal.'}
+                                    ? t('landing.modalSignupSub')
+                                    : t('landing.modalLoginSub')}
                             </p>
                         </div>
 
@@ -346,7 +339,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                                                 setErrorMessage('Google sign-in did not return a credential.');
                                             }
                                         }}
-                                        onError={() => setErrorMessage('Google sign-in failed. Please try again.')}
+                                        onError={() => setErrorMessage(t('landing.errGoogle'))}
                                         width="100%"
                                         text="continue_with"
                                         shape="pill"
@@ -357,7 +350,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                                 <div className="relative flex items-center justify-center">
                                     <div className="border-t border-slate-800 w-full" />
                                     <span className="bg-slate-900 px-3 text-[10px] text-slate-500 font-bold uppercase tracking-wider absolute">
-                                        OR WITH EMAIL
+                                        {t('landing.orEmail')}
                                     </span>
                                 </div>
                             </div>
@@ -375,7 +368,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                             {authModal === 'signup' && (
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-300 mb-1">
-                                        Full Name
+                                        {t('landing.fullName')}
                                     </label>
                                     <div className="relative">
                                         <User className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
@@ -392,7 +385,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
 
                             <div>
                                 <label className="block text-xs font-semibold text-slate-300 mb-1">
-                                    Email Address
+                                    {t('landing.emailLabel')}
                                 </label>
                                 <div className="relative">
                                     <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
@@ -407,7 +400,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                             </div>
 
                             <div>
-                                <label className="text-xs font-semibold text-slate-300 mb-1">Password</label>
+                                <label className="text-xs font-semibold text-slate-300 mb-1">{t('landing.passwordLabel')}</label>
                                 <div className="relative">
                                     <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                                     <input
@@ -430,7 +423,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                             {authModal === 'signup' && (
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-300 mb-1">
-                                        Confirm Password
+                                        {t('landing.confirmPasswordLabel')}
                                     </label>
                                     <div className="relative">
                                         <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
@@ -451,11 +444,11 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                                 className="w-full bg-gradient-to-r from-teal-500 to-emerald-400 hover:from-teal-400 hover:to-emerald-300 text-slate-950 font-extrabold py-3 px-4 rounded-xl text-xs transition-all shadow-lg shadow-teal-500/20 disabled:opacity-50 mt-2"
                             >
                                 {isLoading ? (
-                                    <span>Processing...</span>
+                                    <span>{t('landing.processingBtn')}</span>
                                 ) : authModal === 'signup' ? (
-                                    <span>Create Account</span>
+                                    <span>{t('landing.createAccountBtn')}</span>
                                 ) : (
-                                    <span>Sign In</span>
+                                    <span>{t('landing.signInBtn')}</span>
                                 )}
                             </button>
                         </form>
@@ -467,7 +460,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                                 onClick={() => setShowDemoProfiles(!showDemoProfiles)}
                                 className="text-[11px] text-slate-400 hover:text-teal-300 flex items-center justify-between w-full font-medium"
                             >
-                                <span>Quick Test: Select a Demo Profile</span>
+                                <span>{t('landing.demoToggle')}</span>
                                 <span className="text-teal-400 font-bold">{showDemoProfiles ? '▲' : '▼'}</span>
                             </button>
 
@@ -495,22 +488,22 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                         <div className="mt-5 text-center text-xs text-slate-400">
                             {authModal === 'signup' ? (
                                 <span>
-                                    Already have an account?{' '}
+                                    {t('landing.alreadyAccount')}{' '}
                                     <button
                                         onClick={() => openAuth('login')}
                                         className="text-teal-400 hover:underline font-bold"
                                     >
-                                        Log In
+                                        {t('landing.login')}
                                     </button>
                                 </span>
                             ) : (
                                 <span>
-                                    Don't have an account?{' '}
+                                    {t('landing.dontHaveAccount')}{' '}
                                     <button
                                         onClick={() => openAuth('signup')}
                                         className="text-teal-400 hover:underline font-bold"
                                     >
-                                        Sign Up
+                                        {t('landing.signup')}
                                     </button>
                                 </span>
                             )}
@@ -523,9 +516,9 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
             <footer className="relative z-10 border-t border-slate-800/80 py-4 text-center text-xs text-slate-500 max-w-7xl mx-auto w-full px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
                 <div>© {new Date().getFullYear()} Aperio Health. All rights reserved.</div>
                 <div className="flex items-center space-x-3 text-slate-400 text-[11px]">
-                    <span>🔒 100% Private — No Data Used for AI Model Training</span>
+                    <span>🔒 {t('landing.footerPrivacy')}</span>
                     <span>•</span>
-                    <span>Educational &amp; Literacy Tool Only</span>
+                    <span>{t('landing.footerLiteracy')}</span>
                 </div>
             </footer>
         </div>
