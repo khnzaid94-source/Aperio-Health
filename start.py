@@ -4,8 +4,22 @@ import subprocess
 import webbrowser
 import time
 
+
+def load_env_file(path):
+    if not os.path.exists(path):
+        return
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip())
+
+
 def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
+    load_env_file(os.path.join(base_dir, ".env"))
     dist_dir = os.path.join(base_dir, "dist")
     
     print("=" * 60)

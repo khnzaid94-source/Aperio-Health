@@ -135,10 +135,10 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 
 ## Phase 5 — Google OAuth
 
-- [ ] 5.1 Backend POST /api/auth/google: verify id_token (GOOGLE_CLIENT_ID env),
+- [x] 5.1 Backend POST /api/auth/google: verify id_token (GOOGLE_CLIENT_ID env),
       require email_verified, find-or-create user, issue session token
-- [ ] 5.2 Frontend @react-oauth/google provider + GoogleLogin → credential → API → session
-- [ ] 5.3 Env plumbing: GOOGLE_CLIENT_ID (server), VITE_GOOGLE_CLIENT_ID (build)
+- [x] 5.2 Frontend @react-oauth/google provider + GoogleLogin → credential → API → session
+- [x] 5.3 Env plumbing: GOOGLE_CLIENT_ID (server), VITE_GOOGLE_CLIENT_ID (build)
 
 ## Phase 6 — Quality Pass [P2, time-boxed]
 

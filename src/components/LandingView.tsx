@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 import {
     ShieldCheck,
     Lock,
@@ -33,6 +34,8 @@ const MOCK_PROFILES = [
 ];
 
 const DEMO_PASSWORD = 'demo1234';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 
 export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
     const [authModal, setAuthModal] = useState<AuthMode>(null);
@@ -105,6 +108,24 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
         } catch (err) {
             setErrorMessage(
                 err instanceof ApiError ? err.message : 'Could not reach the server. Please try again.'
+            );
+            setIsLoading(false);
+        }
+    };
+
+    const handleGoogleCredential = async (credential: string) => {
+        setIsLoading(true);
+        setErrorMessage(null);
+        try {
+            const data = await apiFetch<{ token: string; user_email: string }>('/api/auth/google', {
+                method: 'POST',
+                json: { credential }
+            });
+            setToken(data.token);
+            onSignIn(data.user_email);
+        } catch (err) {
+            setErrorMessage(
+                err instanceof ApiError ? err.message : 'Google sign-in failed. Please try again.'
             );
             setIsLoading(false);
         }
@@ -312,6 +333,35 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn }) => {
                                     : 'Enter your credentials to access your Aperio Health portal.'}
                             </p>
                         </div>
+
+                        {/* Google Social Auth (only when configured) */}
+                        {GOOGLE_CLIENT_ID && (
+                            <div className="space-y-4">
+                                <div className="flex justify-center">
+                                    <GoogleLogin
+                                        onSuccess={(res) => {
+                                            if (res.credential) {
+                                                handleGoogleCredential(res.credential);
+                                            } else {
+                                                setErrorMessage('Google sign-in did not return a credential.');
+                                            }
+                                        }}
+                                        onError={() => setErrorMessage('Google sign-in failed. Please try again.')}
+                                        width="100%"
+                                        text="continue_with"
+                                        shape="pill"
+                                        logo_alignment="center"
+                                    />
+                                </div>
+
+                                <div className="relative flex items-center justify-center">
+                                    <div className="border-t border-slate-800 w-full" />
+                                    <span className="bg-slate-900 px-3 text-[10px] text-slate-500 font-bold uppercase tracking-wider absolute">
+                                        OR WITH EMAIL
+                                    </span>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Error Notice */}
                         {errorMessage && (

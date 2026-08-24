@@ -1,3 +1,4 @@
+import os
 import re
 import secrets
 from datetime import datetime, timedelta
@@ -5,12 +6,16 @@ from datetime import datetime, timedelta
 import bcrypt
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
 from database import get_db, UserModel, SessionModel
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -112,6 +117,53 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.email == email).first()
     if not user or not user.password_hash or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Incorrect email or password.")
+    token = _create_session(db, email)
+    return {"token": token, "user_email": email, "full_name": user.full_name}
+
+
+class GoogleAuthRequest(BaseModel):
+    credential: str
+
+
+@router.post("/google")
+def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(
+            status_code=503,
+            detail="Google sign-in is not configured on this server. Please use email and password.",
+        )
+    try:
+        info = google_id_token.verify_oauth2_token(
+            payload.credential, google_requests.Request(), GOOGLE_CLIENT_ID
+        )
+    except ValueError:
+        raise HTTPException(
+            status_code=401, detail="Invalid or expired Google credential. Please try again."
+        )
+
+    if info.get("email_verified") is not True:
+        raise HTTPException(status_code=401, detail="Your Google account email is not verified.")
+
+    email = (info.get("email") or "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=401, detail="Google account did not share an email address.")
+
+    full_name = (info.get("name") or "").strip() or email.split("@")[0]
+
+    user = db.query(UserModel).filter(UserModel.email == email).first()
+    if not user:
+        user = UserModel(
+            email=email,
+            password_hash=None,
+            full_name=full_name,
+            auth_provider="google",
+        )
+        db.add(user)
+        db.commit()
+    elif not user.full_name or user.full_name == email.split("@")[0]:
+        user.full_name = full_name
+        db.commit()
+
     token = _create_session(db, email)
     return {"token": token, "user_email": email, "full_name": user.full_name}
 
