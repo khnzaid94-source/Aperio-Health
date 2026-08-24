@@ -94,15 +94,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return (
         <div className="space-y-6">
             {/* 1. Compact Welcome Banner (~130px height) */}
-            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 rounded-2xl p-4 sm:p-5 text-white shadow-md relative overflow-hidden border border-teal-900/40 min-h-[120px] flex flex-col justify-center">
-                {/* Real-time Calm EKG Cardiac Waveform Layer (45 BPM) */}
-                <div className="absolute inset-0 opacity-40 pointer-events-none overflow-hidden">
-                    <EkgMonitorCanvas bpm={45} color="#2dd4bf" />
-                </div>
+            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 rounded-2xl text-white shadow-md relative overflow-hidden border border-teal-900/40">
+                    {/* TOP ZONE - greeting + ambient EKG (scoped to this zone) */}
+                    <div className="relative p-4 sm:p-5 overflow-hidden">
+                        <div className="absolute inset-0 opacity-40 pointer-events-none overflow-hidden">
+                            <EkgMonitorCanvas bpm={45} color="#2dd4bf" />
+                        </div>
 
-                <div className="absolute top-0 right-0 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+                        <div className="absolute top-0 right-0 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="relative z-10 space-y-2">
+
                     {/* Left: Greeting + Demographic Chips */}
                     <div className="space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
@@ -139,12 +141,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             Track blood biomarkers, monitor multi-test interactions, and log daily medications and lifestyle context in one secure dashboard.
                         </p>
                     </div>
+                        </div>
+                    </div>
 
-                    {/* Right: Grouped Horizontal Action Buttons */}
+                    {/* BOTTOM ZONE - primary actions, clear of the waveform */}
+                    <div className="relative border-t border-white/10 bg-slate-950/50 px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:justify-end items-stretch sm:items-center gap-2.5">
                     <div className="flex items-center gap-2.5 flex-shrink-0">
                         <button
                             onClick={() => onNavigate('upload')}
-                            className="bg-teal-600 hover:bg-teal-500 active:scale-95 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-xs transition-all inline-flex items-center space-x-1.5 rtl:space-x-reverse whitespace-nowrap"
+                            className="bg-teal-600 hover:bg-teal-500 active:scale-95 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-xs transition-all inline-flex items-center space-x-1.5 rtl:space-x-reverse whitespace-nowrap w-full sm:w-auto"
                         >
                             <UploadCloud className="w-4 h-4" />
                             <span>Upload New Report</span>
@@ -152,71 +157,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                         <button
                             onClick={() => onNavigate('journal')}
-                            className="bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700 font-bold text-xs py-2 px-3.5 rounded-xl transition-all inline-flex items-center space-x-1.5 rtl:space-x-reverse whitespace-nowrap"
+                            className="bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700 font-bold text-xs py-2 px-3.5 rounded-xl transition-all inline-flex items-center space-x-1.5 rtl:space-x-reverse whitespace-nowrap w-full sm:w-auto"
                         >
                             <BookOpen className="w-4 h-4" />
                             <span>Log Context</span>
                         </button>
                     </div>
-                </div>
-            </div>
-
-            {/* 2. 4 KPI Stat Widgets Directly Above the Fold (ReUI stats-3) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Reports Logged */}
-                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all space-y-1.5">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Reports Logged</span>
-                        <div className="p-2 bg-teal-50 text-teal-600 rounded-xl">
-                            <FileSpreadsheet className="w-4 h-4" />
-                        </div>
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{totalReports}</div>
-                    <div className="text-[11px] text-slate-400 font-medium">Total laboratory visits saved</div>
-                </div>
-
-                {/* Unique Biomarkers */}
-                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all space-y-1.5">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Unique Biomarkers</span>
-                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-                            <Activity className="w-4 h-4" />
-                        </div>
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{allUniqueTests.size}</div>
-                    <div className="text-[11px] text-slate-400 font-medium">Across 11 medical panel categories</div>
-                </div>
-
-                {/* Active Prescriptions */}
-                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all space-y-1.5">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Active Prescriptions</span>
-                        <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
-                            <BookOpen className="w-4 h-4" />
-                        </div>
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{activeMedsCount + activeSuppsCount}</div>
-                    <div className="text-[11px] text-slate-400 font-medium">
-                        {activeMedsCount} medication(s), {activeSuppsCount} supplement(s)
                     </div>
                 </div>
 
-                {/* Flagged Deviations */}
-                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all space-y-1.5">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Flagged Deviations</span>
-                        <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
-                            <LineChart className="w-4 h-4" />
-                        </div>
-                    </div>
-                    <div className={`text-2xl sm:text-3xl font-black tracking-tight ${totalFlaggedBiomarkers > 0 ? 'text-amber-600' : 'text-slate-900'}`}>
-                        {totalFlaggedBiomarkers}
-                    </div>
-                    <div className="text-[11px] text-slate-400 font-medium">Values outside standard reference bands</div>
-                </div>
-            </div>
-
-            {/* 3. "Delta Pulse" Executive Strip */}
+{/* 2. "Delta Pulse" Executive Strip */}
             {savedReports && savedReports.length >= 2 && deltaAnalysis ? (
                 <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 rounded-2xl p-3.5 sm:p-4 text-white shadow-md border border-slate-750/90 relative overflow-hidden">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
@@ -320,6 +270,61 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </button>
                 </div>
             )}
+
+            {/* 3. 4 KPI Stat Widgets (supporting counts) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Reports Logged */}
+                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all space-y-1.5">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Reports Logged</span>
+                        <div className="p-2 bg-teal-50 text-teal-600 rounded-xl">
+                            <FileSpreadsheet className="w-4 h-4" />
+                        </div>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{totalReports}</div>
+                    <div className="text-[11px] text-slate-400 font-medium">Total laboratory visits saved</div>
+                </div>
+
+                {/* Unique Biomarkers */}
+                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all space-y-1.5">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Unique Biomarkers</span>
+                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+                            <Activity className="w-4 h-4" />
+                        </div>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{allUniqueTests.size}</div>
+                    <div className="text-[11px] text-slate-400 font-medium">Across 11 medical panel categories</div>
+                </div>
+
+                {/* Active Prescriptions */}
+                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all space-y-1.5">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Active Prescriptions</span>
+                        <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+                            <BookOpen className="w-4 h-4" />
+                        </div>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{activeMedsCount + activeSuppsCount}</div>
+                    <div className="text-[11px] text-slate-400 font-medium">
+                        {activeMedsCount} medication(s), {activeSuppsCount} supplement(s)
+                    </div>
+                </div>
+
+                {/* Flagged Deviations */}
+                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all space-y-1.5">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Flagged Deviations</span>
+                        <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
+                            <LineChart className="w-4 h-4" />
+                        </div>
+                    </div>
+                    <div className={`text-2xl sm:text-3xl font-black tracking-tight ${totalFlaggedBiomarkers > 0 ? 'text-amber-600' : 'text-slate-900'}`}>
+                        {totalFlaggedBiomarkers}
+                    </div>
+                    <div className="text-[11px] text-slate-400 font-medium">Values outside standard reference bands</div>
+                </div>
+            </div>
 
             {/* 4. 2-Column Lower Section */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
