@@ -193,7 +193,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn, currentLang,
                         <select
                             value={currentLang}
                             onChange={(e) => onLanguageChange(e.target.value as SupportedLanguage)}
-                            aria-label="Select display language"
+                            aria-label={getTranslation('nav.selectLanguage', currentLang)}
                             className="bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/80 text-slate-200 text-xs font-semibold rounded-xl pl-8 pr-6 py-2 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
                         >
                             {SUPPORTED_LANGUAGES.map((l) => (

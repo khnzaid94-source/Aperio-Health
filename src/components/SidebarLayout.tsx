@@ -251,7 +251,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                             <select
                                 value={currentLang}
                                 onChange={(e) => onLanguageChange(e.target.value as SupportedLanguage)}
-                                aria-label="Select display language"
+                                aria-label={getTranslation('nav.selectLanguage', currentLang)}
                                 className="bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg pl-8 rtl:pl-2.5 pr-7 rtl:pr-8 py-1.5 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
                             >
                                 {SUPPORTED_LANGUAGES.map((lang) => (

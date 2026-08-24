@@ -95,6 +95,9 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
     onNavigateToUpload,
     onNavigate
 }) => {
+    const t = (key: string, params?: Record<string, string>): string =>
+        getTranslation(key, currentLang, params);
+
     const [sampleCondition, setSampleCondition] = useState<SampleConditionType>(
         initialSampleCondition || 'fasting'
     );
@@ -110,7 +113,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
         if (doctorQuestions.length === 0) return;
         const formatted = doctorQuestions.map((q, idx) => `${idx + 1}. ${q}`).join('\n\n');
         navigator.clipboard.writeText(formatted);
-        setCopyToastMessage('Copied all questions to clipboard!');
+        setCopyToastMessage(t('an.copiedToast'));
         setTimeout(() => setCopyToastMessage(null), 3000);
     };
 
@@ -273,8 +276,8 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                 <div className="bg-indigo-50/90 border border-indigo-200/90 text-indigo-950 text-xs p-3 rounded-xl flex items-start space-x-2.5 rtl:space-x-reverse mt-2">
                     <Lightbulb className="w-4 h-4 text-indigo-600 flex-shrink-0 mt-0.5" />
                     <div>
-                        <span className="font-bold text-indigo-900">💡 Postprandial Context: </span>
-                        Blood sugar and triglycerides naturally rise following meals. Mention this to your doctor if a repeat fasting test is warranted.
+                        <span className="font-bold text-indigo-900">{t('an.postprandialTag')} </span>
+                        {t('an.postprandialBody')}
                     </div>
                 </div>
             );
@@ -285,8 +288,8 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                 <div className="bg-amber-50/90 border border-amber-200/90 text-amber-950 text-xs p-3 rounded-xl flex items-start space-x-2.5 rtl:space-x-reverse mt-2">
                     <Lightbulb className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div>
-                        <span className="font-bold text-amber-900">💡 Exercise Context: </span>
-                        Heavy muscular exertion within 24–48 hours of testing can transiently elevate muscle enzymes and urea markers.
+                        <span className="font-bold text-amber-900">{t('an.exerciseTag')} </span>
+                        {t('an.exerciseBody')}
                     </div>
                 </div>
             );
@@ -324,20 +327,20 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                 }
                             }}
                             aria-expanded={isExpanded}
-                            aria-label={`Active medication context: ${interaction.summaryText}`}
+                            aria-label={t('an.medContextAria', { summary: interaction.summaryText })}
                         >
                             <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-start sm:items-center space-x-2 rtl:space-x-reverse min-w-0">
                                     <Pill className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5 sm:mt-0" />
                                     <div className="text-xs text-purple-950 leading-snug">
                                         <span className="font-extrabold text-purple-900">
-                                            💊 Active Medication Context:{' '}
+                                            {t('an.medContextTag')}{' '}
                                         </span>
                                         <span className="font-semibold text-purple-950">
                                             {interaction.summaryText}{' '}
                                         </span>
                                         <span className="text-[11px] text-purple-700 font-medium whitespace-nowrap">
-                                            ({isExpanded ? 'Click to collapse' : 'Click for clinical context'})
+                                            ({isExpanded ? t('an.clickToCollapse') : t('an.clickForContext')})
                                         </span>
                                     </div>
                                 </div>
@@ -356,11 +359,11 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                     className="pt-2.5 mt-2 border-t border-purple-200/90 text-xs text-purple-900 leading-relaxed space-y-1.5 bg-purple-100/50 p-2.5 rounded-lg"
                                 >
                                     <div>
-                                        <span className="font-extrabold text-purple-950">Clinical Mechanism: </span>
+                                        <span className="font-extrabold text-purple-950">{t('an.clinicalMechanism')} </span>
                                         <span>{interaction.rule.clinicalMechanism}</span>
                                     </div>
                                     <div className="pt-1.5 border-t border-purple-200/60">
-                                        <span className="font-extrabold text-purple-950">Patient Guidance: </span>
+                                        <span className="font-extrabold text-purple-950">{t('an.patientGuidance')} </span>
                                         <span>{interaction.rule.patientGuidance}</span>
                                     </div>
                                 </div>
@@ -389,7 +392,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                     >
                         <span className="text-sm flex-shrink-0 mt-0.5">💬</span>
                         <div className="leading-relaxed">
-                            <span className="font-extrabold text-sky-900">Discussion Prompt: </span>
+                            <span className="font-extrabold text-sky-900">{t('an.discussionPromptTag')} </span>
                             <span className="font-medium text-sky-950">{prompt.promptText}</span>
                         </div>
                     </div>
@@ -406,7 +409,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                 <div className="space-y-1 flex-1 min-w-0">
                     <div className="flex items-start space-x-2 rtl:space-x-reverse">
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-800 bg-teal-50 border border-teal-200/80 px-2.5 py-0.5 rounded-full flex-shrink-0 mt-0.5">
-                            Active Report
+                            {t('an.activeReport')}
                         </span>
                         <h2
                             className="text-sm sm:text-base font-extrabold text-slate-900 line-clamp-2"
@@ -416,7 +419,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                         </h2>
                     </div>
                     <p className="text-xs text-slate-500 font-medium">
-                        {parsedResults.length} clinical biomarker(s) evaluated across 3 tiered urgency buckets
+                        {t('an.biomarkerSummary', { count: String(parsedResults.length) })}
                     </p>
                 </div>
 
@@ -432,7 +435,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                             }`}
                         >
                             <Check className={`w-3 h-3 ${sampleCondition === 'fasting' ? 'opacity-100' : 'opacity-0'}`} />
-                            <span>Fasting (8-12h)</span>
+                            <span>{t('an.fastingWindow')}</span>
                         </button>
 
                         <button
@@ -444,7 +447,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                             }`}
                         >
                             <Check className={`w-3 h-3 ${sampleCondition === 'non-fasting' ? 'opacity-100' : 'opacity-0'}`} />
-                            <span>Non-Fasting</span>
+                            <span>{t('dash.nonFasting')}</span>
                         </button>
 
                         <button
@@ -456,7 +459,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                             }`}
                         >
                             <Check className={`w-3 h-3 ${sampleCondition === 'post-exercise' ? 'opacity-100' : 'opacity-0'}`} />
-                            <span>Post-Workout</span>
+                            <span>{t('dash.postWorkout')}</span>
                         </button>
                     </div>
                 )}
@@ -474,7 +477,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                 }`}
                             >
                                 <Save className="w-3.5 h-3.5" />
-                                <span>{isSavedSuccess ? 'Saved to History!' : 'Save Report'}</span>
+                                <span>{isSavedSuccess ? t('an.savedToHistory') : t('an.saveReport')}</span>
                             </button>
                         )}
 
@@ -483,7 +486,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                             className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2 px-3.5 rounded-xl shadow-xs transition-all inline-flex items-center space-x-1.5 rtl:space-x-reverse active:scale-95 whitespace-nowrap"
                         >
                             <Printer className="w-3.5 h-3.5 text-teal-400" />
-                            <span>Download PDF</span>
+                            <span>{t('an.downloadPdf')}</span>
                         </button>
                     </div>
                 )}
@@ -509,15 +512,15 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                             <HeartPulse className="w-4 h-4 text-rose-500 flex-shrink-0" />
                             <div className="flex items-center space-x-2 rtl:space-x-reverse flex-wrap">
                                 <span className="text-xs font-bold text-slate-900">
-                                    Experiencing symptoms today? (Optional)
+                                    {t('an.symptomsQuestion')}
                                 </span>
                                 {selectedSymptomIds.length > 0 ? (
                                     <span className="text-[10px] font-extrabold bg-sky-100 text-sky-800 border border-sky-200 px-2.5 py-0.5 rounded-full">
-                                        {selectedSymptomIds.length} Active {selectedSymptomIds.length === 1 ? 'Symptom' : 'Symptoms'}
+                                        {t('an.symptomCountActive', { count: String(selectedSymptomIds.length) })}
                                     </span>
                                 ) : (
                                     <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
-                                        • Cross-references fatigue, chills, thirst &amp; more with lab findings
+                                        • {t('an.symptomsHint')}
                                     </span>
                                 )}
                             </div>
@@ -532,11 +535,11 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                     }}
                                     className="text-[11px] font-bold text-slate-500 hover:text-rose-600 px-2 py-0.5 rounded-lg hover:bg-rose-50 transition-colors"
                                 >
-                                    Clear
+                                    {t('an.clearSelection')}
                                 </button>
                             )}
                             <div className="text-xs font-bold text-slate-600 flex items-center space-x-1">
-                                <span className="hidden sm:inline">{isSymptomBarExpanded ? 'Collapse' : 'Select'}</span>
+                                <span className="hidden sm:inline">{isSymptomBarExpanded ? t('an.collapse') : t('an.select')}</span>
                                 {isSymptomBarExpanded ? (
                                     <ChevronUp className="w-4 h-4 text-slate-500" />
                                 ) : (
@@ -549,7 +552,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                     {isSymptomBarExpanded && (
                         <div className="px-4 pb-4 pt-1 border-t border-slate-100 bg-slate-50/50">
                             <p className="text-[11px] text-slate-500 font-medium mb-3">
-                                Select any non-specific symptoms you are experiencing to generate non-diagnostic discussion prompts on matching lab parameters:
+                                {t('an.symptomsHelp')}
                             </p>
                             <div className="flex items-center space-x-2 rtl:space-x-reverse flex-wrap gap-y-2">
                                 {SYMPTOMS.map((symptom) => {
@@ -583,9 +586,9 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                         <Layers className="w-8 h-8" />
                     </div>
                     <div className="space-y-2">
-                        <div className="text-base font-extrabold text-slate-900">No Active Report Loaded</div>
+                        <div className="text-base font-extrabold text-slate-900">{t('an.noReportTitle')}</div>
                         <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-md mx-auto">
-                            No active laboratory report loaded. Upload a blood test report to view biomarker evaluations, ML balance scores, and physician consultation prompts.
+                            {t('an.noReportDesc')}
                         </p>
                     </div>
                     {(onNavigateToUpload || onNavigate) && (
@@ -602,7 +605,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                 className="inline-flex items-center space-x-2 rtl:space-x-reverse bg-teal-600 hover:bg-teal-500 text-white font-extrabold text-xs sm:text-sm py-2.5 px-5 rounded-xl shadow-xs transition-all active:scale-95"
                             >
                                 <Upload className="w-4 h-4" />
-                                <span>Upload Report Now</span>
+                                <span>{t('dash.ctaUploadNow')}</span>
                             </button>
                         </div>
                     )}
@@ -631,7 +634,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                             <CheckCircle2 className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-0.5" />
                             <div>
                                 <h3 className="font-bold text-sm text-emerald-950 mb-1">
-                                    All Biomarkers Within Normal Reference Ranges
+                                    {t('an.allNormalHeading')}
                                 </h3>
                                 <p className="text-xs text-emerald-800 leading-relaxed font-medium">
                                     {getTranslation('allClearMessage', currentLang)}
@@ -653,7 +656,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                             : 'text-slate-600 hover:text-slate-900'
                                     }`}
                                 >
-                                    <span>All</span>
+                                    <span>{t('an.filterAll')}</span>
                                     <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${
                                         urgencyFilter === 'ALL' ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-700'
                                     }`}>
@@ -670,7 +673,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                     }`}
                                 >
                                     <span className="inline-block w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                                    <span>Needs Attention</span>
+                                    <span>{t('an.filterNeedsAttention')}</span>
                                     <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${
                                         urgencyFilter === 'NEEDS_ATTENTION' ? 'bg-rose-700 text-rose-100' : 'bg-rose-100 text-rose-800'
                                     }`}>
@@ -687,7 +690,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                     }`}
                                 >
                                     <Check className="w-3.5 h-3.5" />
-                                    <span>In Target</span>
+                                    <span>{t('an.filterInTarget')}</span>
                                     <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${
                                         urgencyFilter === 'IN_TARGET' ? 'bg-emerald-700 text-emerald-100' : 'bg-emerald-100 text-emerald-800'
                                     }`}>
@@ -703,8 +706,8 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search biomarker name..."
-                                    aria-label="Search test parameters"
+                                    placeholder={t('an.searchPlaceholder')}
+                                    aria-label={t('an.searchAria')}
                                     className="w-full bg-slate-50 border border-slate-200/80 text-xs rounded-xl pl-9 pr-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                                 />
                             </div>
@@ -714,7 +717,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                         <div className="flex items-center space-x-1.5 rtl:space-x-reverse overflow-x-auto pb-1 text-xs">
                             <span className="text-slate-400 font-bold flex items-center mr-1 flex-shrink-0">
                                 <Filter className="w-3.5 h-3.5 mr-1" />
-                                Category:
+                                {t('an.categoryColon')}
                             </span>
                             <button
                                 onClick={() => setSelectedCategoryFilter('ALL')}
@@ -724,7 +727,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                 }`}
                             >
-                                All ({parsedResults.length})
+                                {t('an.allWithCount', { count: String(parsedResults.length) })}
                             </button>
                             <button
                                 onClick={() => setSelectedCategoryFilter('FLAGGED')}
@@ -734,7 +737,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                         : 'bg-slate-100 text-rose-700 hover:bg-slate-200'
                                 }`}
                             >
-                                Flagged Only ({parsedResults.filter((r) => r.classification !== 'Normal').length})
+                                {t('an.flaggedOnlyWithCount', { count: String(parsedResults.filter((r) => r.classification !== 'Normal').length) })}
                             </button>
                             {availableCategories.map((cat) => (
                                 <button
@@ -756,9 +759,9 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                     {totalVisibleTests === 0 && (
                         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center space-y-2">
                             <Info className="w-6 h-6 text-slate-400 mx-auto" />
-                            <div className="text-xs font-bold text-slate-700">No biomarkers match your current filter</div>
+                            <div className="text-xs font-bold text-slate-700">{t('an.noMatchesTitle')}</div>
                             <p className="text-[11px] text-slate-500">
-                                Try changing the urgency filter or resetting the category filter and search query.
+                                {t('an.noMatchesDesc')}
                             </p>
                         </div>
                     )}
@@ -776,14 +779,14 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                             <ShieldAlert className="w-3.5 h-3.5" />
                                         </div>
                                         <h3 className="text-sm sm:text-base font-extrabold text-rose-950">
-                                            Tier 1: Immediate Discussion (High Urgency)
+                                            {t('an.tier1Title')}
                                         </h3>
                                         <span className="bg-rose-600 text-white text-[11px] font-black px-2 py-0.5 rounded-full shadow-xs">
-                                            {filteredTier1.length} {filteredTier1.length === 1 ? 'Concern' : 'Concerns'}
+                                            {t('an.tierConcerns', { count: String(filteredTier1.length) })}
                                         </span>
                                     </div>
                                     <p className="text-xs text-rose-800/90 font-medium pl-8.5 rtl:pl-0 rtl:pr-8.5">
-                                        Values showing significant variance (&gt;30% outside reference range) recommended for clinical discussion.
+                                        {t('an.tier1Sub')}
                                     </p>
                                 </div>
 
@@ -791,7 +794,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                     onClick={() => setTier1Expanded(!tier1Expanded)}
                                     className="self-end sm:self-center text-xs font-bold text-rose-800 hover:text-rose-950 bg-rose-100/80 hover:bg-rose-200/80 px-3 py-1.5 rounded-xl border border-rose-200 transition-colors inline-flex items-center space-x-1 rtl:space-x-reverse"
                                 >
-                                    <span>{tier1Expanded ? 'Collapse' : 'Expand'}</span>
+                                    <span>{tier1Expanded ? t('an.collapse') : t('an.expand')}</span>
                                     {tier1Expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                 </button>
                             </div>
@@ -837,7 +840,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                                                     </span>
                                                                 </div>
                                                                 <div className="text-[11px] text-slate-500 font-medium" dir="ltr">
-                                                                    Range: {result.referenceMin} – {result.referenceMax} {result.unit}
+                                                                    {t('an.rangeLine', { min: String(result.referenceMin), max: String(result.referenceMax), unit: result.unit })}
                                                                 </div>
                                                             </div>
 
@@ -861,7 +864,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                                                 <span>
                                                                     {isDoctor
                                                                         ? getTranslation('doctorBadge', currentLang)
-                                                                        : 'Priority Discussion'}
+                                                                        : t('an.priorityDiscussion')}
                                                                 </span>
                                                             </span>
                                                         </div>
@@ -881,7 +884,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                                         <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs p-3 rounded-xl flex items-start space-x-2 rtl:space-x-reverse">
                                                             <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                                                             <div>
-                                                                <span className="font-bold">Auto-Correction Safeguard: </span>
+                                                                <span className="font-bold">{t('an.autoCorrectTag')} </span>
                                                                 {getTranslation('correctedValueAlert', currentLang, {
                                                                     original: String(result.originalValue),
                                                                     corrected: String(result.measuredValue)
@@ -920,7 +923,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                                                 <span>
                                                                     {getTranslation('explanationLabel', currentLang)} —{' '}
                                                                     <span className="font-medium text-slate-500">
-                                                                        Why is this value significantly out of range?
+                                                                        {t('an.whySignificant')}
                                                                     </span>
                                                                 </span>
                                                             </span>
@@ -965,14 +968,14 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                             <Clock className="w-3.5 h-3.5" />
                                         </div>
                                         <h3 className="text-sm sm:text-base font-extrabold text-amber-950">
-                                            Tier 2: Worth Monitoring (Moderate Variance)
+                                            {t('an.tier2Title')}
                                         </h3>
                                         <span className="bg-amber-500 text-white text-[11px] font-black px-2 py-0.5 rounded-full shadow-xs">
-                                            {filteredTier2.length} {filteredTier2.length === 1 ? 'Marker' : 'Markers'}
+                                            {t('an.tierMarkers', { count: String(filteredTier2.length) })}
                                         </span>
                                     </div>
                                     <p className="text-xs text-amber-900/90 font-medium pl-8.5 rtl:pl-0 rtl:pr-8.5">
-                                        Mild-to-moderate boundary deviations to observe and track over upcoming checkups.
+                                        {t('an.tier2Sub')}
                                     </p>
                                 </div>
 
@@ -980,7 +983,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                     onClick={() => setTier2Expanded(!tier2Expanded)}
                                     className="self-end sm:self-center text-xs font-bold text-amber-900 hover:text-amber-950 bg-amber-100/80 hover:bg-amber-200/80 px-3 py-1.5 rounded-xl border border-amber-200 transition-colors inline-flex items-center space-x-1 rtl:space-x-reverse"
                                 >
-                                    <span>{tier2Expanded ? 'Collapse' : 'Expand'}</span>
+                                    <span>{tier2Expanded ? t('an.collapse') : t('an.expand')}</span>
                                     {tier2Expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                 </button>
                             </div>
@@ -1025,7 +1028,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                                                     </span>
                                                                 </div>
                                                                 <div className="text-[11px] text-slate-500 font-medium" dir="ltr">
-                                                                    Range: {result.referenceMin} – {result.referenceMax} {result.unit}
+                                                                    {t('an.rangeLine', { min: String(result.referenceMin), max: String(result.referenceMax), unit: result.unit })}
                                                                 </div>
                                                             </div>
 
@@ -1065,7 +1068,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                                         <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs p-3 rounded-xl flex items-start space-x-2 rtl:space-x-reverse">
                                                             <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                                                             <div>
-                                                                <span className="font-bold">Auto-Correction Safeguard: </span>
+                                                                <span className="font-bold">{t('an.autoCorrectTag')} </span>
                                                                 {getTranslation('correctedValueAlert', currentLang, {
                                                                     original: String(result.originalValue),
                                                                     corrected: String(result.measuredValue)
@@ -1104,7 +1107,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                                                 <span>
                                                                     {getTranslation('explanationLabel', currentLang)} —{' '}
                                                                     <span className="font-medium text-slate-500">
-                                                                        Why is this value slightly out of range?
+                                                                        {t('an.whySlight')}
                                                                     </span>
                                                                 </span>
                                                             </span>
@@ -1147,21 +1150,21 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                     <div>
                                         <div className="flex items-center space-x-2 rtl:space-x-reverse flex-wrap">
                                             <h3 className="text-sm sm:text-base font-extrabold text-emerald-950">
-                                                ✅ All {filteredTier3.length} Biomarkers in Target Range
+                                                ✅ {t('an.tier3Heading', { count: String(filteredTier3.length) })}
                                             </h3>
                                             <span className="bg-emerald-200/80 text-emerald-900 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                                Tier 3 • Optimal &amp; Stable
+                                                {t('an.tier3Badge')}
                                             </span>
                                         </div>
                                         <p className="text-xs text-emerald-800 font-medium mt-0.5">
-                                            Healthy biological balance within standard clinical reference bounds. Click to {tier3Expanded ? 'collapse' : 'expand'}.
+                                            {t('an.tier3Hint', { action: tier3Expanded ? t('an.collapse').toLowerCase() : t('an.expand').toLowerCase() })}
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center space-x-2 rtl:space-x-reverse self-end sm:self-center">
                                     <span className="text-xs font-bold text-emerald-800 bg-emerald-100/80 px-3 py-1 rounded-xl border border-emerald-200 inline-flex items-center space-x-1.5 rtl:space-x-reverse">
-                                        <span>{tier3Expanded ? 'Collapse Rows' : 'Expand Rows'}</span>
+                                        <span>{tier3Expanded ? t('an.collapseRows') : t('an.expandRows')}</span>
                                         {tier3Expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                     </span>
                                 </div>
@@ -1200,7 +1203,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                                     {/* Value, Range & Status Pill */}
                                                     <div className="flex items-center space-x-3 rtl:space-x-reverse flex-wrap gap-y-1 justify-between sm:justify-end">
                                                         <span className="text-[11px] text-slate-500 font-medium" dir="ltr">
-                                                            Target: {result.referenceMin} – {result.referenceMax} {result.unit}
+                                                            {t('an.targetLine', { min: String(result.referenceMin), max: String(result.referenceMax), unit: result.unit })}
                                                         </span>
 
                                                         <div className="text-xs sm:text-sm font-black text-slate-900" dir="ltr">
@@ -1218,8 +1221,8 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                                         <button
                                                             onClick={() => toggleExplanation(result.testId)}
                                                             className="text-slate-400 hover:text-teal-700 p-1 rounded-md hover:bg-white transition-colors"
-                                                            title="Toggle explanation"
-                                                            aria-label="Toggle healthy biomarker explanation"
+                                                            title={t('an.toggleExplanationAria')}
+                                                            aria-label={t('an.toggleExplanationAria')}
                                                         >
                                                             <Info className="w-3.5 h-3.5" />
                                                         </button>

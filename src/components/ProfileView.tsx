@@ -27,6 +27,7 @@ import {
 } from '../types';
 import { SUPPORTED_LANGUAGES } from '../constants/translations';
 import { apiFetch, ApiError } from '../api/client';
+import { getTranslation } from '../utils/language';
 
 interface ProfileViewProps {
     userEmail: string;
@@ -77,6 +78,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     onSignOut,
     currentLang
 }) => {
+    const t = (key: string, params?: Record<string, string>): string =>
+        getTranslation(key, currentLang, params);
+
+    const genderLabel = (g: string): string => {
+        if (g === 'Male') return t('onb.optMale');
+        if (g === 'Female') return t('onb.optFemale');
+        return t('onb.optPreferNot');
+    };
+
+    const bloodTypeLabel = (bt: string): string =>
+        bt === 'Prefer not to say' ? t('onb.optPreferNot') : bt;
+
     // Detect system timezone
     const defaultTimezone = () => {
         try {
@@ -186,12 +199,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         e.preventDefault();
         if (!currentPassword || !newPassword) {
             setPasswordIsError(true);
-            setPasswordMsg('Please fill in both current and new passwords.');
+            setPasswordMsg(t('prof.errFillBothPwds'));
             return;
         }
         if (newPassword.length < 8) {
             setPasswordIsError(true);
-            setPasswordMsg('New password must be at least 8 characters.');
+            setPasswordMsg(t('prof.errNewPwdMinLen'));
             return;
         }
         setPasswordBusy(true);
@@ -202,7 +215,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 json: { current_password: currentPassword, new_password: newPassword }
             });
             setPasswordIsError(false);
-            setPasswordMsg('Password updated successfully.');
+            setPasswordMsg(t('prof.pwdUpdatedSuccess'));
             setTimeout(() => {
                 setShowChangePasswordModal(false);
                 setCurrentPassword('');
@@ -210,7 +223,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 setPasswordMsg(null);
             }, 1200);
         } catch (err) {
-            const message = err instanceof ApiError ? err.message : 'Could not update password. Please try again.';
+            const message = err instanceof ApiError ? err.message : t('prof.pwdUpdateFailed');
             setPasswordIsError(true);
             setPasswordMsg(message);
         } finally {
@@ -242,27 +255,27 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         <div className="space-y-1">
                             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                                 <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                                    {fullName || 'Patient Profile'}
+                                    {fullName || t('prof.patientFallback')}
                                 </h1>
                                 <span className="bg-teal-500/20 text-teal-300 border border-teal-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                                    Private Vault
+                                    {t('prof.privateVault')}
                                 </span>
                             </div>
                             <p className="text-xs text-slate-300">{userEmail}</p>
                             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1 text-[11px] text-teal-200">
                                 {dateOfBirth && (
                                     <span className="bg-slate-800/80 border border-slate-700/80 px-2.5 py-0.5 rounded-md">
-                                        Age: {calculateAge(dateOfBirth) ?? 'N/A'}
+                                        {t('prof.ageChip', { age: String(calculateAge(dateOfBirth) ?? 'N/A') })}
                                     </span>
                                 )}
                                 {gender && (
                                     <span className="bg-slate-800/80 border border-slate-700/80 px-2.5 py-0.5 rounded-md">
-                                        Gender: {gender}
+                                        {t('prof.genderChip', { gender: genderLabel(gender) })}
                                     </span>
                                 )}
                                 {bloodType && bloodType !== 'Prefer not to say' && (
                                     <span className="bg-rose-950/60 border border-rose-800/50 text-rose-300 font-bold px-2.5 py-0.5 rounded-md">
-                                        Blood: {bloodType}
+                                        {t('prof.bloodChip', { type: bloodTypeLabel(bloodType) })}
                                     </span>
                                 )}
                             </div>
@@ -279,15 +292,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             <User className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="text-base font-extrabold text-slate-900">Basic Info &amp; Health Baseline</h3>
-                            <p className="text-xs text-slate-500">Demographic baseline for age and sex-dependent laboratory range evaluation</p>
+                            <h3 className="text-base font-extrabold text-slate-900">{t('prof.basicTitle')}</h3>
+                            <p className="text-xs text-slate-500">{t('prof.basicSub')}</p>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {/* Full Name */}
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">{t('prof.fullName')}</label>
                             <input
                                 type="text"
                                 value={fullName}
@@ -299,10 +312,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         {/* Date of Birth */}
                         <div>
                             <div className="flex items-center justify-between mb-1">
-                                <label className="text-xs font-bold text-slate-700">Date of Birth</label>
+                                <label className="text-xs font-bold text-slate-700">{t('prof.dob')}</label>
                                 {calculateAge(dateOfBirth) !== null && (
                                     <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md">
-                                        Age: {calculateAge(dateOfBirth)}
+                                        {t('prof.ageBadge', { age: String(calculateAge(dateOfBirth)) })}
                                     </span>
                                 )}
                             </div>
@@ -317,16 +330,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
                         {/* Sex */}
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">Gender</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">{t('prof.genderLabel')}</label>
                             <select
                                 value={gender}
                                 onChange={(e) => setGender(e.target.value as GenderType)}
-                                aria-label="Gender"
+                                aria-label={t('prof.genderLabel')}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
                             >
                                 {GENDER_OPTIONS.map((g) => (
                                     <option key={g} value={g}>
-                                        {g}
+                                        {genderLabel(g)}
                                     </option>
                                 ))}
                             </select>
@@ -334,16 +347,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
                         {/* Blood Type */}
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">Blood Type</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">{t('prof.bloodTypeLabel')}</label>
                             <select
                                 value={bloodType}
                                 onChange={(e) => setBloodType(e.target.value as BloodType)}
-                                aria-label="Blood Type"
+                                aria-label={t('prof.bloodTypeLabel')}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
                             >
                                 {BLOOD_TYPES.map((bt) => (
                                     <option key={bt} value={bt}>
-                                        {bt}
+                                        {bloodTypeLabel(bt)}
                                     </option>
                                 ))}
                             </select>
@@ -351,11 +364,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
                         {/* Timezone */}
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">Timezone</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">{t('prof.timezoneLabel')}</label>
                             <select
                                 value={timezone}
                                 onChange={(e) => setTimezone(e.target.value)}
-                                aria-label="Timezone"
+                                aria-label={t('prof.timezoneLabel')}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
                             >
                                 {TIMEZONES.map((tz) => (
@@ -368,11 +381,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
                         {/* Language */}
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">Display Language</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">{t('prof.displayLanguage')}</label>
                             <select
                                 value={language}
                                 onChange={(e) => setLanguage(e.target.value as SupportedLanguage)}
-                                aria-label="Display Language"
+                                aria-label={t('prof.displayLanguage')}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
                             >
                                 {SUPPORTED_LANGUAGES.map((lang) => (
@@ -385,15 +398,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
                         {/* Measurement System */}
                         <div className="sm:col-span-2 lg:col-span-1">
-                            <label className="block text-xs font-bold text-slate-700 mb-1">Measurement System</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">{t('prof.measurementSystem')}</label>
                             <select
                                 value={measurementUnits}
                                 onChange={(e) => setMeasurementUnits(e.target.value as MeasurementUnitPreference)}
-                                aria-label="Measurement System"
+                                aria-label={t('prof.measurementSystem')}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
                             >
-                                <option value="Conventional">Conventional / US (mg/dL, g/dL)</option>
-                                <option value="Metric">Metric / SI (mmol/L, g/L)</option>
+                                <option value="Conventional">{t('prof.unitsConventional')}</option>
+                                <option value="Metric">{t('prof.unitsMetric')}</option>
                             </select>
                         </div>
                     </div>
@@ -406,15 +419,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             <HeartPulse className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="text-base font-extrabold text-slate-900">Medical Context &amp; History</h3>
-                            <p className="text-xs text-slate-500">Improves ML anomaly interpretation and physiological cluster correlation</p>
+                            <h3 className="text-base font-extrabold text-slate-900">{t('prof.medicalTitle')}</h3>
+                            <p className="text-xs text-slate-500">{t('prof.medicalSub')}</p>
                         </div>
                     </div>
 
                     <div className="space-y-4">
                         {/* Chronic Conditions Pills */}
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-2">Diagnosed Chronic Conditions</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-2">{t('prof.chronicConditions')}</label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                                 {CHRONIC_CONDITIONS.map((c) => {
                                     const isSelected = selectedConditions.includes(c.label);
@@ -429,7 +442,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                                     : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
                                             }`}
                                         >
-                                            <span>{c.label}</span>
+                                            <span>{t(`onb.cond_${c.id}`)}</span>
                                             <div
                                                 className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] ${
                                                     isSelected ? 'bg-teal-600 border-teal-600 text-white font-bold' : 'border-slate-300'
@@ -445,13 +458,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             {/* Other Unlisted Conditions Field */}
                             <div className="mt-3">
                                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Other Diagnosed Condition(s) (Optional)
+                                    {t('prof.otherConditionsLabel')}
                                 </label>
                                 <input
                                     type="text"
                                     value={otherChronicConditions}
                                     onChange={(e) => setOtherChronicConditions(e.target.value)}
-                                    placeholder="e.g. Gout, PCOS, Asthma, Rheumatoid Arthritis, Celiac..."
+                                    placeholder={t('prof.otherConditionsPlaceholder')}
                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 placeholder:text-slate-400"
                                 />
                             </div>
@@ -467,19 +480,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                 value={medications}
                                 onChange={(e) => setMedications(e.target.value)}
                                 rows={2}
-                                placeholder="e.g. Metformin 500mg daily, Atorvastatin 20mg, Vitamin D3 2000IU..."
+                                placeholder={t('prof.medsPlaceholder')}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 placeholder:text-slate-400"
                             />
                         </div>
 
                         {/* Allergies */}
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">Known Allergies</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">{t('prof.allergiesLabel')}</label>
                             <input
                                 type="text"
                                 value={allergies}
                                 onChange={(e) => setAllergies(e.target.value)}
-                                placeholder="e.g. Penicillin, Sulfa, Latex (or None)"
+                                placeholder={t('prof.allergiesPlaceholder')}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 placeholder:text-slate-400"
                             />
                         </div>
@@ -494,11 +507,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
                                 <Phone className="w-4 h-4" />
                             </div>
-                            <h3 className="text-sm font-extrabold text-slate-900">Contact Information</h3>
+                            <h3 className="text-sm font-extrabold text-slate-900">{t('prof.contactTitle')}</h3>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">{t('prof.emailLabel')}</label>
                             <input
                                 type="email"
                                 value={userEmail}
@@ -508,7 +521,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number (Optional)</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">{t('prof.phoneLabel')}</label>
                             <input
                                 type="tel"
                                 value={phoneNumber}
@@ -525,27 +538,27 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             <div className="p-2 bg-rose-50 text-rose-600 rounded-xl">
                                 <Stethoscope className="w-4 h-4" />
                             </div>
-                            <h3 className="text-sm font-extrabold text-slate-900">Primary Doctor / Clinic</h3>
+                            <h3 className="text-sm font-extrabold text-slate-900">{t('prof.doctorTitle')}</h3>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">Physician or Clinic Name</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">{t('prof.doctorNameLabel')}</label>
                             <input
                                 type="text"
                                 value={primaryDoctorName}
                                 onChange={(e) => setPrimaryDoctorName(e.target.value)}
-                                placeholder="e.g. Dr. Robert Vance / Cedar Medical Clinic"
+                                placeholder={t('prof.doctorNamePlaceholder')}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 placeholder:text-slate-400"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">Doctor Phone / Contact Info</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">{t('prof.doctorContactLabel')}</label>
                             <input
                                 type="text"
                                 value={primaryDoctorContact}
                                 onChange={(e) => setPrimaryDoctorContact(e.target.value)}
-                                placeholder="e.g. (555) 234-5678 or clinic@cedarmedical.org"
+                                placeholder={t('prof.doctorContactPlaceholder')}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 placeholder:text-slate-400"
                             />
                         </div>
@@ -559,8 +572,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             <Lock className="w-4 h-4" />
                         </div>
                         <div>
-                            <h3 className="text-base font-extrabold text-slate-900">Account &amp; Security Settings</h3>
-                            <p className="text-xs text-slate-500">Manage your password and active sign-in sessions</p>
+                            <h3 className="text-base font-extrabold text-slate-900">{t('prof.securityTitle')}</h3>
+                            <p className="text-xs text-slate-500">{t('prof.securitySub')}</p>
                         </div>
                     </div>
 
@@ -568,15 +581,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         {/* Email */}
                         <div className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                             <div>
-                                <span className="font-bold text-slate-800 block">Email Address</span>
-                                <span className="text-slate-500 text-[11px]">{userEmail} (used to sign in — cannot be changed)</span>
+                                <span className="font-bold text-slate-800 block">{t('prof.emailLabel')}</span>
+                                <span className="text-slate-500 text-[11px]">{t('prof.emailNote', { email: userEmail })}</span>
                             </div>
                         </div>
 
                         {/* Password */}
                         <div className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                             <div>
-                                <span className="font-bold text-slate-800 block">Password</span>
+                                <span className="font-bold text-slate-800 block">{t('prof.passwordRowLabel')}</span>
                                 <span className="text-slate-500 text-[11px]">••••••••••••</span>
                             </div>
                             <button
@@ -584,17 +597,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                 onClick={() => setShowChangePasswordModal(true)}
                                 className="text-xs font-bold text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-xl transition-colors"
                             >
-                                Change Password
+                                {t('prof.changePasswordBtn')}
                             </button>
                         </div>
 
                         {/* Active Sessions */}
                         <div className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                             <div>
-                                <span className="font-bold text-slate-800 block">Active Device Sessions</span>
+                                <span className="font-bold text-slate-800 block">{t('prof.sessionsLabel')}</span>
                                 <span className="text-slate-500 text-[11px] flex items-center space-x-2">
                                     <Clock className="w-3 h-3 text-slate-400 inline" />
-                                    <span>Last login: {userProfile?.lastLogin || 'Today'} • Signing out everywhere includes this device</span>
+                                    <span>{t('prof.lastLoginNote', { time: userProfile?.lastLogin || t('prof.today') })}</span>
                                 </span>
                             </div>
                             <button
@@ -603,7 +616,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                 disabled={logoutAllBusy}
                                 className="text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl transition-colors disabled:opacity-50"
                             >
-                                {logoutAllBusy ? 'Signing Out…' : 'Log Out All Devices'}
+                                {logoutAllBusy ? t('prof.signingOut') : t('prof.logoutAllDevices')}
                             </button>
                         </div>
                     </div>
@@ -616,8 +629,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             <ShieldCheck className="w-4 h-4" />
                         </div>
                         <div>
-                            <h3 className="text-base font-extrabold text-slate-900">Data Sovereignty &amp; Privacy Vault</h3>
-                            <p className="text-xs text-slate-500">Your health data is 100% private. Export archives or purge your vault at any time.</p>
+                            <h3 className="text-base font-extrabold text-slate-900">{t('prof.vaultTitle')}</h3>
+                            <p className="text-xs text-slate-500">{t('prof.vaultSub')}</p>
                         </div>
                     </div>
 
@@ -626,18 +639,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
                             <div className="font-bold text-xs text-slate-800 flex items-center space-x-2">
                                 <Download className="w-4 h-4 text-teal-600" />
-                                <span>Export Full Patient Archive</span>
+                                <span>{t('prof.exportTitle')}</span>
                             </div>
                             <p className="text-[11px] text-slate-500 leading-relaxed">
-                                Download a complete JSON archive containing your demographic profile, historical blood test results, and health journal logs.
-                            </p>
+                                {t('prof.exportDesc')}</p>
                             <button
                                 type="button"
                                 onClick={onExportData}
                                 className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs py-2 px-3 rounded-xl transition-colors inline-flex items-center justify-center space-x-1.5"
                             >
                                 <Download className="w-3.5 h-3.5" />
-                                <span>Download Archive (.json)</span>
+                                <span>{t('prof.exportBtn')}</span>
                             </button>
                         </div>
 
@@ -645,10 +657,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         <div className="p-4 bg-rose-50/50 rounded-xl border border-rose-200/80 space-y-2">
                             <div className="font-bold text-xs text-rose-900 flex items-center space-x-2">
                                 <Trash2 className="w-4 h-4 text-rose-600" />
-                                <span>Delete Account &amp; Medical Vault</span>
+                                <span>{t('prof.deleteVaultTitle')}</span>
                             </div>
                             <p className="text-[11px] text-rose-700/80 leading-relaxed">
-                                Permanently wipe all demographic records, uploaded laboratory reports, and medication entries from local and server databases.
+                                {t('prof.deleteVaultDesc')}
                             </p>
                             <button
                                 type="button"
@@ -656,7 +668,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                 className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-2 px-3 rounded-xl transition-colors inline-flex items-center justify-center space-x-1.5"
                             >
                                 <Trash2 className="w-3.5 h-3.5" />
-                                <span>Purge All Account Records</span>
+                                <span>{t('prof.purgeRecordsBtn')}</span>
                             </button>
                         </div>
                     </div>
@@ -667,7 +679,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     {isSavedSuccess && (
                         <span className="bg-emerald-50 text-emerald-700 border border-emerald-300 text-xs font-bold px-3.5 py-2.5 rounded-xl flex items-center space-x-1.5 animate-in fade-in shadow-xs">
                             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                            <span>Saved</span>
+                            <span>{t('prof.savedBadge')}</span>
                         </span>
                     )}
                     <button
@@ -675,7 +687,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         className="bg-gradient-to-r from-teal-500 to-emerald-400 hover:from-teal-400 hover:to-emerald-300 text-slate-950 font-extrabold text-xs py-3 px-8 rounded-xl shadow-lg shadow-teal-500/25 transition-all transform hover:scale-[1.02] inline-flex items-center space-x-2 rtl:space-x-reverse"
                     >
                         <Save className="w-4 h-4" />
-                        <span>Save All Profile Changes</span>
+                        <span>{t('prof.saveAllBtn')}</span>
                     </button>
                 </div>
             </form>
@@ -692,7 +704,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         </button>
                         <h3 className="text-lg font-bold flex items-center space-x-2">
                             <Key className="w-5 h-5 text-teal-400" />
-                            <span>Change Password</span>
+                            <span>{t('prof.pwdModalTitle')}</span>
                         </h3>
                         {passwordMsg && (
                             <div className={`text-xs p-2.5 rounded-xl border ${
@@ -705,7 +717,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         )}
                         <form onSubmit={handlePasswordChangeSubmit} className="space-y-3">
                             <div>
-                                <label className="block text-xs font-semibold text-slate-300 mb-1">Current Password</label>
+                                <label className="block text-xs font-semibold text-slate-300 mb-1">{t('prof.currentPwdLabel')}</label>
                                 <input
                                     type="password"
                                     value={currentPassword}
@@ -715,7 +727,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold text-slate-300 mb-1">New Password (min 8 characters)</label>
+                                <label className="block text-xs font-semibold text-slate-300 mb-1">{t('prof.newPwdLabel')}</label>
                                 <input
                                     type="password"
                                     value={newPassword}
@@ -729,7 +741,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                 disabled={passwordBusy}
                                 className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold py-2.5 rounded-xl text-xs transition-colors disabled:opacity-50"
                             >
-                                {passwordBusy ? 'Updating…' : 'Update Password'}
+                                {passwordBusy ? t('prof.updatingBtn') : t('prof.updatePwdBtn')}
                             </button>
                         </form>
                     </div>
@@ -743,16 +755,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         <div className="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto border border-rose-500/30">
                             <AlertTriangle className="w-6 h-6" />
                         </div>
-                        <h3 className="text-xl font-black text-white">Permanently Delete Account?</h3>
+                        <h3 className="text-xl font-black text-white">{t('prof.deleteConfirmTitle')}</h3>
                         <p className="text-xs text-slate-300 leading-relaxed">
-                            This action <strong>cannot be undone</strong>. All your demographic profiles, saved lab reports, and medication logs will be permanently erased from this device and the server database.
+                            {t('prof.deleteConfirmLead')}
+                            <strong>{t('prof.deleteConfirmBold')}</strong>
+                            {t('prof.deleteConfirmTail')}
                         </p>
                         <div className="flex items-center space-x-3 pt-2">
                             <button
                                 onClick={() => setShowDeleteConfirmModal(false)}
                                 className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-xs"
                             >
-                                Cancel
+                                {t('prof.cancelBtn')}
                             </button>
                             <button
                                 onClick={() => {
@@ -761,7 +775,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                 }}
                                 className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-extrabold py-2.5 rounded-xl text-xs shadow-md shadow-rose-600/30"
                             >
-                                Confirm &amp; Purge
+                                {t('prof.confirmPurgeBtn')}
                             </button>
                         </div>
                     </div>
