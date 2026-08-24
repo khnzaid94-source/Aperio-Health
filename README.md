@@ -1,100 +1,105 @@
-# 🔬 Aperio Health — AI Lab Report Simplifier Suite
-> **Full-Stack Clinical Informatics, Machine Learning, and Computer Vision System**
+# Aperio Health — Clinical Intelligence Suite
 
-Aperio Health is an intelligent health literacy tool designed to read typed blood test reports, photo scans, and PDFs, and translate complex laboratory shorthand into clear, plain-language explanations with multi-marker anomaly detection—without diagnosing.
+> Turn laboratory blood reports into plain-language insights — powered by real
+> population statistics, computer vision, and machine learning.
 
----
-
-## 🌟 Key Features
-
-* **24 Standard Clinical Biomarkers across 7 Panels**:
-  * *Complete Blood Count (CBC)*: Hemoglobin, WBC, Platelets, RBC, Hematocrit
-  * *Lipid Profile*: Total Cholesterol, LDL, HDL, Triglycerides
-  * *Thyroid Panel*: TSH, T3, T4
-  * *Liver Function (LFT)*: ALT, AST, Total Bilirubin, ALP
-  * *Kidney Function (KFT)*: Creatinine, BUN, Uric Acid
-  * *Blood Sugar*: Fasting Blood Sugar (FBS), HbA1c
-  * *Vitamins & Iron Studies*: Vitamin D, Vitamin B12, Ferritin
-
-* **Machine Learning & Multi-Marker Anomaly Detection (`scikit-learn`)**:
-  * Isolation Forest multidimensional vector evaluation.
-  * **Metabolic Balance Index (0–100%)** scoring overall biomarker balance.
-  * Co-occurrence Risk Clustering (Metabolic & Glycemic Synergy, Iron-Depletion Anemia, Hepatic Cellular Stress, Renal Clearance Stress).
-
-* **Computer Vision Diagnostics (`OpenCV`)**:
-  * Laplacian variance blur and sharpness detection.
-  * Michelson contrast ratio calculation and >150 DPI resolution verification.
-  * Automatic document deskewing and adaptive Otsu binarization.
-
-* **11 Supported Languages with RTL Layout Support**:
-  * English, Hindi (हिन्दी), Marathi (मराठी), Bengali (বাংলা), Telugu (తెలుగు), Tamil (தமிழ்), Gujarati (ગુજરાતી), Spanish (Español), French (Français), Arabic (العربية - with full right-to-left UI mirroring), and Mandarin Chinese (简体中文).
-
-* **Visual Reference Range Gauges & PDF Summary Export**:
-  * Interactive horizontal meters showing exact biomarker positioning across Low, Normal, and High zones.
-  * One-click **"Download Doctor Summary (PDF)"** formatted for physician consultation.
-
-* **Private Account-Isolated History & Retrospective Trend Tracking**:
-  * Interactive Recharts trend charts with shaded reference bands.
-  * 1–2 sentence retrospective trajectory summaries (strict non-predictive clinical rule).
-
-* **Clinical Safeguards**:
-  * Auto-detection for dropped decimal points (e.g. `45%` $\rightarrow$ `4.5%`).
-  * Cross-check protection against garbled reference ranges.
-  * Permanent medical scope disclaimer and **"No Data Used for AI Training"** privacy guarantee.
+**Live demo:** https://aperio-health.onrender.com *(free tier — first visit may take ~45s while the server wakes)*
 
 ---
 
-## 🛠️ Architecture & Tech Stack
+## What it does
+
+Upload a lab report (**PDF / photo / text**) and Aperio Health:
+
+1. **Extracts** values via a hybrid OCR pipeline — Google Gemini Vision when configured,
+   local Tesseract + OpenCV preprocessing (deskew, Otsu binarization, quality grading) as automatic fallback.
+2. **Parses** up to **63 clinical biomarkers** across CBC, lipid, thyroid, liver, kidney,
+   glucose, iron, vitamin, hormone, inflammatory, and pancreatic panels — including
+   multi-line tables, OCR word-collisions (`TotalCholesterol`), comma thousands, and
+   unit-scale normalization (lakhs/cumm).
+3. **Segments** multi-page PDFs into distinct visits by specimen date.
+4. **Interprets** each value against **age- and sex-specific reference intervals derived
+   from CDC NHANES 2017–2018** real-world population percentiles — falling back to the
+   report's own printed ranges, then textbook catalog ranges (each source labeled).
+5. **Scores** overall balance with a transparent weighted z-score index + an Isolation
+   Forest anomaly check, detects cross-marker patterns (glycemic-lipid synergy,
+   iron-deficiency signature, liver/kidney stress pairs), and explains everything in
+   plain language across **10 languages**.
+6. **Tracks** history with visit-over-visit delta analysis, trend charts, a health
+   journal, doctor-question generation, and a printable clinical summary PDF.
+
+See [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) for exactly how the scoring works,
+where the data comes from, and what it can't do.
+
+## Security & privacy posture
+
+- Real authentication: bcrypt password hashing, server-side session tokens, optional
+  **Sign-in with Google** (ID tokens verified against the audience client).
+- Every data route derives identity from the session token — no IDOR-style email-in-URL access.
+- Upload hardening: pre-read size caps, file-count limits, magic-byte type validation.
+- Hardened static serving, explicit CORS allow-list, HTML-escaped PDF export.
+- Honest UI: no fake compliance badges. Educational tool — not medical advice, not HIPAA infrastructure.
+
+## Tech stack
+
+| Layer | Tools |
+|---|---|
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS, Recharts |
+| Backend | FastAPI (Python), SQLAlchemy, SQLite |
+| Vision/OCR | OpenCV, PyTesseract, pypdf, optional Gemini Vision |
+| ML | NumPy, scikit-learn (Isolation Forest), NHANES-derived distributions |
+| Auth | bcrypt + session tokens, Google OAuth 2.0 (`google-auth`) |
+| Deploy | Multi-stage Docker (Node build → Python slim + Tesseract) on Render free tier |
+
+## Project layout
 
 ```
-Aperio Health/
-├── backend/                  # Python FastAPI Backend
-│   ├── main.py               # REST API & Unified Static SPA Server
-│   ├── cv_engine.py          # OpenCV Computer Vision Quality & Preprocessing
-│   ├── ml_engine.py          # Scikit-Learn Isolation Forest & Risk Clustering
-│   ├── ocr.py                # Regex Parser & Clinical Safeguards
-│   ├── catalog.py            # 24-Test Clinical Reference Catalog
-│   ├── database.py           # SQLAlchemy SQLite Models (aperio_data.db)
-│   └── requirements.txt      # Python Dependencies
-├── src/                      # React TypeScript Frontend
-│   ├── components/           # UI Components (Analyzer, History, Gauges, ML Card)
-│   ├── constants/            # Translations (11 Languages), Catalog & Samples
-│   ├── utils/                # Language helpers, Parsers & PDF Generator
-│   └── App.tsx               # Main Application Shell
-├── start.py                  # One-Click Unified Runner Script
-└── package.json              # NPM Configuration
+backend/        FastAPI app, auth, parsers, ML engine, seed script
+shared/         Single-source catalog.json, test_synonyms.json, distributions.json
+src/            React SPA (components, utils, api client)
+scripts/        NHANES distribution builder (reproducible pipeline)
+docs/           MODEL_CARD.md
+Dockerfile      Multi-stage production image
+render.yaml     Render blueprint
 ```
 
----
+Both the TypeScript and Python parsers consume the **same shared JSON definitions**
+(catalog + synonyms + population stats), enforced by mirrored test suites on each side.
 
-## 🚀 One-Command Quick Start
+## Local development
 
-### 1. Install Dependencies (First-time setup only)
 ```bash
+# 1. Install
 npm install
 pip install -r backend/requirements.txt
+
+# 2. Configure (see .env.example)
+cp .env.example .env    # add GOOGLE_CLIENT_ID; GEMINI_API_KEY optional
+
+# 3. Run (builds UI on first run, serves API + SPA on :8000)
+python start.py         # or: npm run dev  (Vite :3000 -> proxies /api)
+
+# 4. Quality gates
+npm test                # Vitest parser + delta suites
+npm run lint            # ESLint
+python -m pytest        # (parser regression suite)
 ```
 
-### 2. Run the Full-Stack Application
-```bash
-python start.py
-```
-*(Or run `npm start`)*
+Demo accounts are seeded automatically at startup:
+`sarah.jenkins@example.com | david.chen@example.com | maya.patel@example.com` — password `demo1234`.
 
-This single command:
-1. Automatically compiles the React frontend bundle.
-2. Starts the Python FastAPI backend server on `http://localhost:8000`.
-3. Automatically opens your default web browser to the application!
+## Limitations (read before use)
+
+- Heuristic parsing: clean digital PDFs parse reliably; phone photos depend on image
+  quality; unusual formats may miss values.
+- Population percentiles describe *commonness*, not health. Nothing here diagnoses.
+- Free hosting: the server sleeps after 15 idle minutes and its database resets on
+  redeploys (demo accounts re-seed automatically).
+- If Gemini OCR is enabled, uploaded images go to Google's API (free-tier data may be
+  used by Google for product improvement) — use sample reports, not sensitive documents.
 
 ---
 
-## ☁️ Deployment (Render / Railway / Cloud)
-
-Aperio Health is designed as a single-port unified server for zero-cost cloud hosting:
-* **Build Command**: `npm install && npm run build && pip install -r backend/requirements.txt`
-* **Start Command**: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
-
----
-
-## ⚖️ Medical Disclaimer
-*Aperio Health is intended for educational and health literacy purposes only. It is not a clinical decision support system, diagnostic device, or medical treatment prescription tool. All clinical values must be verified against official laboratory instruments and reviewed with a qualified healthcare provider.*
+Built as a portfolio demonstration of full-stack engineering: reproducible data
+pipeline, stratified biostatistics, dual-language parser parity under test, and an
+honest security posture.

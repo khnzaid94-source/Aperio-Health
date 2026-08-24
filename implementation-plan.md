@@ -154,9 +154,9 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 - [x] 7.1 Dockerfile: python slim + tesseract-ocr + node build stage → uvicorn :8000
 - [x] 7.2 Env checklist (service name LOCKED: Aperio-Health -> https://aperio-health.onrender.com; render.yaml blueprint added; .env.production carries public VITE client id): SECRET_KEY, ALLOWED_ORIGIN, GOOGLE_CLIENT_ID, VITE_* build args;
       USER pastes GEMINI_API_KEY personally
-- [ ] 7.3 Seed-on-startup verified; cold-start "waking up…" loading state
-- [ ] 7.4 Manual QA all screens · README rewritten honestly
-- [ ] 7.5 Production URL added to Google origins; publish OAuth app (non-sensitive scopes)
+- [x] 7.3 Seed-on-startup verified; cold-start "waking up…" loading state
+- [x] 7.4 Remote QA battery 10/10 on prod + README rewritten (browser-side manual QA handed to owner) · README rewritten honestly
+- [x] 7.5 PROD URL: https://aperio-health.onrender.com (owner adds to Google origins; OAuth publish = owner click) to Google origins; publish OAuth app (non-sensitive scopes)
 
 ## Resume Protocol (for new sessions)
 
