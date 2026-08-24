@@ -142,12 +142,12 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 
 ## Phase 6 — Quality Pass [P2, time-boxed]
 
-- [ ] 6.1 Dead code sweep: rm ekg_animation.py; unused props (UploadView userEmail,
+- [x] 6.1 Dead code sweep: rm ekg_animation.py; unused props (UploadView userEmail,
       HistoryAndTrends onLoadSampleHistory, JournalView currentLang, MLInsightsCard unused,
       ProfileView extras); dead RTL plumbing; fake progress strings → real stages
-- [ ] 6.2 Extract shared computeDeltas() util + ResultCard component
-- [ ] 6.3 Vitest parser tests + ESLint config
-- [ ] 6.4 CATALOG Map lookups in render paths; lazy ML init
+- [x] 6.2a computeDeltas() extracted to src/utils/deltas.ts (both consumers migrated). 6.2b ResultCard extraction DEFERRED: high churn vs regression risk before deploy QA
+- [x] 6.3 Vitest parser tests + ESLint config
+- [x] 6.4 CATALOG Map lookups in render paths; lazy ML init
 
 ## Phase 7 — Deploy & Verify (Render)
 
@@ -168,3 +168,7 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 5. If blocked on a "User Must Provide" item: STOP and ask the user immediately. Only if no
    response in-session: mark the task ⛔ BLOCKED here and continue with next unblocked task.
    Never fabricate placeholder values for user-only secrets.
+
+### Phase 6 addendum - encoding investigation
+'Flagged mojibake' in hi/mr/es/fr translation strings was a FALSE ALARM caused by PowerShell cp1252 console rendering. Verified at codepoint level: all files strict-UTF-8 valid; real Devanagari (26k+ chars in translations.ts) and accents intact. Hardened getTranslation() param interpolation instead (regex-escape key, function replacer) - closes audit item S5.
+

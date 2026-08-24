@@ -9,7 +9,6 @@ import {
     ChevronUp,
     Sparkles
 } from 'lucide-react';
-import { SupportedLanguage } from '../types';
 
 export interface MLRiskCluster {
     name: string;
@@ -46,11 +45,8 @@ export interface CVQualityData {
 
 export interface MLInsightsCardProps {
     mlInsights?: MLInsightsData | null;
-    cvQuality?: CVQualityData | null;
-    currentLang?: SupportedLanguage;
     doctorQuestions?: string[];
     onCopyQuestions?: (e: React.MouseEvent) => void;
-    copyToastMessage?: string | null;
     defaultExpanded?: boolean;
 }
 

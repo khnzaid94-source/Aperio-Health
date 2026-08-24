@@ -5,7 +5,7 @@ import {
     TEST_NAME_TRANSLATIONS,
     EXPLANATION_TRANSLATIONS
 } from '../constants/translations';
-import { CATALOG } from '../constants/catalog';
+import { CATALOG_INDEX } from '../constants/catalog';
 
 export function getTranslation(key: string, lang: SupportedLanguage, params?: Record<string, string>): string {
     const langDict = INTERFACE_TRANSLATIONS[lang] || INTERFACE_TRANSLATIONS['en'];
@@ -13,7 +13,8 @@ export function getTranslation(key: string, lang: SupportedLanguage, params?: Re
 
     if (params) {
         Object.entries(params).forEach(([pKey, pVal]) => {
-            text = text.replace(new RegExp(`\\{${pKey}\\}`, 'g'), pVal);
+            const safeKey = pKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            text = text.replace(new RegExp(`\\{${safeKey}\\}`, 'g'), () => pVal);
         });
     }
 
@@ -25,7 +26,7 @@ export function getLocalizedTestName(testId: string, lang: SupportedLanguage): s
     if (nameMap && nameMap[lang]) {
         return nameMap[lang];
     }
-    const catEntry = CATALOG.find(c => c.id === testId);
+    const catEntry = CATALOG_INDEX.get(testId);
     return catEntry ? catEntry.name : testId;
 }
 
@@ -42,7 +43,7 @@ export function getLocalizedExplanation(
     classification: 'Normal' | 'High' | 'Low',
     lang: SupportedLanguage
 ): string {
-    const catEntry = CATALOG.find(c => c.id === testId);
+    const catEntry = CATALOG_INDEX.get(testId);
     const testName = catEntry ? catEntry.name : testId;
 
     if (classification === 'Normal') {

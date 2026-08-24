@@ -121,14 +121,12 @@ export const UploadView: React.FC<UploadViewProps> = ({
             setBatchCurrentName(fileName);
             setLastUploadedName(fileName);
 
-            // Real-time panel status message
-            if (fileName.toLowerCase().includes('cbc') || fileName.toLowerCase().includes('blood') || idx % 3 === 0) {
-                setBatchStatusMessage('Analyzing Hematology Panel & Complete Blood Count...');
-            } else if (fileName.toLowerCase().includes('lipid') || idx % 3 === 1) {
-                setBatchStatusMessage('Scanning Lipid Profile & Metabolic Biomarkers...');
-            } else {
-                setBatchStatusMessage('Extracting Clinical Reference Ranges & Values...');
-            }
+            // Honest processing stage indicator
+            setBatchStatusMessage(
+                idx === 0
+                    ? 'Uploading document to the analysis engine…'
+                    : 'Extracting text (OCR) and parsing clinical values…'
+            );
 
             let fileProcessed = false;
 

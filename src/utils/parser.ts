@@ -197,19 +197,7 @@ export function parseLabReportText(text: string, patientContext?: PatientContext
         let refMax = catalogEntry.max;
         let rangeOverridden = false;
         let rangeSource: string = 'catalog';
-
-        const popStats = getPopulationStats(matchedTestId!, patientContext);
-        if (popStats && popStats.p97_5 > popStats.p2_5 && popStats.p2_5 > 0) {
-            const catalogMid = (catalogEntry.min + catalogEntry.max) / 2;
-            const popMid = (popStats.p2_5 + popStats.p97_5) / 2;
-            const ratio = catalogMid > 0 ? popMid / catalogMid : 1;
-            const unitScaleSane = ratio >= 0.25 && ratio <= 4;
-            if (unitScaleSane) {
-                refMin = popStats.p2_5;
-                refMax = popStats.p97_5;
-                rangeSource = 'nhanes_p2_5_p97_5';
-            }
-        }
+        let usedExtractedRange = false;
 
         if (extMin !== null && extMax !== null && extMin < extMax) {
             // Unit scale checks (platelets in lakhs vs x10^3, wbc in cumm vs x10^3)
@@ -217,10 +205,12 @@ export function parseLabReportText(text: string, patientContext?: PatientContext
                 refMin = extMin;
                 refMax = extMax;
                 foundUnit = 'lakhs/cumm';
+                usedExtractedRange = true;
             } else if (matchedTestId === 'wbc' && extMax > 1000.0) {
                 refMin = extMin;
                 refMax = extMax;
                 foundUnit = 'cumm';
+                usedExtractedRange = true;
             } else {
                 const minRatio = catalogEntry.min > 0 ? extMin / catalogEntry.min : 1.0;
                 const maxRatio = catalogEntry.max > 0 ? extMax / catalogEntry.max : 1.0;
@@ -232,6 +222,22 @@ export function parseLabReportText(text: string, patientContext?: PatientContext
                 } else {
                     refMin = extMin;
                     refMax = extMax;
+                    usedExtractedRange = true;
+                }
+            }
+        }
+
+        if (!usedExtractedRange) {
+            const popStats = getPopulationStats(matchedTestId!, patientContext);
+            if (popStats && popStats.p97_5 > popStats.p2_5 && popStats.p2_5 > 0) {
+                const catalogMid = (catalogEntry.min + catalogEntry.max) / 2;
+                const popMid = (popStats.p2_5 + popStats.p97_5) / 2;
+                const ratio = catalogMid > 0 ? popMid / catalogMid : 1;
+                const unitScaleSane = ratio >= 0.25 && ratio <= 4;
+                if (unitScaleSane) {
+                    refMin = popStats.p2_5;
+                    refMax = popStats.p97_5;
+                    rangeSource = 'nhanes_p2_5_p97_5';
                 }
             }
         }

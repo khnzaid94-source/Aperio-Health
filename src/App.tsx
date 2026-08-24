@@ -21,7 +21,7 @@ import {
 } from './types';
 import { CATALOG, getUrgency } from './constants/catalog';
 import { getLanguageDirection } from './utils/language';
-import { CVQualityData, MLInsightsData } from './components/MLInsightsCard';
+import { MLInsightsData } from './components/MLInsightsCard';
 import { apiFetch, ApiError, clearToken, getToken } from './api/client';
 
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -347,7 +347,6 @@ export function App() {
     const [currentRawText, setCurrentRawText] = useState<string>('');
     const [currentSourceLabel, setCurrentSourceLabel] = useState<string>('No report uploaded');
     const [currentParsedResults, setCurrentParsedResults] = useState<TestResult[]>([]);
-    const [currentCvQuality, setCurrentCvQuality] = useState<CVQualityData | null>(null);
     const [currentMlInsights, setCurrentMlInsights] = useState<MLInsightsData | null>(null);
 
     // RTL & Language support
@@ -371,7 +370,6 @@ export function App() {
         setCurrentParsedResults([]);
         setCurrentSourceLabel('No report uploaded');
         setCurrentRawText('');
-        setCurrentCvQuality(null);
         setCurrentMlInsights(null);
         clearToken();
         Object.keys(localStorage)
@@ -875,13 +873,12 @@ export function App() {
         results: TestResult[],
         sourceLabel: string,
         rawText: string,
-        cvQuality: CVQualityData | null,
+        _cvQuality: unknown,
         mlInsights: MLInsightsData | null
     ) => {
         setCurrentParsedResults(results);
         setCurrentSourceLabel(sourceLabel);
         setCurrentRawText(rawText);
-        setCurrentCvQuality(cvQuality);
         setCurrentMlInsights(mlInsights);
         setCurrentTab('analyze');
     };
@@ -917,7 +914,6 @@ export function App() {
         setCurrentParsedResults(primary.results);
         setCurrentSourceLabel(primary.sourceLabel);
         setCurrentRawText(primary.rawText);
-        setCurrentCvQuality(primary.cvQuality);
         setCurrentMlInsights(primary.mlInsights);
 
         // Redirect to Dashboard (if multi-report stack) or AnalyzeView (if single report)
@@ -986,7 +982,6 @@ export function App() {
                     parsedResults={currentParsedResults}
                     sourceLabel={currentSourceLabel}
                     mlInsights={currentMlInsights}
-                    cvQuality={currentCvQuality}
                     currentLang={currentLang}
                     onSaveToHistory={handleSaveReport}
                     userProfile={userProfile}
@@ -1012,7 +1007,6 @@ export function App() {
                     journalEntries={journalEntries}
                     onAddEntry={handleAddJournalEntry}
                     onDeleteEntry={handleDeleteJournalEntry}
-                    currentLang={currentLang}
                 />
             )}
 

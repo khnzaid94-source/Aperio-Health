@@ -38,14 +38,13 @@ import {
 } from '../utils/language';
 import { RangeGauge } from './RangeGauge';
 import { exportDoctorSummaryPDF } from '../utils/pdfExport';
-import { MLInsightsCard, MLInsightsData, CVQualityData } from './MLInsightsCard';
+import { MLInsightsCard, MLInsightsData } from './MLInsightsCard';
 
 interface AnalyzeViewProps {
     userEmail: string;
     parsedResults: TestResult[];
     sourceLabel: string;
     mlInsights: MLInsightsData | null;
-    cvQuality: CVQualityData | null;
     currentLang: SupportedLanguage;
     onSaveToHistory?: (report: SavedReport) => void;
     initialSampleCondition?: SampleConditionType;
@@ -88,7 +87,6 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
     parsedResults,
     sourceLabel,
     mlInsights,
-    cvQuality,
     currentLang,
     onSaveToHistory,
     initialSampleCondition,
@@ -611,12 +609,9 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                     {/* 2. Collapsible Clinical Intelligence Deck */}
                     <MLInsightsCard
                         mlInsights={mlInsights}
-                        cvQuality={cvQuality}
                         defaultExpanded={false}
-                        currentLang={currentLang}
                         doctorQuestions={doctorQuestions}
                         onCopyQuestions={handleCopyQuestions}
-                        copyToastMessage={copyToastMessage}
                     />
 
                     {/* Toast notification for copying */}

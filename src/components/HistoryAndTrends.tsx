@@ -29,14 +29,15 @@ import {
     ReferenceArea,
     ReferenceLine
 } from 'recharts';
-import { SavedReport, SupportedLanguage, TestResult, SidebarTab } from '../types';
+import { SavedReport, SupportedLanguage, SidebarTab } from '../types';
+import { computeDeltaAnalysis } from '../utils/deltas';
 import {
     getTranslation,
     getLocalizedTestName,
     getLocalizedExplanation,
     generateRetrospectiveTrendSummary
 } from '../utils/language';
-import { CATALOG } from '../constants/catalog';
+import { CATALOG_INDEX } from '../constants/catalog';
 
 interface HistoryAndTrendsProps {
     currentLang: SupportedLanguage;
@@ -46,24 +47,6 @@ interface HistoryAndTrendsProps {
     onDeleteSingleTest: (reportId: string, testId: string) => void;
     onNavigateToUpload?: () => void;
     onNavigate?: (tab: SidebarTab) => void;
-    onLoadSampleHistory?: any;
-}
-
-interface BiomarkerDelta {
-    testId: string;
-    name: string;
-    category: string;
-    unit: string;
-    prevValue: number;
-    currValue: number;
-    diff: number;
-    referenceMin: number;
-    referenceMax: number;
-    status: 'improved' | 'variance' | 'stable';
-    arrow: '↑' | '↓' | '→';
-    diffSign: string;
-    formattedTransition: string;
-    explanation: string;
 }
 
 export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
@@ -125,148 +108,9 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
     const isSelfComparison = Boolean(activeReportAId) && activeReportAId === activeReportBId;
 
     const deltaAnalysis = useMemo(() => {
-        if (!reportA?.results || !reportB?.results || activeReportAId === activeReportBId) {
-            return null;
-        }
-
-        const prevMap = new Map<string, TestResult>();
-        reportA.results.forEach((r) => {
-            if (r?.testId) {
-                prevMap.set(r.testId, r);
-            }
-        });
-
-        const deltas: BiomarkerDelta[] = [];
-        let improvedCount = 0;
-        let varianceCount = 0;
-        let stableCount = 0;
-
-        reportB.results.forEach((curr) => {
-            if (!curr?.testId || !prevMap.has(curr.testId)) {
-                return;
-            }
-
-            const prev = prevMap.get(curr.testId)!;
-            if (
-                typeof curr.measuredValue !== 'number' ||
-                isNaN(curr.measuredValue) ||
-                typeof prev.measuredValue !== 'number' ||
-                isNaN(prev.measuredValue)
-            ) {
-                return;
-            }
-
-            const catItem = CATALOG.find((c) => c.id === curr.testId);
-            const min =
-                typeof curr.referenceMin === 'number' && !isNaN(curr.referenceMin)
-                    ? curr.referenceMin
-                    : (catItem?.min ?? 0);
-            const max =
-                typeof curr.referenceMax === 'number' && !isNaN(curr.referenceMax)
-                    ? curr.referenceMax
-                    : (catItem?.max ?? 100);
-
-            const prevDist = getDistance(prev.measuredValue, min, max);
-            const currDist = getDistance(curr.measuredValue, min, max);
-            const diff = curr.measuredValue - prev.measuredValue;
-
-            let status: 'improved' | 'variance' | 'stable' = 'stable';
-            let explanation = '';
-
-            const crossedOver =
-                (prev.measuredValue < min && curr.measuredValue > max) ||
-                (prev.measuredValue > max && curr.measuredValue < min);
-
-            if (crossedOver) {
-                status = 'variance';
-                explanation = 'Crossed healthy range from one abnormal side to the other.';
-            } else if (prevDist === 0 && currDist === 0) {
-                status = 'stable';
-                explanation = 'Remained steady within normal reference bounds.';
-            } else if (prevDist > 0 && currDist === 0) {
-                status = 'improved';
-                explanation = 'Normalized back into standard healthy range.';
-            } else if (prevDist > 0 && currDist > 0 && currDist < prevDist - 0.0001) {
-                status = 'improved';
-                explanation = 'Moved closer toward normal reference range.';
-            } else if (prevDist === 0 && currDist > 0) {
-                status = 'variance';
-                explanation = 'Moved outside normal reference boundaries.';
-            } else if (prevDist > 0 && currDist > 0 && currDist > prevDist + 0.0001) {
-                status = 'variance';
-                explanation = 'Deviated further from normal reference baseline.';
-            } else {
-                status = 'stable';
-                explanation = 'Maintained consistent level relative to baseline.';
-            }
-
-            if (status === 'improved') improvedCount++;
-            else if (status === 'variance') varianceCount++;
-            else stableCount++;
-
-            const formatNum = (v: number) =>
-                Number.isInteger(v) ? v.toString() : Number(v.toFixed(2)).toString();
-
-            const absDiff = Math.abs(diff);
-            const formattedAbsDiff = formatNum(absDiff);
-
-            let arrow: '↑' | '↓' | '→' = '→';
-            let diffSign = '0';
-            if (diff > 0.0001) {
-                arrow = '↑';
-                diffSign = `+${formattedAbsDiff}`;
-            } else if (diff < -0.0001) {
-                arrow = '↓';
-                diffSign = `-${formattedAbsDiff}`;
-            }
-
-            const unit = curr.unit || prev.unit || '';
-            let formattedTransition = '';
-
-            if (unit === '%') {
-                formattedTransition = `${formatNum(prev.measuredValue)}% → ${formatNum(curr.measuredValue)}% (${arrow} ${diffSign}%)`;
-            } else if (unit) {
-                formattedTransition = `${formatNum(prev.measuredValue)} → ${formatNum(curr.measuredValue)} ${unit} (${arrow} ${diffSign} ${unit})`;
-            } else {
-                formattedTransition = `${formatNum(prev.measuredValue)} → ${formatNum(curr.measuredValue)} (${arrow} ${diffSign})`;
-            }
-
-            deltas.push({
-                testId: curr.testId,
-                name: curr.name || catItem?.name || curr.testId,
-                category: curr.category || catItem?.category || '',
-                unit,
-                prevValue: prev.measuredValue,
-                currValue: curr.measuredValue,
-                diff,
-                referenceMin: min,
-                referenceMax: max,
-                status,
-                arrow,
-                diffSign,
-                formattedTransition,
-                explanation
-            });
-        });
-
-        // Sort so that new variances appear first, then improved markers, then stable
-        deltas.sort((a, b) => {
-            const priority = { variance: 0, improved: 1, stable: 2 };
-            return priority[a.status] - priority[b.status];
-        });
-
-        return {
-            latestLabel: reportB.label || 'Visit B',
-            latestDate: reportB.date || 'Recent',
-            prevLabel: reportA.label || 'Visit A',
-            prevDate: reportA.date || 'Earlier',
-            deltas,
-            improvedCount,
-            varianceCount,
-            stableCount,
-            totalCompared: deltas.length
-        };
-    }, [reportA, reportB]);
+        if (!reportA || !reportB || isSelfComparison) return null;
+        return computeDeltaAnalysis(reportA, reportB);
+    }, [reportA, reportB, isSelfComparison]);
 
     const filteredDeltas = useMemo(() => {
         if (!deltaAnalysis) return [];
@@ -280,7 +124,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
         reportA.results.forEach(r => { if (r?.testId) ids.add(r.testId); });
         reportB.results.forEach(r => { if (r?.testId) ids.add(r.testId); });
         
-        const catalogIdsOrder = CATALOG.map(c => c.id);
+        const catalogIdsOrder = Array.from(CATALOG_INDEX.keys());
         return Array.from(ids).sort((a, b) => {
             const indexA = catalogIdsOrder.indexOf(a);
             const indexB = catalogIdsOrder.indexOf(b);
@@ -341,7 +185,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
     }, [savedReports, activeTrendTestId]);
 
     const activeTestCatalog = useMemo(() => {
-        return CATALOG.find((c) => c.id === activeTrendTestId);
+        return CATALOG_INDEX.get(activeTrendTestId);
     }, [activeTrendTestId]);
 
     const trendSummary = useMemo(() => {
@@ -943,7 +787,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                             </thead>
                                             <tbody className="divide-y divide-slate-150 text-xs text-slate-700">
                                                 {uniqueBiomarkerIds.map((testId) => {
-                                                    const catalogItem = CATALOG.find(c => c.id === testId);
+                                                    const catalogItem = CATALOG_INDEX.get(testId);
                                                     const resultA = reportA?.results.find(r => r.testId === testId);
                                                     const resultB = reportB?.results.find(r => r.testId === testId);
 

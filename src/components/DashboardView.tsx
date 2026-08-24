@@ -14,9 +14,9 @@ import {
     Minus,
     GitCompare
 } from 'lucide-react';
-import { SavedReport, JournalEntry, SidebarTab, SupportedLanguage, UserProfile, TestResult } from '../types';
+import { SavedReport, JournalEntry, SidebarTab, SupportedLanguage, UserProfile } from '../types';
+import { computeDeltaAnalysis } from '../utils/deltas';
 import { getLocalizedTestName } from '../utils/language';
-import { CATALOG } from '../constants/catalog';
 import { EkgMonitorCanvas } from './EkgMonitorCanvas';
 
 interface DashboardViewProps {
@@ -26,23 +26,6 @@ interface DashboardViewProps {
     journalEntries: JournalEntry[];
     onNavigate: (tab: SidebarTab) => void;
     currentLang: SupportedLanguage;
-}
-
-interface BiomarkerDelta {
-    testId: string;
-    name: string;
-    category: string;
-    unit: string;
-    prevValue: number;
-    currValue: number;
-    diff: number;
-    referenceMin: number;
-    referenceMax: number;
-    status: 'improved' | 'variance' | 'stable';
-    arrow: '↑' | '↓' | '→';
-    diffSign: string;
-    formattedTransition: string;
-    explanation: string;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -95,163 +78,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         ? latestReport.results.filter((r) => r && r.classification !== 'Normal')
         : [];
 
-    // Delta Calculation: "Delta Pulse" Executive Summary
-    const deltaAnalysis = useMemo(() => {
-        const latest = savedReports?.[0];
-        const previous = savedReports?.[1];
-
-        if (!latest?.results || !previous?.results) {
-            return null;
-        }
-
-        // Index previous report results by testId for fast safe lookup
-        const prevMap = new Map<string, TestResult>();
-        previous.results.forEach((r) => {
-            if (r?.testId) {
-                prevMap.set(r.testId, r);
-            }
-        });
-
-        const deltas: BiomarkerDelta[] = [];
-        let improvedCount = 0;
-        let varianceCount = 0;
-        let stableCount = 0;
-
-        latest.results.forEach((curr) => {
-            // Backward compatibility guard: biomarker must exist in both reports with valid numbers
-            if (!curr?.testId || !prevMap.has(curr.testId)) {
-                return;
-            }
-
-            const prev = prevMap.get(curr.testId)!;
-            if (
-                typeof curr.measuredValue !== 'number' ||
-                isNaN(curr.measuredValue) ||
-                typeof prev.measuredValue !== 'number' ||
-                isNaN(prev.measuredValue)
-            ) {
-                return;
-            }
-
-            const catItem = CATALOG.find((c) => c.id === curr.testId);
-            const min =
-                typeof curr.referenceMin === 'number' && !isNaN(curr.referenceMin)
-                    ? curr.referenceMin
-                    : (catItem?.min ?? 0);
-            const max =
-                typeof curr.referenceMax === 'number' && !isNaN(curr.referenceMax)
-                    ? curr.referenceMax
-                    : (catItem?.max ?? 100);
-
-            const getDistance = (val: number) => {
-                if (val < min) return min - val;
-                if (val > max) return val - max;
-                return 0; // inside normal range
-            };
-
-            const prevDist = getDistance(prev.measuredValue);
-            const currDist = getDistance(curr.measuredValue);
-            const diff = curr.measuredValue - prev.measuredValue;
-
-            let status: 'improved' | 'variance' | 'stable' = 'stable';
-            let explanation = '';
-
-            // Check if value jumped from one abnormal extreme to the opposite abnormal extreme
-            const crossedOver =
-                (prev.measuredValue < min && curr.measuredValue > max) ||
-                (prev.measuredValue > max && curr.measuredValue < min);
-
-            if (crossedOver) {
-                status = 'variance';
-                explanation = 'Crossed healthy range from one abnormal side to the other.';
-            } else if (prevDist === 0 && currDist === 0) {
-                status = 'stable';
-                explanation = 'Remained steady within normal reference bounds.';
-            } else if (prevDist > 0 && currDist === 0) {
-                status = 'improved';
-                explanation = 'Normalized back into standard healthy range.';
-            } else if (prevDist > 0 && currDist > 0 && currDist < prevDist - 0.0001) {
-                status = 'improved';
-                explanation = 'Moved closer toward normal reference range.';
-            } else if (prevDist === 0 && currDist > 0) {
-                status = 'variance';
-                explanation = 'Moved outside normal reference boundaries.';
-            } else if (prevDist > 0 && currDist > 0 && currDist > prevDist + 0.0001) {
-                status = 'variance';
-                explanation = 'Deviated further from normal reference baseline.';
-            } else {
-                status = 'stable';
-                explanation = 'Maintained consistent level relative to baseline.';
-            }
-
-            if (status === 'improved') improvedCount++;
-            else if (status === 'variance') varianceCount++;
-            else stableCount++;
-
-            // Formatting helper for clean integer/decimal representation
-            const formatNum = (v: number) =>
-                Number.isInteger(v) ? v.toString() : Number(v.toFixed(2)).toString();
-
-            const absDiff = Math.abs(diff);
-            const formattedAbsDiff = formatNum(absDiff);
-
-            let arrow: '↑' | '↓' | '→' = '→';
-            let diffSign = '0';
-            if (diff > 0.0001) {
-                arrow = '↑';
-                diffSign = `+${formattedAbsDiff}`;
-            } else if (diff < -0.0001) {
-                arrow = '↓';
-                diffSign = `-${formattedAbsDiff}`;
-            }
-
-            const unit = curr.unit || prev.unit || '';
-            let formattedTransition = '';
-
-            if (unit === '%') {
-                formattedTransition = `${formatNum(prev.measuredValue)}% → ${formatNum(curr.measuredValue)}% (${arrow} ${diffSign}%)`;
-            } else if (unit) {
-                formattedTransition = `${formatNum(prev.measuredValue)} → ${formatNum(curr.measuredValue)} ${unit} (${arrow} ${diffSign} ${unit})`;
-            } else {
-                formattedTransition = `${formatNum(prev.measuredValue)} → ${formatNum(curr.measuredValue)} (${arrow} ${diffSign})`;
-            }
-
-            deltas.push({
-                testId: curr.testId,
-                name: curr.name || catItem?.name || curr.testId,
-                category: curr.category || catItem?.category || '',
-                unit,
-                prevValue: prev.measuredValue,
-                currValue: curr.measuredValue,
-                diff,
-                referenceMin: min,
-                referenceMax: max,
-                status,
-                arrow,
-                diffSign,
-                formattedTransition,
-                explanation
-            });
-        });
-
-        // Sort so that new variances appear first, then improved markers, then stable
-        deltas.sort((a, b) => {
-            const priority = { variance: 0, improved: 1, stable: 2 };
-            return priority[a.status] - priority[b.status];
-        });
-
-        return {
-            latestLabel: latest.label || 'Latest Visit',
-            latestDate: latest.date || 'Recent',
-            prevLabel: previous.label || 'Previous Visit',
-            prevDate: previous.date || 'Earlier',
-            deltas,
-            improvedCount,
-            varianceCount,
-            stableCount,
-            totalCompared: deltas.length
-        };
-    }, [savedReports]);
+    // Delta Pulse executive summary (shared engine)
+    const deltaAnalysis = useMemo(
+        () => computeDeltaAnalysis(savedReports?.[1] ?? null, savedReports?.[0] ?? null),
+        [savedReports]
+    );
 
     const chronicConditionsList = useMemo(() => {
         if (!userProfile?.chronicConditions || userProfile.chronicConditions.length === 0) return [];

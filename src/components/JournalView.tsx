@@ -11,14 +11,13 @@ import {
     X,
     FileText
 } from 'lucide-react';
-import { JournalEntry, SupportedLanguage } from '../types';
+import { JournalEntry } from '../types';
 
 interface JournalViewProps {
     userEmail: string;
     journalEntries: JournalEntry[];
     onAddEntry: (entry: Omit<JournalEntry, 'id'>) => void;
     onDeleteEntry: (id: string) => void;
-    currentLang: SupportedLanguage;
 }
 
 export const JournalView: React.FC<JournalViewProps> = ({
