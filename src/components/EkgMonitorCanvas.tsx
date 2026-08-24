@@ -72,7 +72,7 @@ export const EkgMonitorCanvas: React.FC<EkgMonitorCanvasProps> = ({
         };
 
         let scanX = 0;
-        const scanSpeed = 1.6; // Speed of the scanning cursor
+        const scanSpeed = 1.0; // Calm scanning cursor sweep
         const history: number[] = new Array(Math.ceil(1200)).fill(0);
         let time = 0;
         const beatDuration = (60 / bpm) * 60; // frames per beat (~60 frames at 60fps)
@@ -89,8 +89,8 @@ export const EkgMonitorCanvas: React.FC<EkgMonitorCanvasProps> = ({
 
             ctx.clearRect(0, 0, width, height);
 
-            const midY = height * 0.55;
-            const amp = height * 0.38;
+            const midY = height * 0.58;
+            const amp = height * 0.33;
 
             // Draw subtle background medical grid lines
             ctx.strokeStyle = 'rgba(45, 212, 191, 0.04)';
