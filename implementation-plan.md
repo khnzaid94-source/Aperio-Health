@@ -78,7 +78,7 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 **Prod:** https://aperio-health.onrender.com (Render free tier, autoDeploy on push)
 **Repo:** github.com/khnzaid94-source/Aperio-Health (private) · branch `main`
 **HEAD:** `5e728ea` — all work below is pushed
-**Next up:** Phase 8 Stage 4 — Upload remainder + History compare/chart microcopy (~75 keys)
+**Next up:** Phase 8 Stage 5 — JournalView + AboutView + misc (~50 keys)
 
 ## ✅ Completed work ledger (this chat)
 
@@ -104,8 +104,9 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 | 18 | **Pinned RESOLVED via owner screenshot**: root cause = tab was never implemented (list below fold); third "Saved Reports" pill + view wrapper added to HistoryAndTrends | `7933a07` |
 | 19 | **i18n Stage 3**: Profile deep sections + AnalyzeView headings/tier copy localized (123 new keys ×10 langs) | `5e728ea` |
 | 20 | Stages 1–3 remediation audit: `nav.selectLanguage` aria-labels (sidebar+landing), delete-confirm `<strong>` split, `prof.today` fallback, tier-3 hint casing; scripted sweep clean (+4 keys/lang → 304×10) | `5e728ea` |
+| 21 | **i18n Stage 4**: UploadView + HistoryAndTrends fully localized (110 new keys ×10 langs: `up.*` ×45, `hist.*` ×65); reused `dash.nonFasting/postWorkout`, `an.allWithCount/filterAll`, `normal/high/lowBadge`, `processingText`, `getLocalizedCategory` | (uncommitted) |
 
-**Test posture at HEAD:** Vitest 26/26 · pytest 13/13 · ESLint clean · tsc build green.
+**Test posture at HEAD:** Vitest 26/26 · pytest 13/13 · ESLint clean · tsc build green. Stage 4 (uncommitted) re-verified: same battery all green; dictionary now 414 keys ×10.
 
 ## ⛔ Pinned — RESOLVED 2026-08-24: "Saved Reports tab invisible on prod"
 
@@ -126,7 +127,7 @@ Shipped pieces are live (see ledger #13–15): parity guard, sidebar + landing l
 - [x] Stage 1b: LandingView (42 keys) — pushed
 - [x] **Stage 2 (scope expanded per owner): Onboarding wizard + Dashboard welcome-banner/KPI strings (~85 keys)** — shipped `ea8c9d5`: 115 new keys (`onb.*` ×72, `dash.*` ×43) authored across all 10 languages; OnboardingView fully wired (wizard live-switches language via its own Language Preference select); DashboardView fully wired (welcome banner, Delta Pulse strip, KPI widgets, Latest Report card, quick-nav cards). Stored VALUES stay English by design (gender/blood/condition strings feed ML strata + filters); display-only translation via label helpers. Vitest 26/26 parity green, tsc build green, ESLint clean, pytest 13/13.
 - [x] **Stage 3** — shipped (uncommitted): 123 new keys (`prof.*` ×66, `an.*` ×57) across all 10 languages; ProfileView fully wired (all 6 cards + hero chips + password/delete modals), gender/blood/condition display via label helpers reusing `onb.opt*` / `onb.cond_*` vocab — stored values stay English by design; AnalyzeView fully wired (tier headers/badges/subcopy, urgency+category filters, symptom bar, postprandial/exercise/med-context/discussion-prompt chips, Range/Target lines, empty state, search). Exact-match reuse of `dash.nonFasting`, `dash.postWorkout`, `dash.ctaUploadNow`. Applied via verified codemod (60/60 patterns). Vitest 26/26 parity green, tsc build green, ESLint clean, pytest 13/13.
-- [ ] Stage 4: Upload remainder + History compare/chart microcopy (~75)
+- [x] **Stage 4** — shipped (uncommitted): 110 new keys (`up.*` ×45, `hist.*` ×65) across all 10 languages; UploadView fully wired (dropzone header/limits/format badges, batch progress + honest stage messages, all error/success banners incl. 401 + server-offline variants, CV quality strip labels/scores, raw-text inspector accordion + placeholder); HistoryAndTrends fully wired (3 view pills, trend chart tooltip/min-max lines/band caption, compare workspace header/sub-toggles, visit A/B selectors + option tags, self-compare warning, plain-language summary chips+lines, delta filter pills, card badges/target-range/marker titles, clinical table headers + localized category via `getLocalizedCategory` + High/Low/Normal badges via existing badge keys + trajectory states, sample-condition pill reusing `dash.*`, all 3 ConfirmDialogs). Exact-match reuse of `dash.nonFasting`, `dash.postWorkout`, `an.allWithCount`, `an.filterAll`, `normalBadge/highBadge/lowBadge`, `processingText`. Inserted via verified Python splice (key parity 110×10, `{param}` parity vs EN pre-checked). Vitest 26/26 parity green, tsc build green, ESLint clean, pytest 13/13.
 - [ ] Stage 5: JournalView + AboutView + misc (~50)
 
 Notes: translations are AI-authored (native review recommended pre-promotion); clinical term dictionaries fall back to English names where untranslated; parity test must be extended to any new dictionary added.
