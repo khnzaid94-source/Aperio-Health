@@ -60,7 +60,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
 }) => {
     const [expandedReportIds, setExpandedReportIds] = useState<Record<string, boolean>>({});
     const [selectedTrendTestId, setSelectedTrendTestId] = useState<string>('');
-    const [activeView, setActiveView] = useState<'charts' | 'compare'>('charts');
+    const [activeView, setActiveView] = useState<'charts' | 'compare' | 'reports'>('charts');
     const [compareSubView, setCompareSubView] = useState<'cards' | 'table'>('cards');
     const [deltaFilter, setDeltaFilter] = useState<'all' | 'improved' | 'variance' | 'stable'>('all');
     const [selectedReportAId, setSelectedReportAId] = useState<string>('');
@@ -280,6 +280,18 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                 <GitCompare className="w-4 h-4" />
                                 <span>⚖️ Compare Two Visits</span>
                             </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveView('reports')}
+                                className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm transition-all duration-200 ${
+                                    activeView === 'reports'
+                                        ? 'bg-white text-teal-700 shadow-sm border border-slate-200/60'
+                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                                }`}
+                            >
+                                <Calendar className="w-4 h-4" />
+                                <span>🗂️ {getTranslation('historyListHeader', currentLang)}</span>
+                            </button>
                         </div>
                     </div>
 
@@ -425,7 +437,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                 </div>
                             )}
                         </div>
-                    ) : savedReports.length < 2 ? (
+                    ) : activeView === 'compare' && savedReports.length < 2 ? (
                         <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-8 text-center max-w-2xl mx-auto space-y-6">
                             <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
                                 <AlertTriangle className="w-8 h-8" />
@@ -939,7 +951,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                     )}
 
                     {/* Saved Reports Timeline List */}
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+                    <div className={`bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6 ${activeView === 'reports' ? '' : 'hidden'}`}>
                         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                             <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2 rtl:space-x-reverse">
                                 <Calendar className="w-5 h-5 text-teal-600" />
