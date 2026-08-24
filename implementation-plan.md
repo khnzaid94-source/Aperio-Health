@@ -73,6 +73,59 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 
 ---
 
+# 📌 STATUS SNAPSHOT & WORK LOG — Session ending 2026-08-24
+
+**Prod:** https://aperio-health.onrender.com (Render free tier, autoDeploy on push)
+**Repo:** github.com/khnzaid94-source/Aperio-Health (private) · branch `main`
+**HEAD:** `354562f` — all work below is pushed
+
+## ✅ Completed work ledger (this chat)
+
+| # | Deliverable | Commit |
+|---|---|---|
+| 1 | Full audit (security / bugs / UX) → phased remediation plan | — |
+| 2 | Git init, identity, privacy exclusions verified, baseline snapshot | `72b395a` |
+| 3 | **Phase 1** real auth: bcrypt+sessions, token routes (IDOR eliminated), CORS lockdown, safe static serving, upload hardening, demo seeding | `43e9648` |
+| 4 | **Phase 2** frontend auth wiring: unified API client, real register/login, honest security UI | `96206c8` |
+| 5 | **Phase 3** bulk history sync, race/crash guards, parser correctness (TS+PY), PDF XSS escape | `403be14` |
+| 6 | **GitHub repo created** (private) + full push | `19dbf30` |
+| 7 | **Phase 4** NHANES population engine: shared catalog/synonyms JSON, distribution builder, gender-aware ranges, lazy ML singleton, MODEL_CARD | `19dbf30` |
+| 8 | **Phase 5** Google OAuth (server-verified ID tokens) | `b2902c4` |
+| 9 | **Phase 6** quality pass: dead-code sweep (incl. deleting fake-report ReportAnalyzer), shared delta engine, Vitest 14 tests, ESLint | `403be14` |
+| 10 | **Phase 7** Docker/render.yaml/env prep, lockfile fix, deploy live, prod QA 10/10, honest README | `4af0766`→`98bdb87` |
+| 11 | **Post-deploy Batch 1**: analyze header fix · tier defaults collapsed · Saved Reports tab ⚠️(see pinned) · trend chart upgrade package · two-zone banner · Delta Pulse promotion · About panel · CI workflow · pytest suite · GitHub button · gender-aware copy | `16b93bd`, `7dec22d` |
+| 12 | EKG refinement ×2 (slower sweep · centered/lowered baseline) | `b56dd4a`, `714b98b` |
+| 13 | **i18n Stage 1a** sidebar (20 keys ×10 langs) + key-parity CI guard | `a6db88f` |
+| 14 | **i18n Stage 1b** landing page (42 keys ×10 langs) | `8ee1d3d` |
+| 15 | Language carry-over fix (explicit choice > stored profile) + immutable asset / no-cache HTML headers + landing language selector | `354562f`, `6ff218e` |
+
+**Test posture at HEAD:** Vitest 26/26 · pytest 13/13 · ESLint clean · tsc build green · CI workflow passing on main.
+
+## ⛔ Pinned — top priority next session
+
+**Saved Reports tab reported invisible on prod** (owner, after refresh).
+Facts gathered: prod bundle hash verified identical to local build at time of report; CI/deploy succeeded. Debug order:
+1. Incognito window + confirm Render "Live" deploy ≥ `b56dd4a` (rules out cache/stale deploy).
+2. If still missing: inspect `HistoryAndTrends.tsx` v3 visibility wrappers — the tab pill renders unconditionally, and the reports card root uses `` className={`... ${activeView === 'reports' ? '' : 'hidden'}`} `` — verify against live DOM (DevTools) whether pill exists but card logic misbehaves, or pill absent (then something reverted).
+3. Suspect nothing until reproduced; do not rewrite blind.
+
+## ⏸️ Phase 8 · i18n Scope A — Stage 1 marked **INCOMPLETE by owner**
+
+Shipped pieces are live (see ledger #13–15): parity guard, sidebar + landing localization, landing language selector, carry-over fix. Owner judges Stage 1 incomplete because large app surfaces remain English (Welcome-back banner, onboarding wizard, profile sections, etc.) — which are precisely the pending stages below.
+
+- [x] Foundation: 10-language key-parity CI test (`translations.test.ts`)
+- [x] Stage 1a: SidebarLayout (20 keys) — pushed
+- [x] Stage 1b: LandingView (42 keys) — pushed
+- [ ] **Stage 2 (scope expanded per owner): Onboarding wizard + Dashboard welcome-banner/KPI strings** (~85 keys)
+- [ ] Stage 3: Profile deep sections + AnalyzeView headings/tier copy (~75)
+- [ ] Stage 4: Upload remainder + History compare/chart microcopy (~75)
+- [ ] Stage 5: JournalView + AboutView + misc (~50)
+
+Notes: translations are AI-authored (native review recommended pre-promotion); clinical term dictionaries fall back to English names where untranslated; parity test must be extended to any new dictionary added.
+
+---
+
+
 ## Phase 1 — Backend Foundation & Real Auth [P0]
 
 - [x] 1.1 `database.py`: anchor SQLite to file path; add `UserModel` (email unique,
