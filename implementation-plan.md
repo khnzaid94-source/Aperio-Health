@@ -75,21 +75,21 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 
 ## Phase 1 — Backend Foundation & Real Auth [P0]
 
-- [ ] 1.1 `database.py`: anchor SQLite to file path; add `UserModel` (email unique,
+- [x] 1.1 `database.py`: anchor SQLite to file path; add `UserModel` (email unique,
       password_hash nullable for future Google-only accounts) + `SessionModel` (token PK)
-- [ ] 1.2 New `backend/auth.py`: bcrypt hashing; POST /api/auth/register, /api/auth/login,
+- [x] 1.2 New `backend/auth.py`: bcrypt hashing; POST /api/auth/register, /api/auth/login,
       /api/auth/logout, PUT /api/auth/password (verify old), POST /api/auth/logout-all;
       `get_current_user` dependency (Bearer token → session → email); stale-session cleanup
-- [ ] 1.3 `main.py`: remove `user_email` from ALL history/journal/profile/delete routes —
+- [x] 1.3 `main.py`: remove `user_email` from ALL history/journal/profile/delete routes —
       derive from token. Journal delete scoped by owner. Account deletion by token identity.
-- [ ] 1.4 CORS from `ALLOWED_ORIGIN` env (comma-separated support)
-- [ ] 1.5 Static serving: safe catch-all via os.path.realpath containment inside DIST_DIR
-- [ ] 1.6 Upload hardening: pre-read cap (read MAX+1 bytes), ≤10 files server-side,
+- [x] 1.4 CORS from `ALLOWED_ORIGIN` env (comma-separated support)
+- [x] 1.5 Static serving: safe catch-all via os.path.realpath containment inside DIST_DIR
+- [x] 1.6 Upload hardening: pre-read cap (read MAX+1 bytes), ≤10 files server-side,
       magic-byte validation (%PDF, PNG/JPEG/BMP/WebP), explicit skipped-file reporting
-- [ ] 1.7 New `backend/seed.py`: demo users sarah.jenkins/david.chen/maya.patel@example.com
+- [x] 1.7 New `backend/seed.py`: demo users sarah.jenkins/david.chen/maya.patel@example.com
       (password `demo1234`) if absent; called from startup event
-- [ ] 1.8 `requirements.txt`: pin versions; add bcrypt, google-auth
-- [ ] 1.9 Resolve stray root-level `aperio_data.db` / `lablens_data.db` after inspection
+- [x] 1.8 `requirements.txt`: pin versions; add bcrypt, google-auth
+- [x] 1.9 Resolve stray root-level `aperio_data.db` / `lablens_data.db` after inspection
 
 **Verify:** register→login→authorized GET history works; unauthorized → 401.
 

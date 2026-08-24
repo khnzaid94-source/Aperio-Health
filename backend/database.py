@@ -1,10 +1,11 @@
-import os
-import json
-from sqlalchemy import create_engine, Column, String, Integer, Text, DateTime
-from sqlalchemy.orm import declarative_base, sessionmaker
+from pathlib import Path
 from datetime import datetime
 
-DATABASE_URL = "sqlite:///./aperio_data.db"
+from sqlalchemy import create_engine, Column, String, Integer, Text, DateTime
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+DB_PATH = Path(__file__).resolve().parent / "aperio_data.db"
+DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 engine = create_engine(
     DATABASE_URL, connect_args={"check_same_thread": False}
@@ -12,6 +13,26 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
+
+class UserModel(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    password_hash = Column(String, nullable=True)
+    full_name = Column(String, nullable=True)
+    auth_provider = Column(String, default="password")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class SessionModel(Base):
+    __tablename__ = "auth_sessions"
+
+    token = Column(String, primary_key=True, index=True)
+    user_email = Column(String, index=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 
 class SavedReportModel(Base):
     __tablename__ = "saved_reports"
@@ -23,17 +44,19 @@ class SavedReportModel(Base):
     results_json = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+
 class JournalEntryModel(Base):
     __tablename__ = "journal_entries"
 
     id = Column(String, primary_key=True, index=True)
     user_email = Column(String, index=True, nullable=False)
-    entry_type = Column(String, nullable=False) # 'medication' | 'supplement' | 'lifestyle'
+    entry_type = Column(String, nullable=False)
     name = Column(String, nullable=False)
     dosage = Column(String, nullable=True)
     start_date = Column(String, nullable=True)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
 
 class UserProfileModel(Base):
     __tablename__ = "user_profiles"
@@ -57,7 +80,9 @@ class UserProfileModel(Base):
     onboarding_completed = Column(Integer, default=1)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+
 Base.metadata.create_all(bind=engine)
+
 
 def get_db():
     db = SessionLocal()
