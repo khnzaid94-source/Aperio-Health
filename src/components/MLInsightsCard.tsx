@@ -153,7 +153,7 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                             </div>
 
                             <p className="text-[11px] text-slate-400 leading-relaxed">
-                                Compares your values against real-world population percentiles (CDC NHANES 2017-2018, matched to your sex and age band) with an Isolation Forest anomaly check. Educational estimate only — not a diagnostic measure.
+                                Compares your values against real-world population percentiles (CDC NHANES 2017-2018, matched to your gender and age band) with an Isolation Forest anomaly check. Educational estimate only — not a diagnostic measure.
                                 {mlInsights?.patient_stratum ? ` Stratum: ${mlInsights.patient_stratum}.` : ''}
                             </p>
                         </div>

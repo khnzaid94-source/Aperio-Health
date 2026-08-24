@@ -13,11 +13,11 @@ It is **not** a diagnostic model and makes no disease predictions.
 - Regenerate anytime: `python scripts/build_distributions.py` (cached downloads).
 
 ## Method
-1. Per marker, per stratum (sex x age band 18-39 / 40-59 / 60+), we store:
+1. Per marker, per stratum (gender x age band 18-39 / 40-59 / 60+), we store:
    n, mean, SD, 2.5th / 50th / 97.5th percentiles, and a robust sigma (IQR/1.349).
 2. Patient values are converted to robust z-scores against the matching stratum:
    `z = (value - p50) / sigma_robust` (falls back to population-average stats when
-   sex/age are unknown, and to catalog reference ranges when a marker has no
+   gender/age are unknown, and to catalog reference ranges when a marker has no
    NHANES coverage - flagged as `rangeSource: "catalog"`).
 3. Balance Index = `100 * (1 - 0.6 * mean(min(|z|/4, 1)))`, clipped to [10, 100].
    Every marker at its population median scores 100; every marker 4+ sigmas out

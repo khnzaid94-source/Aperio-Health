@@ -18,7 +18,7 @@ Upload a lab report (**PDF / photo / text**) and Aperio Health:
    multi-line tables, OCR word-collisions (`TotalCholesterol`), comma thousands, and
    unit-scale normalization (lakhs/cumm).
 3. **Segments** multi-page PDFs into distinct visits by specimen date.
-4. **Interprets** each value against **age- and sex-specific reference intervals derived
+4. **Interprets** each value against **age- and gender-aware reference intervals derived
    from CDC NHANES 2017–2018** real-world population percentiles — falling back to the
    report's own printed ranges, then textbook catalog ranges (each source labeled).
 5. **Scores** overall balance with a transparent weighted z-score index + an Isolation

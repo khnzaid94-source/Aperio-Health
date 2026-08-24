@@ -439,7 +439,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                         </div>
                     ) : (
                         /* Compare Two Visits View */
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+                        <div className={`bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6 ${activeView === 'compare' ? '' : 'hidden'}`}>
                             {/* Header & Sub-view Toggle */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                                 <div className="flex items-center space-x-2 rtl:space-x-reverse">

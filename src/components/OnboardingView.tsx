@@ -150,7 +150,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                 return;
             }
             if (!gender) {
-                setErrorMsg('Please select your biological sex or gender.');
+                setErrorMsg('Please select your gender.');
                 return;
             }
             goToStep(2);

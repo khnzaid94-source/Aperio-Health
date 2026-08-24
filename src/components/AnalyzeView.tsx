@@ -139,9 +139,9 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
     const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('ALL');
     const [urgencyFilter, setUrgencyFilter] = useState<UrgencyQuickFilter>('ALL');
 
-    // Tier accordion collapse states (Tier 1 & 2 open by default — critical findings first)
-    const [tier1Expanded, setTier1Expanded] = useState(true);
-    const [tier2Expanded, setTier2Expanded] = useState(true);
+    // Tier accordion collapse states (all tiers collapsed by default - full overview first)
+    const [tier1Expanded, setTier1Expanded] = useState(false);
+    const [tier2Expanded, setTier2Expanded] = useState(false);
     const [tier3Expanded, setTier3Expanded] = useState(false);
 
     const toggleExplanation = (testId: string) => {
@@ -403,12 +403,15 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
             {/* 1. Unified Top Control Strip */}
             <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                 {/* Left: Active Report Title & Biomarker Count */}
-                <div className="space-y-1">
-                    <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-800 bg-teal-50 border border-teal-200/80 px-2.5 py-0.5 rounded-full">
+                <div className="space-y-1 flex-1 min-w-0">
+                    <div className="flex items-start space-x-2 rtl:space-x-reverse">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-800 bg-teal-50 border border-teal-200/80 px-2.5 py-0.5 rounded-full flex-shrink-0 mt-0.5">
                             Active Report
                         </span>
-                        <h2 className="text-sm sm:text-base font-extrabold text-slate-900 truncate max-w-xs sm:max-w-md">
+                        <h2
+                            className="text-sm sm:text-base font-extrabold text-slate-900 line-clamp-2"
+                            title={sourceLabel}
+                        >
                             {sourceLabel}
                         </h2>
                     </div>
@@ -458,9 +461,9 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                     </div>
                 )}
 
-                {/* Right: Actions */}
+                {/* Right: Actions (stacked vertically to keep the title readable) */}
                 {parsedResults.length > 0 && (
-                    <div className="flex items-center space-x-2.5 rtl:space-x-reverse flex-wrap gap-y-2 flex-shrink-0">
+                    <div className="flex flex-col items-stretch sm:items-end gap-2 flex-shrink-0">
                         {onSaveToHistory && (
                             <button
                                 onClick={handleSaveToHistory}
