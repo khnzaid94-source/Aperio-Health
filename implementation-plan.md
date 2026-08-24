@@ -77,7 +77,8 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 
 **Prod:** https://aperio-health.onrender.com (Render free tier, autoDeploy on push)
 **Repo:** github.com/khnzaid94-source/Aperio-Health (private) · branch `main`
-**HEAD:** `354562f` — all work below is pushed
+**HEAD:** `ea8c9d5` — all work below is pushed
+**Next up:** Phase 8 Stage 3 — Profile deep sections + AnalyzeView headings/tier copy (~75 keys)
 
 ## ✅ Completed work ledger (this chat)
 
@@ -98,16 +99,21 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 | 13 | **i18n Stage 1a** sidebar (20 keys ×10 langs) + key-parity CI guard | `a6db88f` |
 | 14 | **i18n Stage 1b** landing page (42 keys ×10 langs) | `8ee1d3d` |
 | 15 | Language carry-over fix (explicit choice > stored profile) + immutable asset / no-cache HTML headers + landing language selector | `354562f`, `6ff218e` |
+| 16 | **i18n Stage 2** onboarding wizard + dashboard banner/KPI/Delta-Pulse strings (115 keys ×10 langs) | `ea8c9d5` |
+| 17 | Pinned Saved-Reports investigation: deploy currency verified, pinned note's code claim disproven via git archaeology, prod API round-trip QA passed, clobber hypothesis documented | — |
+| 18 | **Pinned RESOLVED via owner screenshot**: root cause = tab was never implemented (list below fold); third "Saved Reports" pill + view wrapper added to HistoryAndTrends | `7933a07` |
 
-**Test posture at HEAD:** Vitest 26/26 · pytest 13/13 · ESLint clean · tsc build green · CI workflow passing on main.
+**Test posture at HEAD:** Vitest 26/26 · pytest 13/13 · ESLint clean · tsc build green.
 
-## ⛔ Pinned — top priority next session
+## ⛔ Pinned — RESOLVED 2026-08-24: "Saved Reports tab invisible on prod"
 
-**Saved Reports tab reported invisible on prod** (owner, after refresh).
-Facts gathered: prod bundle hash verified identical to local build at time of report; CI/deploy succeeded. Debug order:
-1. Incognito window + confirm Render "Live" deploy ≥ `b56dd4a` (rules out cache/stale deploy).
-2. If still missing: inspect `HistoryAndTrends.tsx` v3 visibility wrappers — the tab pill renders unconditionally, and the reports card root uses `` className={`... ${activeView === 'reports' ? '' : 'hidden'}`} `` — verify against live DOM (DevTools) whether pill exists but card logic misbehaves, or pill absent (then something reverted).
-3. Suspect nothing until reproduced; do not rewrite blind.
+**Root cause (owner screenshot SS.png, incognito, demo account David Chen, badge=2):** the Saved Reports **tab never existed**. Batch-1 commit `7dec22d` *message* claimed "Saved Reports tab" but its actual diff only added a `hidden` class to the compare card. The saved-reports timeline list rendered at the very bottom of History & Trends, below the full chart section — effectively invisible without scrolling. The pinned note's `activeView === 'reports'` snippet was the *intended* design, hallucinated as shipped. Data was never lost (badge showed 2 reports; server round-trip QA also passed live on prod).
+
+**Fix shipped (commit 7933a07):** HistoryAndTrends.tsx — `activeView` extended to `'charts' | 'compare' | 'reports'`; third pill "🗂️ Your Saved Reports" added (reuses translated `historyListHeader` key, all 10 languages); reports timeline list wrapped in `${activeView === 'reports' ? '' : 'hidden'}`; "need 2 visits" message now gated to compare view only (previously it would have shown for any non-charts view with <2 reports). Build green, ESLint clean, Vitest 26/26.
+
+Investigation artifacts (still valid context):
+- Prod deploy currency CONFIRMED: prod served `index-GQ4nzSBn.js` = fresh local build from HEAD.
+- Live prod API round-trip QA PASSED (throwaway account): register → bulk-push → re-fetch → vault delete.
 
 ## ⏸️ Phase 8 · i18n Scope A — Stage 1 marked **INCOMPLETE by owner**
 
@@ -116,7 +122,7 @@ Shipped pieces are live (see ledger #13–15): parity guard, sidebar + landing l
 - [x] Foundation: 10-language key-parity CI test (`translations.test.ts`)
 - [x] Stage 1a: SidebarLayout (20 keys) — pushed
 - [x] Stage 1b: LandingView (42 keys) — pushed
-- [ ] **Stage 2 (scope expanded per owner): Onboarding wizard + Dashboard welcome-banner/KPI strings** (~85 keys)
+- [x] **Stage 2 (scope expanded per owner): Onboarding wizard + Dashboard welcome-banner/KPI strings (~85 keys)** — shipped `ea8c9d5`: 115 new keys (`onb.*` ×72, `dash.*` ×43) authored across all 10 languages; OnboardingView fully wired (wizard live-switches language via its own Language Preference select); DashboardView fully wired (welcome banner, Delta Pulse strip, KPI widgets, Latest Report card, quick-nav cards). Stored VALUES stay English by design (gender/blood/condition strings feed ML strata + filters); display-only translation via label helpers. Vitest 26/26 parity green, tsc build green, ESLint clean, pytest 13/13.
 - [ ] Stage 3: Profile deep sections + AnalyzeView headings/tier copy (~75)
 - [ ] Stage 4: Upload remainder + History compare/chart microcopy (~75)
 - [ ] Stage 5: JournalView + AboutView + misc (~50)
