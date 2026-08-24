@@ -125,13 +125,13 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 
 ## Phase 4 — Parser Consolidation + ML Tiers 1+2
 
-- [ ] 4.1 Shared `data/catalog.json`; TS imports it, Python loads it; delete duplicate literals
-- [ ] 4.2 Offline script `scripts/build_distributions.py`: NHANES XPT labs → per age-band×sex
+- [x] 4.1 Shared `data/catalog.json`; TS imports it, Python loads it; delete duplicate literals
+- [x] 4.2 Offline script `scripts/build_distributions.py`: NHANES XPT labs → per age-band×sex
       mean/SD/percentiles → commit `backend/data/distributions.json`
-- [ ] 4.3 Rewrite `ml_engine.py`: robust z-scores vs patient stratum; transparent weighted
+- [x] 4.3 Rewrite `ml_engine.py`: robust z-scores vs patient stratum; transparent weighted
       Balance Index; IsolationForest refit on NHANES samples; lazy init; keep risk clusters
-- [ ] 4.4 Age/sex-aware reference ranges flow through parser/catalog/UI
-- [ ] 4.5 `docs/MODEL_CARD.md` + educational-use disclaimers
+- [x] 4.4 Age/sex-aware reference ranges flow through parser/catalog/UI
+- [x] 4.5 `docs/MODEL_CARD.md` + educational-use disclaimers
 
 ## Phase 5 — Google OAuth
 

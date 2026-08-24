@@ -15,6 +15,7 @@ export interface TestResult {
     isAutoCorrected?: boolean;
     originalValue?: number;
     rangeOverridden?: boolean;
+rangeSource?: string;
 }
 
 export type SampleConditionType = 'fasting' | 'non-fasting' | 'post-exercise';

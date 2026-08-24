@@ -1,6 +1,8 @@
+import json
 import os
 import re
 import io
+from pathlib import Path
 from typing import List, Dict, Any, Tuple, Optional
 from pypdf import PdfReader
 import cv2
@@ -8,108 +10,22 @@ import numpy as np
 from PIL import Image
 import pytesseract
 
-from catalog import CATALOG, get_catalog_entry, CatalogEntry
+from catalog import get_catalog_entry, CatalogEntry
+from population import PopulationDistributions, age_from_dob, resolve_age_band, resolve_sex
 
-TEST_SYNONYMS: Dict[str, List[str]] = {
-    # Complete Blood Count
-    "hemoglobin": ["hemoglobin", "haemoglobin", "hb", "hgb", "total hemoglobin"],
-    "wbc": ["total leukocyte count", "total leucocyte count", "white blood cell count", "white blood cell", "wbc", "tlc", "leukocyte count", "leukocytes"],
-    "platelets": ["platelet count", "platelets", "plt", "platelet", "total platelet count"],
-    "rbc": ["total rbc count", "red blood cell count", "red blood cell", "rbc", "erythrocyte count", "erythrocytes", "red blood cells"],
-    "hematocrit": ["hematocrit value, hct", "hematocrit", "hct", "pcv", "packed cell volume"],
-    "mcv": ["mean corpuscular volume", "mcv"],
-    "mch": ["mean corpuscular hemoglobin", "mch"],
-    "mchc": ["mean corpuscular hemoglobin concentration", "mchc"],
-    "rdw": ["red cell distribution width", "rdw", "rdw-cv", "rdw-sd"],
-    "neutrophils": ["neutrophils", "neutrophil percentage", "absolute neutrophil count", "anc", "neutrophil"],
+_SHARED_DIR = Path(__file__).resolve().parent.parent / "shared"
 
-    # Lipid Profile
-    "cholesterol": ["total cholesterol", "serum cholesterol", "cholesterol", "tc"],
-    "ldl": ["ldl cholesterol", "serum ldl", "ldl-c", "ldl"],
-    "hdl": ["hdl cholesterol", "serum hdl", "hdl-c", "hdl"],
-    "triglycerides": ["serum triglycerides", "triglycerides", "tg", "trig"],
-    "vldl": ["vldl cholesterol", "serum vldl", "vldl-c", "vldl"],
-    "non_hdl": ["non-hdl cholesterol", "non hdl cholesterol", "non-hdl"],
-    "chol_hdl_ratio": ["total cholesterol / hdl ratio", "cholesterol/hdl ratio", "chol/hdl ratio", "tc/hdl"],
+POPULATION = PopulationDistributions()
 
-    # Thyroid Panel
-    "tsh": ["thyroid stimulating hormone", "s.tsh", "serum tsh", "tsh"],
-    "t3": ["triiodothyronine", "total t3", "t3"],
-    "t4": ["thyroxine", "total t4", "t4"],
-    "ft3": ["free triiodothyronine", "free t3", "ft3"],
-    "ft4": ["free thyroxine", "free t4", "ft4"],
-    "anti_tpo": ["anti-thyroid peroxidase", "anti-tpo", "tpo antibodies", "anti tpo"],
+_synonym_data = json.loads((_SHARED_DIR / "test_synonyms.json").read_text(encoding="utf-8"))
 
-    # Liver Function
-    "alt": ["sgpt (alt)", "alanine transaminase", "alanine aminotransferase", "alt", "sgpt", "s.g.p.t"],
-    "ast": ["sgot (ast)", "aspartate transaminase", "aspartate aminotransferase", "ast", "sgot", "s.g.o.t"],
-    "bilirubin": ["serum bilirubin (total)", "total bilirubin", "bilirubin (total)", "bilirubin", "tbil", "s.bilirubin"],
-    "alp": ["serum alkaline phosphatase", "alkaline phosphatase", "alp", "alk phos", "s.alkaline phosphatase"],
-    "direct_bilirubin": ["direct bilirubin", "conjugated bilirubin", "dbil"],
-    "ggt": ["gamma-glutamyl transferase", "gamma gt", "ggt", "ggtp"],
-    "total_protein": ["total serum protein", "total protein", "s.protein"],
-    "albumin": ["serum albumin", "albumin", "alb"],
-
-    # Kidney Function
-    "creatinine": ["serum creatinine", "creatinine", "cre", "creat", "s.creatinine"],
-    "bun": ["blood urea nitrogen", "bun", "serum urea", "blood urea", "urea", "s.urea"],
-    "uricacid": ["serum uric acid", "uric acid", "ua", "s.uric acid"],
-    "egfr": ["estimated gfr", "estimated glomerular filtration rate", "egfr", "gfr"],
-
-    # Blood Sugar
-    "hba1c": ["hba1c", "glycated hemoglobin", "glycohemoglobin", "a1c"],
-    "fbs": ["fasting blood sugar", "fbs", "fasting glucose", "fpg", "fasting blood glucose"],
-    "ppbs": ["postprandial blood sugar", "ppbs", "post prandial glucose", "post-prandial blood sugar", "ppg", "rbs", "random blood sugar"],
-    "insulin": ["fasting insulin", "serum insulin", "insulin"],
-
-    # Vitamins & Iron Studies
-    "vitamind": ["vitamin d", "25-oh vitamin d", "vit d", "25-hydroxy vitamin d"],
-    "vitaminb12": ["vitamin b12", "cobalamin", "vit b12", "b12"],
-    "ferritin": ["serum ferritin", "ferritin", "fer", "s.ferritin"],
-    "iron": ["serum iron", "total iron", "fe", "s.iron"],
-    "tibc": ["total iron binding capacity", "tibc"],
-    "transferrin_sat": ["transferrin saturation", "iron saturation", "transferrin sat", "% saturation"],
-    "folate": ["serum folate", "folic acid", "folate", "vitamin b9"],
-
-    # Electrolytes & Minerals
-    "sodium": ["serum sodium", "sodium (na)", "sodium", "na+", "na"],
-    "potassium": ["serum potassium", "potassium (k)", "potassium", "k+", "k"],
-    "chloride": ["serum chloride", "chloride (cl)", "chloride", "cl-", "cl"],
-    "calcium": ["serum calcium", "calcium (ca)", "calcium", "ca++", "ca"],
-    "phosphorus": ["serum phosphorus", "phosphorus (p)", "phosphorus", "phosphate", "p"],
-    "magnesium": ["serum magnesium", "magnesium (mg)", "magnesium", "mg++", "mg"],
-
-    # Inflammatory & Cardiac
-    "hscrp": ["high-sensitivity c-reactive protein", "hs-crp", "hscrp", "c-reactive protein", "crp"],
-    "esr": ["erythrocyte sedimentation rate", "esr", "sed rate"],
-    "troponin_i": ["troponin-i", "troponin i", "trop i", "hs-troponin"],
-
-    # Hormonal & Endocrine
-    "total_testosterone": ["total testosterone", "testosterone total", "testosterone"],
-    "free_testosterone": ["free testosterone", "testosterone free"],
-    "estradiol": ["estradiol (e2)", "estradiol", "e2", "serum estradiol"],
-    "cortisol": ["serum cortisol", "cortisol", "morning cortisol"],
-    "progesterone": ["serum progesterone", "progesterone", "prog"],
-    "psa": ["prostate-specific antigen", "psa", "total psa"],
-
-    # Pancreatic Function
-    "lipase": ["serum lipase", "lipase"],
-    "amylase": ["serum amylase", "amylase"]
-}
+TEST_SYNONYMS: Dict[str, List[str]] = _synonym_data["synonyms"]
 
 # Short abbreviations that require strict contextual validation
-SHORT_ABBREVIATIONS = {
-    "hb", "hgb", "wbc", "tlc", "plt", "rbc", "hct", "pcv", "mcv", "mch", "mchc", "rdw",
-    "anc", "tc", "ldl", "hdl", "tg", "vldl", "tsh", "t3", "t4", "ft3", "ft4", "alt",
-    "ast", "alp", "ggt", "cre", "bun", "ua", "gfr", "egfr", "a1c", "fbs", "rbs", "fpg",
-    "ppbs", "ppg", "b12", "fer", "fe", "tibc", "na", "k", "cl", "ca", "p", "mg", "crp",
-    "hscrp", "esr", "e2", "psa"
-}
+SHORT_ABBREVIATIONS = set(_synonym_data["short_abbreviations"])
 
 # Single letter or short 2-letter symbols requiring strict matching unit or section context (e.g. K, Ca, P, Na, Cl, Mg, Fe, E2)
-ULTRA_SHORT_SYMBOLS = {
-    "k", "ca", "p", "na", "cl", "mg", "fe", "e2", "hb", "ua", "tc", "k+", "na+", "cl-", "ca++", "mg++"
-}
+ULTRA_SHORT_SYMBOLS = set(_synonym_data["ultra_short_symbols"])
 
 CLINICAL_UNIT_PATTERN = re.compile(
     r'(\b(meq/l|mmol/l|mg/dl|ug/dl|ng/ml|pg/ml|iu/l|u/l|fl|mm/hr|g/dl|%|cumm|x10\^3|x10\^6|ratio|ml/min|ng/dl)\b)',
@@ -368,13 +284,17 @@ def build_synonym_pattern(synonym: str) -> re.Pattern:
         pattern_str = r'(?:\b|\()' + re.escape(synonym) + r'(?:\b|\)|:)'
     return re.compile(pattern_str, re.IGNORECASE)
 
-def parse_report_text_python(text: str) -> List[Dict[str, Any]]:
+def parse_report_text_python(
+    text: str,
+    patient_context: Optional[Dict[str, Any]] = None,
+) -> List[Dict[str, Any]]:
     """
     Robust medical lab report parser:
     - Accurately matches clinical test names and multi-line table rows
     - Supports joined OCR text (e.g. TotalCholesterol, SerumCreatinine)
     - Validates short abbreviations to prevent false positives from random non-medical text
     - Handles comma-separated numbers and multi-unit scales (lakhs/cumm, cumm)
+    - Applies age/sex-specific population reference intervals when patient context is given
     """
     if not text or not text.strip():
         return []
@@ -517,10 +437,18 @@ def parse_report_text_python(text: str) -> List[Dict[str, Any]]:
         if raw_val is None:
             continue
 
-        # Standardize reference ranges and units
+        sex = resolve_sex((patient_context or {}).get("gender"))
+        age_band = resolve_age_band(
+            (patient_context or {}).get("age")
+            if (patient_context or {}).get("age") is not None
+            else age_from_dob((patient_context or {}).get("date_of_birth"))
+        )
+
         ref_min = catalog_entry.min
         ref_max = catalog_entry.max
         range_overridden = False
+        range_source = "catalog"
+        used_extracted_range = False
 
         if ext_min is not None and ext_max is not None and ext_min < ext_max:
             # Check unit scales (platelets in lakhs vs x10^3, wbc in cumm vs x10^3)
@@ -528,10 +456,12 @@ def parse_report_text_python(text: str) -> List[Dict[str, Any]]:
                 ref_min = ext_min
                 ref_max = ext_max
                 found_unit = "lakhs/cumm"
+                used_extracted_range = True
             elif matched_test_id == 'wbc' and ext_max > 1000.0:
                 ref_min = ext_min
                 ref_max = ext_max
                 found_unit = "cumm"
+                used_extracted_range = True
             else:
                 min_ratio = ext_min / catalog_entry.min if catalog_entry.min > 0 else 1.0
                 max_ratio = ext_max / catalog_entry.max if catalog_entry.max > 0 else 1.0
@@ -543,6 +473,24 @@ def parse_report_text_python(text: str) -> List[Dict[str, Any]]:
                 else:
                     ref_min = ext_min
                     ref_max = ext_max
+                    used_extracted_range = True
+
+        pop_stats = POPULATION.stats_for(matched_test_id, sex, age_band)
+        if not used_extracted_range and pop_stats:
+            p_lo = pop_stats.get("p2_5")
+            p_hi = pop_stats.get("p97_5")
+            if (
+                isinstance(p_lo, (int, float))
+                and isinstance(p_hi, (int, float))
+                and p_hi > p_lo > 0
+            ):
+                catalog_mid = (catalog_entry.min + catalog_entry.max) / 2.0
+                pop_mid = (p_lo + p_hi) / 2.0
+                ratio = pop_mid / catalog_mid if catalog_mid > 0 else 1.0
+                if 0.25 <= ratio <= 4.0:
+                    ref_min = float(p_lo)
+                    ref_max = float(p_hi)
+                    range_source = "nhanes_p2_5_p97_5"
 
         # Auto-correction safeguard for dropped decimal point
         measured_val = raw_val
@@ -585,7 +533,8 @@ def parse_report_text_python(text: str) -> List[Dict[str, Any]]:
             "explanation": explanation,
             "isAutoCorrected": is_auto_corrected,
             "originalValue": original_val,
-            "rangeOverridden": range_overridden
+            "rangeOverridden": range_overridden,
+            "rangeSource": range_source
         })
 
         detected_test_ids.add(matched_test_id)

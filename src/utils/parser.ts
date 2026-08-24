@@ -1,106 +1,24 @@
-import { CATALOG, classifyValue, getUrgency } from '../constants/catalog';
+import { CATALOG_INDEX, classifyValue, getUrgency } from '../constants/catalog';
 import { TestResult } from '../types';
+import { getPopulationStats, PatientContext } from './population';
 
-const TEST_SYNONYMS: Record<string, string[]> = {
-    // Complete Blood Count
-    hemoglobin: ['hemoglobin', 'haemoglobin', 'hb', 'hgb', 'total hemoglobin'],
-    wbc: ['total leukocyte count', 'total leucocyte count', 'white blood cell count', 'white blood cell', 'wbc', 'tlc', 'leukocyte count', 'leukocytes'],
-    platelets: ['platelet count', 'platelets', 'plt', 'platelet', 'total platelet count'],
-    rbc: ['total rbc count', 'red blood cell count', 'red blood cell', 'rbc', 'erythrocyte count', 'erythrocytes', 'red blood cells'],
-    hematocrit: ['hematocrit value, hct', 'hematocrit', 'hct', 'pcv', 'packed cell volume'],
-    mcv: ['mean corpuscular volume', 'mcv'],
-    mch: ['mean corpuscular hemoglobin', 'mch'],
-    mchc: ['mean corpuscular hemoglobin concentration', 'mchc'],
-    rdw: ['red cell distribution width', 'rdw', 'rdw-cv', 'rdw-sd'],
-    neutrophils: ['neutrophils', 'neutrophil percentage', 'absolute neutrophil count', 'anc', 'neutrophil'],
+import synonymsData from '../../shared/test_synonyms.json';
 
-    // Lipid Profile
-    cholesterol: ['total cholesterol', 'serum cholesterol', 'cholesterol', 'tc'],
-    ldl: ['ldl cholesterol', 'serum ldl', 'ldl-c', 'ldl'],
-    hdl: ['hdl cholesterol', 'serum hdl', 'hdl-c', 'hdl'],
-    triglycerides: ['serum triglycerides', 'triglycerides', 'tg', 'trig'],
-    vldl: ['vldl cholesterol', 'serum vldl', 'vldl-c', 'vldl'],
-    non_hdl: ['non-hdl cholesterol', 'non hdl cholesterol', 'non-hdl'],
-    chol_hdl_ratio: ['total cholesterol / hdl ratio', 'cholesterol/hdl ratio', 'chol/hdl ratio', 'tc/hdl'],
+interface SynonymFile {
+    synonyms: Record<string, string[]>;
+    short_abbreviations: string[];
+    ultra_short_symbols: string[];
+}
 
-    // Thyroid Panel
-    tsh: ['thyroid stimulating hormone', 's.tsh', 'serum tsh', 'tsh'],
-    t3: ['triiodothyronine', 'total t3', 't3'],
-    t4: ['thyroxine', 'total t4', 't4'],
-    ft3: ['free triiodothyronine', 'free t3', 'ft3'],
-    ft4: ['free thyroxine', 'free t4', 'ft4'],
-    anti_tpo: ['anti-thyroid peroxidase', 'anti-tpo', 'tpo antibodies', 'anti tpo'],
+const synonymFile = (synonymsData as unknown) as SynonymFile;
 
-    // Liver Function
-    alt: ['sgpt (alt)', 'alanine transaminase', 'alanine aminotransferase', 'alt', 'sgpt', 's.g.p.t'],
-    ast: ['sgot (ast)', 'aspartate transaminase', 'aspartate aminotransferase', 'ast', 'sgot', 's.g.o.t'],
-    bilirubin: ['serum bilirubin (total)', 'total bilirubin', 'bilirubin (total)', 'bilirubin', 'tbil', 's.bilirubin'],
-    alp: ['serum alkaline phosphatase', 'alkaline phosphatase', 'alp', 'alk phos', 's.alkaline phosphatase'],
-    direct_bilirubin: ['direct bilirubin', 'conjugated bilirubin', 'dbil'],
-    ggt: ['gamma-glutamyl transferase', 'gamma gt', 'ggt', 'ggtp'],
-    total_protein: ['total serum protein', 'total protein', 's.protein'],
-    albumin: ['serum albumin', 'albumin', 'alb'],
+const TEST_SYNONYMS: Record<string, string[]> = synonymFile.synonyms;
 
-    // Kidney Function
-    creatinine: ['serum creatinine', 'creatinine', 'cre', 'creat', 's.creatinine'],
-    bun: ['blood urea nitrogen', 'bun', 'serum urea', 'blood urea', 'urea', 's.urea'],
-    uricacid: ['serum uric acid', 'uric acid', 'ua', 's.uric acid'],
-    egfr: ['estimated gfr', 'estimated glomerular filtration rate', 'egfr', 'gfr'],
+// Short abbreviations that require strict contextual validation
+const SHORT_ABBREVIATIONS = new Set(synonymFile.short_abbreviations);
 
-    // Blood Sugar
-    hba1c: ['hba1c', 'glycated hemoglobin', 'glycohemoglobin', 'a1c'],
-    fbs: ['fasting blood sugar', 'fbs', 'fasting glucose', 'fpg', 'fasting blood glucose'],
-    ppbs: ['postprandial blood sugar', 'ppbs', 'post prandial glucose', 'post-prandial blood sugar', 'ppg', 'rbs', 'random blood sugar'],
-    insulin: ['fasting insulin', 'serum insulin', 'insulin'],
-
-    // Vitamins & Iron Studies
-    vitamind: ['vitamin d', '25-oh vitamin d', 'vit d', '25-hydroxy vitamin d'],
-    vitaminb12: ['vitamin b12', 'cobalamin', 'vit b12', 'b12'],
-    ferritin: ['serum ferritin', 'ferritin', 'fer', 's.ferritin'],
-    iron: ['serum iron', 'total iron', 'fe', 's.iron'],
-    tibc: ['total iron binding capacity', 'tibc'],
-    transferrin_sat: ['transferrin saturation', 'iron saturation', 'transferrin sat', '% saturation'],
-    folate: ['serum folate', 'folic acid', 'folate', 'vitamin b9'],
-
-    // Electrolytes & Minerals
-    sodium: ['serum sodium', 'sodium (na)', 'sodium', 'na+', 'na'],
-    potassium: ['serum potassium', 'potassium (k)', 'potassium', 'k+', 'k'],
-    chloride: ['serum chloride', 'chloride (cl)', 'chloride', 'cl-', 'cl'],
-    calcium: ['serum calcium', 'calcium (ca)', 'calcium', 'ca++', 'ca'],
-    phosphorus: ['serum phosphorus', 'phosphorus (p)', 'phosphorus', 'phosphate', 'p'],
-    magnesium: ['serum magnesium', 'magnesium (mg)', 'magnesium', 'mg++', 'mg'],
-
-    // Inflammatory & Cardiac
-    hscrp: ['high-sensitivity c-reactive protein', 'hs-crp', 'hscrp', 'c-reactive protein', 'crp'],
-    esr: ['erythrocyte sedimentation rate', 'esr', 'sed rate'],
-    troponin_i: ['troponin-i', 'troponin i', 'trop i', 'hs-troponin'],
-
-    // Hormonal & Endocrine
-    total_testosterone: ['total testosterone', 'testosterone total', 'testosterone'],
-    free_testosterone: ['free testosterone', 'testosterone free'],
-    estradiol: ['estradiol (e2)', 'estradiol', 'e2', 'serum estradiol'],
-    cortisol: ['serum cortisol', 'cortisol', 'morning cortisol'],
-    progesterone: ['serum progesterone', 'progesterone', 'prog'],
-    psa: ['prostate-specific antigen', 'psa', 'total psa'],
-
-    // Pancreatic Function
-    lipase: ['serum lipase', 'lipase'],
-    amylase: ['serum amylase', 'amylase']
-};
-
-const SHORT_ABBREVIATIONS = new Set([
-    'hb', 'hgb', 'wbc', 'tlc', 'plt', 'rbc', 'hct', 'pcv', 'mcv', 'mch', 'mchc', 'rdw',
-    'anc', 'tc', 'ldl', 'hdl', 'tg', 'vldl', 'tsh', 't3', 't4', 'ft3', 'ft4', 'alt',
-    'ast', 'alp', 'ggt', 'cre', 'bun', 'ua', 'gfr', 'egfr', 'a1c', 'fbs', 'rbs', 'fpg',
-    'ppbs', 'ppg', 'b12', 'fer', 'fe', 'tibc', 'na', 'k', 'cl', 'ca', 'p', 'mg', 'crp',
-    'hscrp', 'esr', 'e2', 'psa'
-]);
-
-// Single letter or short 2-letter symbols requiring strict matching unit or section context (e.g. K, Ca, P, Na, Cl, Mg, Fe, E2)
-const ULTRA_SHORT_SYMBOLS = new Set([
-    'k', 'ca', 'p', 'na', 'cl', 'mg', 'fe', 'e2', 'hb', 'ua', 'tc', 'k+', 'na+', 'cl-', 'ca++', 'mg++'
-]);
-
+// Single letter or short 2-letter symbols requiring unit or section context
+const ULTRA_SHORT_SYMBOLS = new Set(synonymFile.ultra_short_symbols);
 // Clinical measurement units pattern
 const CLINICAL_UNIT_PATTERN = /(\b(meq\/l|mmol\/l|mg\/dl|ug\/dl|ng\/ml|pg\/ml|iu\/l|u\/l|fl|mm\/hr|g\/dl|%|cumm|x10\^3|x10\^6|ratio|ml\/min|ng\/dl)\b)/i;
 
@@ -120,7 +38,7 @@ function buildSynonymPattern(synonym: string): RegExp {
     return new RegExp(`(?:\\b|\\()${escapeRegExp(synonym)}(?:\\b|\\)|:)`, 'i');
 }
 
-export function parseLabReportText(text: string): TestResult[] {
+export function parseLabReportText(text: string, patientContext?: PatientContext | null): TestResult[] {
     if (!text || !text.trim()) return [];
 
     const rawLines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -179,7 +97,7 @@ export function parseLabReportText(text: string): TestResult[] {
 
         if (!matchedTestId) continue;
 
-        const catalogEntry = CATALOG.find(item => item.id === matchedTestId);
+        const catalogEntry = CATALOG_INDEX.get(matchedTestId!);
         if (!catalogEntry) continue;
 
         let rawVal: number | null = null;
@@ -278,6 +196,20 @@ export function parseLabReportText(text: string): TestResult[] {
         let refMin = catalogEntry.min;
         let refMax = catalogEntry.max;
         let rangeOverridden = false;
+        let rangeSource: string = 'catalog';
+
+        const popStats = getPopulationStats(matchedTestId!, patientContext);
+        if (popStats && popStats.p97_5 > popStats.p2_5 && popStats.p2_5 > 0) {
+            const catalogMid = (catalogEntry.min + catalogEntry.max) / 2;
+            const popMid = (popStats.p2_5 + popStats.p97_5) / 2;
+            const ratio = catalogMid > 0 ? popMid / catalogMid : 1;
+            const unitScaleSane = ratio >= 0.25 && ratio <= 4;
+            if (unitScaleSane) {
+                refMin = popStats.p2_5;
+                refMax = popStats.p97_5;
+                rangeSource = 'nhanes_p2_5_p97_5';
+            }
+        }
 
         if (extMin !== null && extMax !== null && extMin < extMax) {
             // Unit scale checks (platelets in lakhs vs x10^3, wbc in cumm vs x10^3)
@@ -350,7 +282,8 @@ export function parseLabReportText(text: string): TestResult[] {
             explanation,
             isAutoCorrected,
             originalValue,
-            rangeOverridden
+            rangeOverridden,
+            rangeSource
         });
 
         detectedTestIds.add(matchedTestId);

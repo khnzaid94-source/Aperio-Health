@@ -11,9 +11,10 @@ import {
     ChevronUp,
     Edit3
 } from 'lucide-react';
-import { TestResult, SupportedLanguage } from '../types';
+import { TestResult, SupportedLanguage, UserProfile } from '../types';
 import { parseLabReportText } from '../utils/parser';
 import { getTranslation } from '../utils/language';
+import { ageFromDob } from '../utils/population';
 import { CVQualityData, MLInsightsData } from './MLInsightsCard';
 import { apiFetch, ApiError } from '../api/client';
 
@@ -27,6 +28,7 @@ export interface ExtractedReportItem {
 }
 
 interface UploadViewProps {
+    userProfile?: UserProfile | null;
     currentLang: SupportedLanguage;
     onReportExtracted: (
         results: TestResult[],
@@ -41,12 +43,23 @@ interface UploadViewProps {
 }
 
 export const UploadView: React.FC<UploadViewProps> = ({
+    userProfile,
     currentLang,
     onReportExtracted,
     onBatchReportsExtracted,
     currentRawText,
     onUpdateRawText
 }) => {
+    const buildPatientContext = () => {
+        if (!userProfile) return null;
+        const ctx: { date_of_birth?: string; gender?: string; patient_age?: number; patient_gender?: string } = {};
+        if (userProfile.dateOfBirth) ctx.date_of_birth = userProfile.dateOfBirth;
+        if (userProfile.gender && userProfile.gender !== 'Prefer not to say') ctx.gender = userProfile.gender;
+        const age = ageFromDob(userProfile.dateOfBirth);
+        if (age !== null) ctx.patient_age = age;
+        if (ctx.gender) ctx.patient_gender = ctx.gender;
+        return Object.keys(ctx).length > 0 ? ctx : null;
+    };
     const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
     const [analysisError, setAnalysisError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -177,7 +190,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                     try {
                         const text = await file.text();
                         onUpdateRawText(text);
-                        const clientResults = parseLabReportText(text);
+                        const clientResults = parseLabReportText(text, buildPatientContext());
                         if (clientResults.length > 0) {
                             extractedReportItems.push({
                                 results: clientResults,
@@ -237,9 +250,15 @@ export const UploadView: React.FC<UploadViewProps> = ({
         setSuccessMessage(null);
 
         try {
+            const ctx = buildPatientContext();
             const data = await apiFetch<any>('/api/analyze-text', {
                 method: 'POST',
-                json: { text: currentRawText, label: lastUploadedName || 'Pasted Report' }
+                json: {
+                    text: currentRawText,
+                    label: lastUploadedName || 'Pasted Report',
+                    patient_age: ctx?.patient_age ?? null,
+                    patient_gender: ctx?.patient_gender ?? null
+                }
             });
             setIsAnalyzing(false);
 
@@ -271,7 +290,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
 
         setTimeout(() => {
             setIsAnalyzing(false);
-            const clientResults = parseLabReportText(currentRawText);
+            const clientResults = parseLabReportText(currentRawText, buildPatientContext());
             if (clientResults.length === 0) {
                 setAnalysisError(
                     'No supported blood test parameters or reference ranges were detected in this text. Please check the spelling or format.'

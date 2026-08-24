@@ -29,9 +29,10 @@ from ocr import (
     parse_report_text_python,
 )
 from cv_engine import analyze_image_quality, preprocess_document_cv
-from ml_engine import ml_engine
+from ml_engine import get_ml_engine
 from auth import router as auth_router, get_current_user
 from seed import seed_demo_accounts
+from population import age_from_dob
 
 MAX_FILE_SIZE = 15 * 1024 * 1024
 MAX_FILES_PER_UPLOAD = 10
@@ -98,6 +99,8 @@ app.include_router(auth_router)
 class TextParseRequest(BaseModel):
     text: str
     label: Optional[str] = "Pasted Report"
+    patient_age: Optional[int] = None
+    patient_gender: Optional[str] = None
 
 
 class TestResultSchema(BaseModel):
@@ -114,6 +117,7 @@ class TestResultSchema(BaseModel):
     isAutoCorrected: Optional[bool] = False
     originalValue: Optional[float] = None
     rangeOverridden: Optional[bool] = False
+    rangeSource: Optional[str] = None
 
 
 class SaveReportRequest(BaseModel):
@@ -170,9 +174,15 @@ def health_check():
 
 @app.post("/api/analyze-text")
 def analyze_text(payload: TextParseRequest):
-    results = parse_report_text_python(payload.text)
+    patient_context = {}
+    if payload.patient_age is not None:
+        patient_context["age"] = payload.patient_age
+    if payload.patient_gender:
+        patient_context["gender"] = payload.patient_gender
+
+    results = parse_report_text_python(payload.text, patient_context=patient_context)
     is_valid = len(results) > 0
-    ml_insights = ml_engine.analyze_report_ml(results) if is_valid else None
+    ml_insights = get_ml_engine().analyze_report_ml(results, patient_context) if is_valid else None
 
     return {
         "label": payload.label,
@@ -190,7 +200,23 @@ def analyze_text(payload: TextParseRequest):
 async def upload_file(
     file: Optional[UploadFile] = File(None),
     files: Optional[List[UploadFile]] = File(None),
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
+    patient_context: Dict[str, Any] = {}
+    profile_row = (
+        db.query(UserProfileModel)
+        .filter(UserProfileModel.user_email == current_user)
+        .first()
+    )
+    if profile_row:
+        if profile_row.date_of_birth:
+            age = age_from_dob(profile_row.date_of_birth)
+            if age is not None:
+                patient_context["age"] = age
+        if profile_row.gender:
+            patient_context["gender"] = profile_row.gender
+
     upload_list: List[UploadFile] = []
     if files:
         upload_list.extend(files)
@@ -250,7 +276,7 @@ async def upload_file(
                 group_text = "\n\n".join(
                     [f"--- [Page {p['page_num']}] ---\n{p['text']}" for p in group_pages]
                 )
-                group_results = parse_report_text_python(group_text)
+                group_results = parse_report_text_python(group_text, patient_context=patient_context)
                 if len(group_results) > 0:
                     spec_date = (
                         date_key if date_key != "default" else extract_specimen_date(group_text)
@@ -259,7 +285,7 @@ async def upload_file(
 
             if len(valid_group_reports) > 1:
                 for spec_date, group_pages, group_text, group_results in valid_group_reports:
-                    ml_insights = ml_engine.analyze_report_ml(group_results)
+                    ml_insights = get_ml_engine().analyze_report_ml(group_results, patient_context)
                     page_nums = [p["page_num"] for p in group_pages]
                     report_label = f"Uploaded: {filename}" + (
                         f" ({spec_date})" if spec_date else f" (Pages {page_nums})"
@@ -287,10 +313,10 @@ async def upload_file(
                     if pages
                     else ""
                 )
-                results = parse_report_text_python(full_text) if full_text else []
+                results = parse_report_text_python(full_text, patient_context=patient_context) if full_text else []
                 is_valid = len(results) > 0
                 spec_date = extract_specimen_date(full_text)
-                ml_insights = ml_engine.analyze_report_ml(results) if is_valid else None
+                ml_insights = get_ml_engine().analyze_report_ml(results, patient_context) if is_valid else None
 
                 parsed_reports.append(
                     {
@@ -319,10 +345,10 @@ async def upload_file(
             if img_note:
                 note = f"{note} {img_note}".strip()
 
-            results = parse_report_text_python(extracted_text) if extracted_text else []
+            results = parse_report_text_python(extracted_text, patient_context=patient_context) if extracted_text else []
             is_valid = len(results) > 0
             spec_date = extract_specimen_date(extracted_text) if extracted_text else None
-            ml_insights = ml_engine.analyze_report_ml(results) if is_valid else None
+            ml_insights = get_ml_engine().analyze_report_ml(results, patient_context) if is_valid else None
 
             err_msg = None
             if not is_valid:
@@ -358,10 +384,10 @@ async def upload_file(
                 except Exception:
                     extracted_text = ""
 
-            results = parse_report_text_python(extracted_text) if extracted_text else []
+            results = parse_report_text_python(extracted_text, patient_context=patient_context) if extracted_text else []
             is_valid = len(results) > 0
             spec_date = extract_specimen_date(extracted_text) if extracted_text else None
-            ml_insights = ml_engine.analyze_report_ml(results) if is_valid else None
+            ml_insights = get_ml_engine().analyze_report_ml(results, patient_context) if is_valid else None
 
             parsed_reports.append(
                 {

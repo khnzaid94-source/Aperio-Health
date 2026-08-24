@@ -971,6 +971,7 @@ export function App() {
 
             {currentTab === 'upload' && (
                 <UploadView
+                    userProfile={userProfile}
                     currentLang={currentLang}
                     onReportExtracted={handleReportExtracted}
                     onBatchReportsExtracted={handleBatchReportsExtracted}

@@ -26,6 +26,9 @@ export interface MLInsightsData {
     analyzed_markers_count: number;
     risk_clusters: MLRiskCluster[];
     z_scores?: Record<string, number>;
+    population_source?: string;
+    patient_stratum?: string;
+    markers_with_population_data?: number;
 }
 
 export interface CVQualityData {
@@ -154,7 +157,8 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                             </div>
 
                             <p className="text-[11px] text-slate-400 leading-relaxed">
-                                Evaluates multi-variable covariance across {mlInsights.analyzed_markers_count || 'all'} clinical markers against standard reference baselines using an Isolation Forest anomaly classifier.
+                                Compares your values against real-world population percentiles (CDC NHANES 2017-2018, matched to your sex and age band) with an Isolation Forest anomaly check. Educational estimate only — not a diagnostic measure.
+                                {mlInsights?.patient_stratum ? ` Stratum: ${mlInsights.patient_stratum}.` : ''}
                             </p>
                         </div>
                     )}
