@@ -11,13 +11,15 @@ import {
 } from 'lucide-react';
 import { CATALOG } from '../constants/catalog';
 import { SupportedLanguage } from '../types';
-import { getLocalizedTestName, getLocalizedCategory } from '../utils/language';
+import { getLocalizedTestName, getLocalizedCategory, getTranslation } from '../utils/language';
 
 interface AboutViewProps {
     currentLang: SupportedLanguage;
 }
 
 export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
+    const t = (key: string, params?: Record<string, string>): string =>
+        getTranslation(key, currentLang, params);
     const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
     const [searchTerm, setSearchTerm] = useState<string>('');
 
@@ -51,13 +53,13 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
             <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-3">
                 <div className="inline-flex items-center space-x-2 rtl:space-x-reverse bg-teal-50 text-teal-800 border border-teal-200/80 px-3 py-1 rounded-full text-xs font-semibold">
                     <Microscope className="w-4 h-4 text-teal-600" />
-                    <span>Clinical Scope &amp; Medical Trust Architecture</span>
+                    <span>{t('ab.badge')}</span>
                 </div>
                 <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    About Aperio Health — Clinical Intelligence Suite
+                    {t('ab.title')}
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
-                    Aperio Health bridges health literacy gaps by translating complex laboratory blood report shorthand, reference ranges, and numerical parameters into clear, plain-language insights — without diagnosing or prescribing.
+                    {t('ab.intro')}
                 </p>
             </div>
 
@@ -66,7 +68,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                 <div className="flex items-center space-x-2 rtl:space-x-reverse">
                     <Sparkles className="w-5 h-5 text-teal-600" />
                     <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
-                        Trust &amp; Technical Architecture Core
+                        {t('ab.archTitle')}
                     </h2>
                 </div>
 
@@ -78,15 +80,15 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                                 <Database className="w-5 h-5" />
                             </div>
                             <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-teal-100/80 text-teal-900 border border-teal-200">
-                                Zero AI Hallucinations
+                                {t('ab.c1Badge')}
                             </span>
                         </div>
                         <div>
                             <h3 className="text-sm font-extrabold text-slate-900">
-                                Pre-Vetted Clinical Database
+                                {t('ab.c1Title')}
                             </h3>
                             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                                Explanations are strictly mapped from pre-approved, peer-reviewed medical templates rather than freely generated LLM text, eliminating hallucination risks and diagnostic claims.
+                                {t('ab.c1Body')}
                             </p>
                         </div>
                     </div>
@@ -98,15 +100,15 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                                 <Eye className="w-5 h-5" />
                             </div>
                             <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-100/80 text-indigo-900 border border-indigo-200">
-                                Image Quality Audit
+                                {t('ab.c2Badge')}
                             </span>
                         </div>
                         <div>
                             <h3 className="text-sm font-extrabold text-slate-900">
-                                Computer Vision Quality Diagnostics
+                                {t('ab.c2Title')}
                             </h3>
                             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                                Image pre-processing utilizes OpenCV algorithms (Laplacian variance blur measurement, Michelson contrast calculation, DPI scaling) to audit document clarity prior to parsing.
+                                {t('ab.c2Body')}
                             </p>
                         </div>
                     </div>
@@ -118,15 +120,15 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                                 <Brain className="w-5 h-5" />
                             </div>
                             <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-900 border border-emerald-200">
-                                Pattern Recognition
+                                {t('ab.c3Badge')}
                             </span>
                         </div>
                         <div>
                             <h3 className="text-sm font-extrabold text-slate-900">
-                                Isolation Forest ML Anomaly Modeling
+                                {t('ab.c3Title')}
                             </h3>
                             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                                Scikit-learn multivariate anomaly models evaluate multi-panel biomarker vectors to detect co-occurring metabolic patterns, calculating population-relative balance scores.
+                                {t('ab.c3Body')}
                             </p>
                         </div>
                     </div>
@@ -138,15 +140,15 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                                 <ShieldCheck className="w-5 h-5" />
                             </div>
                             <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-100/80 text-purple-900 border border-purple-200">
-                                HIPAA &amp; GDPR Privacy
+                                {t('ab.c4Badge')}
                             </span>
                         </div>
                         <div>
                             <h3 className="text-sm font-extrabold text-slate-900">
-                                Zero Data Training &amp; Account Privacy
+                                {t('ab.c4Title')}
                             </h3>
                             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                                Medical reports and health journal logs are never used to train public AI models. All data is isolated to your account with instant full-vault erasure capabilities.
+                                {t('ab.c4Body')}
                             </p>
                         </div>
                     </div>
@@ -158,21 +160,21 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                 <div className="flex items-center space-x-2.5 rtl:space-x-reverse border-b border-amber-200/80 pb-3">
                     <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
                     <h2 className="text-sm font-extrabold uppercase tracking-wider text-amber-950">
-                        Mandatory Medical &amp; Regulatory Disclaimer
+                        {t('ab.discTitle')}
                     </h2>
                 </div>
                 <ul className="text-xs text-amber-900 leading-relaxed space-y-2 font-medium list-disc list-inside">
                     <li>
-                        <strong className="text-amber-950">Educational Scope Only: </strong>
-                        The content and evaluations generated by Aperio Health are strictly for informational and educational literacy purposes. Aperio Health is not a medical device and does not provide medical diagnoses, treatment prescriptions, or clinical decision support.
+                        <strong className="text-amber-950">{t('ab.discEduLead')}</strong>
+                        {t('ab.discEduBody')}
                     </li>
                     <li>
-                        <strong className="text-amber-950">Mandatory Physician Consultation: </strong>
-                        Never disregard professional medical advice or delay seeking clinical care because of information displayed in this tool. Always review your original printed laboratory reports with a qualified physician or healthcare provider.
+                        <strong className="text-amber-950">{t('ab.discPhysLead')}</strong>
+                        {t('ab.discPhysBody')}
                     </li>
                     <li>
-                        <strong className="text-amber-950">Deterministic Reference Bounds: </strong>
-                        Measured biomarker values are evaluated mathematically against standard adult reference intervals without diagnostic claims.
+                        <strong className="text-amber-950">{t('ab.discBoundsLead')}</strong>
+                        {t('ab.discBoundsBody')}
                     </li>
                 </ul>
             </div>
@@ -184,11 +186,11 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                         <div className="flex items-center space-x-2 rtl:space-x-reverse">
                             <Database className="w-5 h-5 text-teal-600" />
                             <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
-                                Clinical Biomarker Reference Catalog ({CATALOG.length} Parameters)
+                                {t('ab.catalogTitle', { count: String(CATALOG.length) })}
                             </h3>
                         </div>
                         <p className="text-xs text-slate-500 mt-0.5">
-                            Standard reference bounds, units, and categories used across the parsing engine.
+                            {t('ab.catalogSub')}
                         </p>
                     </div>
 
@@ -200,7 +202,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search test name or category..."
+                                placeholder={t('ab.searchPh')}
                                 className="w-full bg-slate-50 border border-slate-200 text-xs font-medium rounded-xl pl-9 pr-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
                             />
                         </div>
@@ -208,10 +210,10 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                         <select
                             value={selectedCategory}
                             onChange={(e) => setSelectedCategory(e.target.value)}
-                            aria-label="Filter test category"
+                            aria-label={t('ab.filterAria')}
                             className="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
                         >
-                            <option value="ALL">All Panels ({CATALOG.length})</option>
+                            <option value="ALL">{t('ab.allPanels', { count: String(CATALOG.length) })}</option>
                             {categories.map((c) => (
                                 <option key={c} value={c}>
                                     {c}
@@ -226,18 +228,18 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                     <table className="w-full text-xs text-left rtl:text-right border-collapse">
                         <thead>
                             <tr className="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
-                                <th className="p-3.5">Biomarker Name</th>
-                                <th className="p-3.5">Category Panel</th>
-                                <th className="p-3.5">Reference Bounds</th>
-                                <th className="p-3.5">Standard Unit</th>
-                                <th className="p-3.5">Clinical Purpose</th>
+                                <th className="p-3.5">{t('ab.colName')}</th>
+                                <th className="p-3.5">{t('ab.colPanel')}</th>
+                                <th className="p-3.5">{t('ab.colBounds')}</th>
+                                <th className="p-3.5">{t('ab.colUnit')}</th>
+                                <th className="p-3.5">{t('ab.colPurpose')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-150 text-slate-700">
                             {filteredCatalog.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="p-8 text-center text-xs text-slate-400 font-medium">
-                                        No biomarkers found matching "{searchTerm}".
+                                        {t('ab.noMatch', { query: searchTerm })}
                                     </td>
                                 </tr>
                             ) : (
@@ -268,7 +270,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                                                         {item.explanations.low}
                                                     </span>
                                                 ) : (
-                                                    <span className="text-slate-400 italic">Clinical parameter evaluation interval</span>
+                                                    <span className="text-slate-400 italic">{t('ab.fallbackPurpose')}</span>
                                                 )}
                                             </td>
                                         </tr>

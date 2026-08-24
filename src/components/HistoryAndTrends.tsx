@@ -1162,6 +1162,8 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                 title={getTranslation('hist.clearConfirmTitle', currentLang)}
                 message={getTranslation('hist.clearConfirmMessage', currentLang)}
                 confirmLabel={getTranslation('hist.clearConfirmYes', currentLang)}
+                subtitle={getTranslation('ui.cannotUndo', currentLang)}
+                cancelLabel={getTranslation('ui.cancel', currentLang)}
                 onClose={() => setShowClearConfirmModal(false)}
                 onConfirm={() => {
                     setShowClearConfirmModal(false);
@@ -1174,6 +1176,8 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                 title={getTranslation('hist.deleteReportTitle', currentLang)}
                 message={getTranslation('hist.deleteReportMessage', currentLang)}
                 confirmLabel={getTranslation('hist.deleteReportYes', currentLang)}
+                subtitle={getTranslation('ui.cannotUndo', currentLang)}
+                cancelLabel={getTranslation('ui.cancel', currentLang)}
                 onClose={() => setDeleteReportTarget(null)}
                 onConfirm={() => {
                     if (deleteReportTarget !== null) {
@@ -1188,6 +1192,8 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                 title={getTranslation('hist.removeTestTitle', currentLang, { name: deleteTestTarget?.testName ?? '' })}
                 message={getTranslation('hist.removeTestMessage', currentLang)}
                 confirmLabel={getTranslation('hist.removeTestYes', currentLang)}
+                subtitle={getTranslation('ui.cannotUndo', currentLang)}
+                cancelLabel={getTranslation('ui.cancel', currentLang)}
                 onClose={() => setDeleteTestTarget(null)}
                 onConfirm={() => {
                     if (deleteTestTarget) {

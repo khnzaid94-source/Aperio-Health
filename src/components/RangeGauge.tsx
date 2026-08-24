@@ -1,5 +1,6 @@
 import React from 'react';
-import { ClassificationType } from '../types';
+import { ClassificationType, SupportedLanguage } from '../types';
+import { getTranslation } from '../utils/language';
 
 interface RangeGaugeProps {
     value: number;
@@ -7,6 +8,7 @@ interface RangeGaugeProps {
     max: number;
     unit: string;
     classification: ClassificationType;
+    currentLang?: SupportedLanguage;
 }
 
 export const RangeGauge: React.FC<RangeGaugeProps> = ({
@@ -14,8 +16,11 @@ export const RangeGauge: React.FC<RangeGaugeProps> = ({
     min,
     max,
     unit,
-    classification
+    classification,
+    currentLang = 'en'
 }) => {
+    const t = (key: string, params?: Record<string, string>): string =>
+        getTranslation(key, currentLang, params);
     const rangeSpan = max - min;
     if (rangeSpan <= 0) return null;
 
@@ -36,7 +41,7 @@ export const RangeGauge: React.FC<RangeGaugeProps> = ({
     return (
         <div className="space-y-1.5 pt-1">
             <div className="flex justify-between items-center text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                <span>Visual Range Gauge</span>
+                <span>{t('gauge.title')}</span>
                 <span dir="ltr">{value} {unit}</span>
             </div>
 
@@ -73,15 +78,15 @@ export const RangeGauge: React.FC<RangeGaugeProps> = ({
                             : 'bg-emerald-600'
                     }`}
                     style={{ left: `${valuePos}%` }}
-                    title={`Measured Value: ${value} ${unit}`}
+                    title={t('gauge.valueTitle', { value: String(value), unit })}
                 />
             </div>
 
             {/* Boundary Labels */}
             <div className="flex justify-between text-[10px] text-slate-500 font-medium px-0.5" dir="ltr">
-                <span className="text-amber-800 font-bold">Low (&lt; {min})</span>
-                <span className="text-emerald-700 font-bold">Normal ({min} – {max} {unit})</span>
-                <span className="text-rose-700">High (&gt; {max})</span>
+                <span className="text-amber-800 font-bold">{t('gauge.lowZone', { min: String(min) })}</span>
+                <span className="text-emerald-700 font-bold">{t('gauge.normalZone', { min: String(min), max: String(max), unit })}</span>
+                <span className="text-rose-700">{t('gauge.highZone', { max: String(max) })}</span>
             </div>
         </div>
     );

@@ -9,6 +9,8 @@ import {
     ChevronUp,
     Sparkles
 } from 'lucide-react';
+import { SupportedLanguage } from '../types';
+import { getTranslation } from '../utils/language';
 
 export interface MLRiskCluster {
     name: string;
@@ -48,15 +50,19 @@ export interface MLInsightsCardProps {
     doctorQuestions?: string[];
     onCopyQuestions?: (e: React.MouseEvent) => void;
     defaultExpanded?: boolean;
+    currentLang?: SupportedLanguage;
 }
 
 export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
     mlInsights,
     doctorQuestions = [],
     onCopyQuestions,
-    defaultExpanded = false
+    defaultExpanded = false,
+    currentLang = 'en'
 }) => {
     const [isExpanded, setIsExpanded] = useState<boolean>(defaultExpanded);
+    const t = (key: string, params?: Record<string, string>): string =>
+        getTranslation(key, currentLang, params);
 
     if (!mlInsights && (!doctorQuestions || doctorQuestions.length === 0)) {
         return null;
@@ -84,14 +90,14 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                     <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                             <h3 className="text-sm sm:text-base font-extrabold text-white">
-                                Clinical Intelligence &amp; Consultation Deck
+                                {t('ml.cardTitle')}
                             </h3>
                             <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded-full border border-indigo-500/30">
-                                Scikit-Learn ML
+                                {t('ml.badgeSklearn')}
                             </span>
                         </div>
                         <p className="text-[11px] text-slate-400 mt-0.5 truncate">
-                            Multi-panel metabolic balance, synergistic risk clusters, and prepared doctor agenda
+                            {t('ml.cardSub')}
                         </p>
                     </div>
                 </div>
@@ -101,7 +107,7 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                     {mlInsights && (
                         <div className="bg-slate-800/90 border border-slate-700/80 px-2.5 py-1 rounded-xl text-right rtl:text-left flex items-center space-x-1.5 rtl:space-x-reverse">
                             <span className="text-[10px] text-slate-400 uppercase font-semibold hidden md:inline">
-                                Balance:
+                                {t('ml.balanceLabel')}
                             </span>
                             <span className="text-xs font-black text-teal-400">
                                 {mlInsights.balance_index}% ({mlInsights.balance_badge})
@@ -113,10 +119,10 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                         <button
                             onClick={onCopyQuestions}
                             className="bg-teal-500 hover:bg-teal-400 active:scale-95 text-slate-950 text-xs font-bold py-1.5 px-3 rounded-xl transition-all flex items-center space-x-1.5 rtl:space-x-reverse shadow-xs"
-                            title="Copy all prepared questions to clipboard"
+                            title={t('ml.copyQuestionsTitle')}
                         >
                             <Copy className="w-3.5 h-3.5" />
-                            <span className="hidden md:inline">Copy Questions</span>
+                            <span className="hidden md:inline">{t('ml.copyQuestions')}</span>
                         </button>
                     )}
 
@@ -136,11 +142,11 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                                 <div className="flex items-center space-x-2 rtl:space-x-reverse">
                                     <Sparkles className="w-4 h-4 text-teal-400" />
                                     <span className="text-xs font-bold text-white uppercase tracking-wider">
-                                        Metabolic Balance Index (Population Distribution)
+                                        {t('ml.balanceHeader')}
                                     </span>
                                 </div>
                                 <span className="text-xs font-extrabold text-teal-400">
-                                    {mlInsights.balance_index ?? '—'}% — {mlInsights.balance_badge ?? 'Unknown'}
+                                    {mlInsights.balance_index ?? '—'}% — {mlInsights.balance_badge ?? t('ml.unknown')}
                                 </span>
                             </div>
 
@@ -153,8 +159,8 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                             </div>
 
                             <p className="text-[11px] text-slate-400 leading-relaxed">
-                                Compares your values against real-world population percentiles (CDC NHANES 2017-2018, matched to your gender and age band) with an Isolation Forest anomaly check. Educational estimate only — not a diagnostic measure.
-                                {mlInsights?.patient_stratum ? ` Stratum: ${mlInsights.patient_stratum}.` : ''}
+                                {t('ml.balanceBody')}
+                                {mlInsights?.patient_stratum ? ' ' + t('ml.stratumSuffix', { stratum: mlInsights.patient_stratum }) : ''}
                             </p>
                         </div>
                     )}
@@ -164,14 +170,14 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                         <div className="space-y-3">
                             <div className="flex items-center space-x-1.5 rtl:space-x-reverse text-xs font-bold text-slate-300">
                                 <Layers className="w-4 h-4 text-indigo-400" />
-                                <span>Multi-Biomarker Synergistic Interaction Clusters:</span>
+                                <span>{t('ml.clustersHeader')}</span>
                             </div>
 
                             {(mlInsights.risk_clusters ?? []).length === 0 ? (
                                 <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-300 flex items-center space-x-2.5 rtl:space-x-reverse">
                                     <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                                     <span>
-                                        No multi-marker pathological synergy detected across evaluated biomarkers. Multi-system balance is within acceptable bounds.
+                                        {t('ml.noClusters')}
                                     </span>
                                 </div>
                             ) : (
@@ -195,7 +201,7 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                                             </p>
                                             <div className="flex items-center space-x-1 rtl:space-x-reverse flex-wrap pt-1">
                                                 <span className="text-[10px] text-slate-400 font-semibold mr-1">
-                                                    Interacting Markers:
+                                                    {t('ml.interactingMarkers')}
                                                 </span>
                                                 {cluster.markers.map((m) => (
                                                     <span
@@ -220,7 +226,7 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                                 <div className="flex items-center space-x-2 rtl:space-x-reverse">
                                     <span className="text-base">📋</span>
                                     <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-                                        Doctor Consultation Agenda ({doctorQuestions.length} Tailored Questions)
+                                        {t('ml.agendaHeader', { count: String(doctorQuestions.length) })}
                                     </h4>
                                 </div>
                                 {onCopyQuestions && (
@@ -229,7 +235,7 @@ export const MLInsightsCard: React.FC<MLInsightsCardProps> = ({
                                         className="text-xs text-teal-400 hover:text-teal-300 font-bold inline-flex items-center space-x-1 rtl:space-x-reverse"
                                     >
                                         <Copy className="w-3.5 h-3.5" />
-                                        <span>Copy Questions</span>
+                                        <span>{t('ml.copyQuestions')}</span>
                                     </button>
                                 )}
                             </div>

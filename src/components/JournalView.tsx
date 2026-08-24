@@ -12,20 +12,26 @@ import {
     FileText
 } from 'lucide-react';
 import { JournalEntry } from '../types';
+import { SupportedLanguage } from '../types';
+import { getTranslation } from '../utils/language';
 
 interface JournalViewProps {
     userEmail: string;
     journalEntries: JournalEntry[];
     onAddEntry: (entry: Omit<JournalEntry, 'id'>) => void;
     onDeleteEntry: (id: string) => void;
+    currentLang: SupportedLanguage;
 }
 
 export const JournalView: React.FC<JournalViewProps> = ({
     userEmail,
     journalEntries,
     onAddEntry,
-    onDeleteEntry
+    onDeleteEntry,
+    currentLang
 }) => {
+    const t = (key: string, params?: Record<string, string>): string =>
+        getTranslation(key, currentLang, params);
     const [entryType, setEntryType] = useState<'medication' | 'supplement' | 'lifestyle'>('medication');
     const [name, setName] = useState('');
     const [dosage, setDosage] = useState('');
@@ -68,10 +74,10 @@ export const JournalView: React.FC<JournalViewProps> = ({
                             </div>
                             <div>
                                 <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
-                                    Medication &amp; Clinical Context Ledger
+                                    {t('jrn.headerTitle')}
                                 </h2>
                                 <p className="text-xs text-slate-500">
-                                    Log active prescriptions, daily supplements, and lab collection conditions (fasting, workout) for complete longitudinal analysis.
+                                    {t('jrn.headerSub')}
                                 </p>
                             </div>
                         </div>
@@ -89,12 +95,12 @@ export const JournalView: React.FC<JournalViewProps> = ({
                         {showForm ? (
                             <>
                                 <X className="w-4 h-4" />
-                                <span>Close Drawer</span>
+                                <span>{t('jrn.closeDrawer')}</span>
                             </>
                         ) : (
                             <>
                                 <Plus className="w-4 h-4" />
-                                <span>+ Log New Item</span>
+                                <span>{t('jrn.logNewItem')}</span>
                             </>
                         )}
                     </button>
@@ -104,8 +110,8 @@ export const JournalView: React.FC<JournalViewProps> = ({
                 <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 text-xs text-slate-600 flex items-start space-x-2.5 rtl:space-x-reverse">
                     <Info className="w-4 h-4 text-teal-600 flex-shrink-0 mt-0.5" />
                     <div className="leading-relaxed font-medium">
-                        <strong className="text-slate-800 font-bold">Why Context Matters: </strong>
-                        Biomarkers fluctuate based on active medications (e.g., cholesterol statins, thyroid hormone replacement), fasting duration before blood draws, and strenuous exercise. Logging these events provides context during doctor consultations.
+                        <strong className="text-slate-800 font-bold">{t('jrn.whyContextLead')}</strong>
+                        {t('jrn.whyContextBody')}
                     </div>
                 </div>
             </div>
@@ -117,7 +123,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                         <div className="flex items-center space-x-2 rtl:space-x-reverse">
                             <Sparkles className="w-4 h-4 text-teal-600" />
                             <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
-                                Log New Health &amp; Context Item
+                                {t('jrn.formHeader')}
                             </h3>
                         </div>
                         <button
@@ -133,7 +139,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                         {/* Category Pill Switcher Selector */}
                         <div className="space-y-1.5">
                             <label className="block text-xs font-bold text-slate-700">
-                                Select Entry Category
+                                {t('jrn.selectCategory')}
                             </label>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
                                 <button
@@ -146,7 +152,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                     }`}
                                 >
                                     <Pill className="w-3.5 h-3.5" />
-                                    <span>Prescription Med</span>
+                                    <span>{t('jrn.catMedication')}</span>
                                 </button>
                                 <button
                                     type="button"
@@ -158,7 +164,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                     }`}
                                 >
                                     <Activity className="w-3.5 h-3.5" />
-                                    <span>Daily Supplement</span>
+                                    <span>{t('jrn.catSupplement')}</span>
                                 </button>
                                 <button
                                     type="button"
@@ -170,7 +176,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                     }`}
                                 >
                                     <Calendar className="w-3.5 h-3.5" />
-                                    <span>Test Context / Event</span>
+                                    <span>{t('jrn.catLifestyle')}</span>
                                 </button>
                             </div>
                         </div>
@@ -179,7 +185,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Item Name / Title *
+                                    {t('jrn.nameLabel')}
                                 </label>
                                 <input
                                     type="text"
@@ -188,10 +194,10 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder={
                                         entryType === 'medication'
-                                            ? 'e.g. Atorvastatin, Levothyroxine'
+                                            ? t('jrn.phNameMedication')
                                             : entryType === 'supplement'
-                                            ? 'e.g. Vitamin D3, Omega-3 Fish Oil'
-                                            : 'e.g. 12-Hour Fasting, Marathon Training'
+                                            ? t('jrn.phNameSupplement')
+                                            : t('jrn.phNameLifestyle')
                                     }
                                     className="w-full bg-slate-50 border border-slate-200 text-xs font-medium rounded-xl p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 />
@@ -199,20 +205,20 @@ export const JournalView: React.FC<JournalViewProps> = ({
 
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Dosage / Frequency (Optional)
+                                    {t('jrn.dosageLabel')}
                                 </label>
                                 <input
                                     type="text"
                                     value={dosage}
                                     onChange={(e) => setDosage(e.target.value)}
-                                    placeholder="e.g. 20mg daily, 2000 IU morning"
+                                    placeholder={t('jrn.phDosage')}
                                     className="w-full bg-slate-50 border border-slate-200 text-xs font-medium rounded-xl p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 />
                             </div>
 
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Start / Event Date
+                                    {t('jrn.dateLabel')}
                                 </label>
                                 <input
                                     type="date"
@@ -225,13 +231,13 @@ export const JournalView: React.FC<JournalViewProps> = ({
 
                         <div>
                             <label className="block text-xs font-bold text-slate-700 mb-1">
-                                Clinical Notes &amp; Context (Optional)
+                                {t('jrn.notesLabel')}
                             </label>
                             <input
                                 type="text"
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
-                                placeholder="e.g. Prescribed for lipid management, taken after morning meal"
+                                placeholder={t('jrn.phNotes')}
                                 className="w-full bg-slate-50 border border-slate-200 text-xs font-medium rounded-xl p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
                             />
                         </div>
@@ -243,13 +249,13 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                 onClick={() => setShowForm(false)}
                                 className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2 px-4 rounded-xl transition-colors"
                             >
-                                Cancel
+                                {t('ui.cancel')}
                             </button>
                             <button
                                 type="submit"
                                 className="bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs py-2 px-5 rounded-xl shadow-xs transition-colors"
                             >
-                                Save to Ledger
+                                {t('jrn.saveEntry')}
                             </button>
                         </div>
                     </form>
@@ -265,7 +271,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                             <div className="flex items-center space-x-2 rtl:space-x-reverse">
                                 <Pill className="w-4 h-4 text-teal-600" />
                                 <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
-                                    Prescription Meds
+                                    {t('jrn.cardMeds')}
                                 </h3>
                             </div>
                             <span className="text-xs font-extrabold text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">
@@ -276,7 +282,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                         {medications.length === 0 ? (
                             <div className="text-center py-8 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 space-y-1">
                                 <FileText className="w-6 h-6 text-slate-300 mx-auto" />
-                                <p className="text-xs text-slate-400 font-medium">No active prescription meds logged</p>
+                                <p className="text-xs text-slate-400 font-medium">{t('jrn.emptyMeds')}</p>
                             </div>
                         ) : (
                             <div className="space-y-2.5">
@@ -291,7 +297,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                                     {item.name}
                                                 </span>
                                                 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-100 text-teal-800 border border-teal-200/80">
-                                                    Prescription
+                                                    {t('jrn.tagPrescription')}
                                                 </span>
                                             </div>
 
@@ -303,7 +309,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                                 )}
                                                 {item.start_date && (
                                                     <span className="text-[10px] text-slate-500 font-medium">
-                                                        Started: {item.start_date}
+                                                        {t('jrn.startedPrefix', { date: item.start_date })}
                                                     </span>
                                                 )}
                                             </div>
@@ -318,7 +324,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => onDeleteEntry(item.id)}
-                                            title="Delete medication entry"
+                                            title={t('jrn.delMedTitle')}
                                             className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
@@ -337,7 +343,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                             <div className="flex items-center space-x-2 rtl:space-x-reverse">
                                 <Activity className="w-4 h-4 text-emerald-600" />
                                 <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
-                                    Daily Supplements
+                                    {t('jrn.cardSupplements')}
                                 </h3>
                             </div>
                             <span className="text-xs font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
@@ -348,7 +354,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                         {supplements.length === 0 ? (
                             <div className="text-center py-8 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 space-y-1">
                                 <FileText className="w-6 h-6 text-slate-300 mx-auto" />
-                                <p className="text-xs text-slate-400 font-medium">No daily supplements logged</p>
+                                <p className="text-xs text-slate-400 font-medium">{t('jrn.emptySupplements')}</p>
                             </div>
                         ) : (
                             <div className="space-y-2.5">
@@ -363,7 +369,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                                     {item.name}
                                                 </span>
                                                 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200/80">
-                                                    Supplement
+                                                    {t('jrn.tagSupplement')}
                                                 </span>
                                             </div>
 
@@ -375,7 +381,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                                 )}
                                                 {item.start_date && (
                                                     <span className="text-[10px] text-slate-500 font-medium">
-                                                        Started: {item.start_date}
+                                                        {t('jrn.startedPrefix', { date: item.start_date })}
                                                     </span>
                                                 )}
                                             </div>
@@ -390,7 +396,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => onDeleteEntry(item.id)}
-                                            title="Delete supplement entry"
+                                            title={t('jrn.delSuppTitle')}
                                             className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
@@ -409,7 +415,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                             <div className="flex items-center space-x-2 rtl:space-x-reverse">
                                 <Calendar className="w-4 h-4 text-indigo-600" />
                                 <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
-                                    Test Context / Lifestyle
+                                    {t('jrn.cardLifestyle')}
                                 </h3>
                             </div>
                             <span className="text-xs font-extrabold text-indigo-800 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full">
@@ -420,7 +426,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                         {lifestyleLogs.length === 0 ? (
                             <div className="text-center py-8 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 space-y-1">
                                 <FileText className="w-6 h-6 text-slate-300 mx-auto" />
-                                <p className="text-xs text-slate-400 font-medium">No lifestyle context entries logged</p>
+                                <p className="text-xs text-slate-400 font-medium">{t('jrn.emptyLifestyle')}</p>
                             </div>
                         ) : (
                             <div className="space-y-2.5">
@@ -435,7 +441,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                                     {item.name}
                                                 </span>
                                                 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200/80">
-                                                    Context
+                                                    {t('jrn.tagContext')}
                                                 </span>
                                             </div>
 
@@ -447,7 +453,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                                 )}
                                                 {item.start_date && (
                                                     <span className="text-[10px] text-slate-500 font-medium">
-                                                        Event Date: {item.start_date}
+                                                        {t('jrn.eventDatePrefix', { date: item.start_date })}
                                                     </span>
                                                 )}
                                             </div>
@@ -462,7 +468,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => onDeleteEntry(item.id)}
-                                            title="Delete context entry"
+                                            title={t('jrn.delCtxTitle')}
                                             className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />

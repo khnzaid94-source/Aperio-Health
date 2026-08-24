@@ -1016,6 +1016,7 @@ export function App() {
                     journalEntries={journalEntries}
                     onAddEntry={handleAddJournalEntry}
                     onDeleteEntry={handleDeleteJournalEntry}
+                    currentLang={currentLang}
                 />
             )}
 

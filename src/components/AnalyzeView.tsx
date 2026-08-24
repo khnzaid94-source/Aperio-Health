@@ -618,6 +618,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                         defaultExpanded={false}
                         doctorQuestions={doctorQuestions}
                         onCopyQuestions={handleCopyQuestions}
+                        currentLang={currentLang}
                     />
 
                     {/* Toast notification for copying */}
@@ -877,6 +878,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                                         max={result.referenceMax}
                                                         unit={result.unit}
                                                         classification={result.classification}
+                                                        currentLang={currentLang}
                                                     />
 
                                                     {/* Value Correction Safeguard Alert */}
@@ -1061,6 +1063,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
                                                         max={result.referenceMax}
                                                         unit={result.unit}
                                                         classification={result.classification}
+                                                        currentLang={currentLang}
                                                     />
 
                                                     {/* Value Correction Safeguard Alert */}
