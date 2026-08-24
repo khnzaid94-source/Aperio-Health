@@ -98,7 +98,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {/* TOP ZONE - greeting + ambient EKG (scoped to this zone) */}
                     <div className="relative p-4 sm:p-5 overflow-hidden">
                         <div className="absolute inset-0 opacity-40 pointer-events-none overflow-hidden">
-                            <EkgMonitorCanvas bpm={45} color="#2dd4bf" />
+                            <EkgMonitorCanvas bpm={40} color="#2dd4bf" />
                         </div>
 
                         <div className="absolute top-0 right-0 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
