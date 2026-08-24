@@ -94,13 +94,13 @@ export const UploadView: React.FC<UploadViewProps> = ({
         if (filesList.length === 0) return;
 
         if (filesList.length > 10) {
-            setAnalysisError('Maximum 10 documents can be uploaded simultaneously in a batch. Please select up to 10 files.');
+            setAnalysisError(getTranslation('up.errTooManyFiles', currentLang));
             return;
         }
 
         for (const f of filesList) {
             if (f.size > 15 * 1024 * 1024) {
-                setAnalysisError(`File "${f.name}" exceeds the 15 MB limit. Please upload files under 15 MB.`);
+                setAnalysisError(getTranslation('up.errFileTooLarge', currentLang, { name: f.name }));
                 return;
             }
         }
@@ -124,8 +124,8 @@ export const UploadView: React.FC<UploadViewProps> = ({
             // Honest processing stage indicator
             setBatchStatusMessage(
                 idx === 0
-                    ? 'Uploading document to the analysis engine…'
-                    : 'Extracting text (OCR) and parsing clinical values…'
+                    ? getTranslation('up.stageUpload', currentLang)
+                    : getTranslation('up.stageOcr', currentLang)
             );
 
             let fileProcessed = false;
@@ -147,7 +147,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                         const reportDate = rep.date || new Date().toISOString().split('T')[0];
                         const reportItem: ExtractedReportItem = {
                             results: rep.results,
-                            sourceLabel: rep.label || `Uploaded: ${fileName}`,
+                            sourceLabel: rep.label || getTranslation('up.uploadedPrefix', currentLang, { name: fileName }),
                             rawText: rep.extractedText || '',
                             cvQuality: rep.cv_quality || null,
                             mlInsights: rep.ml_insights || null,
@@ -166,11 +166,11 @@ export const UploadView: React.FC<UploadViewProps> = ({
                     const reasons = data.skipped_files
                         .map((s: { filename: string; reason: string }) => `"${s.filename}" (${s.reason.replace(/_/g, ' ')})`)
                         .join(', ');
-                    setAnalysisError(`Some files were skipped by the server: ${reasons}.`);
+                    setAnalysisError(getTranslation('up.errSkippedFiles', currentLang, { reasons }));
                 }
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) {
-                    setAnalysisError('Your session has expired. Please sign in again and re-upload the files.');
+                    setAnalysisError(getTranslation('up.errSessionReupload', currentLang));
                     setIsAnalyzing(false);
                     return;
                 }
@@ -178,7 +178,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                     setAnalysisError(
                         err instanceof ApiError
                             ? err.message
-                            : `Could not process "${fileName}". The server may be offline or waking up — please try again.`
+                            : getTranslation('up.errServerOffline', currentLang, { name: fileName })
                     );
                 }
             }
@@ -192,7 +192,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                         if (clientResults.length > 0) {
                             extractedReportItems.push({
                                 results: clientResults,
-                                sourceLabel: `Uploaded: ${fileName}`,
+                                sourceLabel: getTranslation('up.uploadedPrefix', currentLang, { name: fileName }),
                                 rawText: text,
                                 cvQuality: null,
                                 mlInsights: null
@@ -208,7 +208,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
         setIsAnalyzing(false);
 
         if (extractedReportItems.length === 0) {
-            setAnalysisError('No supported blood test parameters or reference ranges were detected in the uploaded file(s). Please upload clear laboratory blood test reports.');
+            setAnalysisError(getTranslation('up.errNoParamsFile', currentLang));
             setExtractedCount(0);
             return;
         }
@@ -217,9 +217,12 @@ export const UploadView: React.FC<UploadViewProps> = ({
         setExtractedCount(totalTests);
 
         if (extractedReportItems.length > 1) {
-            setSuccessMessage(`Batch processing complete! Successfully parsed ${extractedReportItems.length} reports across distinct visits (${totalTests} total clinical biomarkers).`);
+            setSuccessMessage(getTranslation('up.successBatch', currentLang, {
+                reports: String(extractedReportItems.length),
+                tests: String(totalTests)
+            }));
         } else {
-            setSuccessMessage(`Successfully recognized ${totalTests} clinical biomarkers!`);
+            setSuccessMessage(getTranslation('up.successSingle', currentLang, { count: String(totalTests) }));
         }
 
         if (onBatchReportsExtracted) {
@@ -239,7 +242,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
     const handleReRunRawText = async () => {
         if (isAnalyzing) return;
         if (!currentRawText.trim()) {
-            setAnalysisError('Please enter or paste report text to analyze.');
+            setAnalysisError(getTranslation('up.errPasteEmpty', currentLang));
             return;
         }
 
@@ -253,7 +256,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                 method: 'POST',
                 json: {
                     text: currentRawText,
-                    label: lastUploadedName || 'Pasted Report',
+                    label: lastUploadedName || getTranslation('up.pastedReportLabel', currentLang),
                     patient_age: ctx?.patient_age ?? null,
                     patient_gender: ctx?.patient_gender ?? null
                 }
@@ -261,18 +264,16 @@ export const UploadView: React.FC<UploadViewProps> = ({
             setIsAnalyzing(false);
 
             if (!data.is_valid_report || !data.results || data.results.length === 0) {
-                setAnalysisError(
-                    'No supported blood test parameters or reference ranges were detected in this text. Please check the spelling or format.'
-                );
+                setAnalysisError(getTranslation('up.errNoParamsText', currentLang));
                 setExtractedCount(0);
                 return;
             }
 
             setExtractedCount(data.results.length);
-            setSuccessMessage(`Successfully recognized ${data.results.length} clinical biomarkers!`);
+            setSuccessMessage(getTranslation('up.successSingle', currentLang, { count: String(data.results.length) }));
             onReportExtracted(
                 data.results,
-                lastUploadedName || 'Pasted Report',
+                lastUploadedName || getTranslation('up.pastedReportLabel', currentLang),
                 currentRawText,
                 cvQuality,
                 data.ml_insights || null
@@ -281,7 +282,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
         } catch (err) {
             if (err instanceof ApiError && err.status === 401) {
                 setIsAnalyzing(false);
-                setAnalysisError('Your session has expired. Please sign in again.');
+                setAnalysisError(getTranslation('up.errSessionExpired', currentLang));
                 return;
             }
         }
@@ -290,18 +291,16 @@ export const UploadView: React.FC<UploadViewProps> = ({
             setIsAnalyzing(false);
             const clientResults = parseLabReportText(currentRawText, buildPatientContext());
             if (clientResults.length === 0) {
-                setAnalysisError(
-                    'No supported blood test parameters or reference ranges were detected in this text. Please check the spelling or format.'
-                );
+                setAnalysisError(getTranslation('up.errNoParamsText', currentLang));
                 setExtractedCount(0);
                 return;
             }
 
             setExtractedCount(clientResults.length);
-            setSuccessMessage(`Successfully recognized ${clientResults.length} clinical biomarkers!`);
+            setSuccessMessage(getTranslation('up.successSingle', currentLang, { count: String(clientResults.length) }));
             onReportExtracted(
                 clientResults,
-                lastUploadedName || 'Pasted Report',
+                lastUploadedName || getTranslation('up.pastedReportLabel', currentLang),
                 currentRawText,
                 cvQuality,
                 null
@@ -324,15 +323,15 @@ export const UploadView: React.FC<UploadViewProps> = ({
                             <div className="p-2 bg-teal-50 text-teal-600 rounded-xl border border-teal-100/80">
                                 <Upload className="w-5 h-5" />
                             </div>
-                            <span>Lab Report Upload Studio</span>
+                            <span>{getTranslation('up.title', currentLang)}</span>
                         </h2>
                         <p className="text-xs text-slate-500 max-w-xl leading-relaxed">
-                            Upload blood test photos, scans, or multi-page PDFs. The automated stacker segments distinct specimen collection dates into separate health history visits.
+                            {getTranslation('up.subtitle', currentLang)}
                         </p>
                     </div>
                     <div className="flex items-center gap-2 self-start sm:self-center flex-shrink-0">
                         <span className="text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200/80 px-3 py-1 rounded-full whitespace-nowrap">
-                            Max 10 files • 15 MB/file
+                            {getTranslation('up.limitsBadge', currentLang)}
                         </span>
                     </div>
                 </div>
@@ -360,7 +359,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                         accept=".pdf,.png,.jpg,.jpeg,.txt"
                         onChange={handleFileUpload}
                         disabled={isAnalyzing}
-                        aria-label="Upload laboratory report files"
+                        aria-label={getTranslation('up.dropzoneAria', currentLang)}
                         className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10 disabled:cursor-not-allowed"
                     />
 
@@ -383,16 +382,16 @@ export const UploadView: React.FC<UploadViewProps> = ({
                         {/* Format badges */}
                         <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
                             <span className="text-[10px] font-bold bg-white text-slate-600 border border-slate-200 px-2 py-0.5 rounded-md">
-                                Multi-Page PDF
+                                {getTranslation('up.formatPdf', currentLang)}
                             </span>
                             <span className="text-[10px] font-bold bg-white text-slate-600 border border-slate-200 px-2 py-0.5 rounded-md">
-                                JPG / PNG
+                                {getTranslation('up.formatImage', currentLang)}
                             </span>
                             <span className="text-[10px] font-bold bg-white text-slate-600 border border-slate-200 px-2 py-0.5 rounded-md">
-                                TXT
+                                {getTranslation('up.formatTxt', currentLang)}
                             </span>
                             <span className="text-[10px] font-semibold text-teal-700 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-md">
-                                Batch Stacking (1-10)
+                                {getTranslation('up.batchBadge', currentLang)}
                             </span>
                         </div>
                     </div>
@@ -413,8 +412,8 @@ export const UploadView: React.FC<UploadViewProps> = ({
                     <div className="space-y-1.5 max-w-md mx-auto">
                         <div className="text-sm font-bold text-slate-900">
                             {batchTotal > 1
-                                ? `Processing Document ${batchCurrentIndex} of ${batchTotal}`
-                                : 'Scanning and Analyzing Clinical Document...'}
+                                ? getTranslation('up.processingNofM', currentLang, { current: String(batchCurrentIndex), total: String(batchTotal) })
+                                : getTranslation('processingText', currentLang)}
                         </div>
                         {batchCurrentName && (
                             <div className="text-xs text-teal-700 font-semibold inline-flex items-center space-x-1.5 rtl:space-x-reverse bg-teal-50 px-3 py-1 rounded-full border border-teal-200/60 max-w-xs truncate">
@@ -423,7 +422,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                             </div>
                         )}
                         <p className="text-xs text-slate-500 italic">
-                            {batchStatusMessage || 'Extracting biomarkers and reference intervals...'}
+                            {batchStatusMessage || getTranslation('up.stageDefault', currentLang)}
                         </p>
                     </div>
 
@@ -440,7 +439,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                     </div>
                     {batchTotal > 1 && (
                         <div className="text-[11px] font-bold text-slate-400">
-                            {Math.round((batchCurrentIndex / batchTotal) * 100)}% Complete
+                            {getTranslation('up.percentComplete', currentLang, { percent: String(Math.round((batchCurrentIndex / batchTotal) * 100)) })}
                         </div>
                     )}
                 </div>
@@ -451,8 +450,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                 <div className="bg-rose-50 border border-rose-200/80 rounded-2xl p-4 sm:p-5 text-rose-900 space-y-1.5 shadow-xs">
                     <div className="flex items-center space-x-2 rtl:space-x-reverse font-bold text-sm text-rose-950">
                         <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
-                        <span>Document Validation Notice</span>
-                    </div>
+                        <span>{getTranslation('up.validationTitle', currentLang)}</span>                    </div>
                     <p className="text-xs text-rose-800 leading-relaxed font-medium">
                         {analysisError}
                     </p>
@@ -469,13 +467,13 @@ export const UploadView: React.FC<UploadViewProps> = ({
                             {extractedNote && <div className="text-[11px] text-emerald-700">{extractedNote}</div>}
                             {pageCount > 1 && (
                                 <div className="text-[10px] text-emerald-800 font-semibold mt-0.5">
-                                    Multi-Page Document: Analyzed {pageCount} pages
+                                    {getTranslation('up.multiPageInfo', currentLang, { count: String(pageCount) })}
                                 </div>
                             )}
                         </div>
                     </div>
                     <span className="text-xs font-extrabold bg-emerald-600 text-white px-3 py-1 rounded-full">
-                        {extractedCount} Tests Found
+                        {getTranslation('up.testsFound', currentLang, { count: String(extractedCount) })}
                     </span>
                 </div>
             )}
@@ -499,30 +497,30 @@ export const UploadView: React.FC<UploadViewProps> = ({
                                     : 'bg-amber-50 text-amber-700 border-amber-200'
                             }`}
                         >
-                            {cvQuality.quality_passed ? '✓ Quality Approved' : '⚠ Quality Notice'}
+                            {cvQuality.quality_passed ? getTranslation('up.cvPassed', currentLang) : getTranslation('up.cvNotice', currentLang)}
                         </span>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center text-xs">
                         <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                            <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Sharpness</div>
+                            <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">{getTranslation('up.cvSharpness', currentLang)}</div>
                             <div className="font-black text-slate-800 mt-0.5">{cvQuality.sharpness_rating}</div>
-                            <div className="text-[10px] text-slate-400 font-mono">Score: {cvQuality.sharpness_score}</div>
+                            <div className="text-[10px] text-slate-400 font-mono">{getTranslation('up.cvScore', currentLang, { value: String(cvQuality.sharpness_score) })}</div>
                         </div>
                         <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                            <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Contrast</div>
+                            <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">{getTranslation('up.cvContrast', currentLang)}</div>
                             <div className="font-black text-slate-800 mt-0.5">{cvQuality.contrast_rating}</div>
-                            <div className="text-[10px] text-slate-400 font-mono">Ratio: {cvQuality.contrast_ratio}</div>
+                            <div className="text-[10px] text-slate-400 font-mono">{getTranslation('up.cvRatio', currentLang, { value: String(cvQuality.contrast_ratio) })}</div>
                         </div>
                         <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                            <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Resolution DPI</div>
+                            <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">{getTranslation('up.cvDpi', currentLang)}</div>
                             <div className="font-black text-slate-800 mt-0.5">{cvQuality.dpi_status}</div>
-                            <div className="text-[10px] text-slate-400 font-mono">Est. DPI</div>
+                            <div className="text-[10px] text-slate-400 font-mono">{getTranslation('up.cvEstDpi', currentLang)}</div>
                         </div>
                         <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                            <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Dimensions</div>
+                            <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">{getTranslation('up.cvDimensions', currentLang)}</div>
                             <div className="font-black text-slate-800 mt-0.5">{cvQuality.dimensions}</div>
-                            <div className="text-[10px] text-slate-400 font-mono">Pixels</div>
+                            <div className="text-[10px] text-slate-400 font-mono">{getTranslation('up.cvPixels', currentLang)}</div>
                         </div>
                     </div>
 
@@ -547,12 +545,12 @@ export const UploadView: React.FC<UploadViewProps> = ({
                         </div>
                         <div>
                             <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                                View / Edit Extracted Raw Text
+                                {getTranslation('up.rawTextToggle', currentLang)}
                             </span>
                             <div className="text-[11px] text-slate-400 mt-0.5">
                                 {textLineCount > 0
-                                    ? `${textLineCount} lines of clinical text loaded`
-                                    : 'Inspect OCR output or paste text directly'}
+                                    ? getTranslation('up.rawTextLoaded', currentLang, { count: String(textLineCount) })
+                                    : getTranslation('up.rawTextEmpty', currentLang)}
                             </div>
                         </div>
                     </div>
@@ -560,7 +558,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                     <div className="flex items-center space-x-2 rtl:space-x-reverse">
                         {textLineCount > 0 && (
                             <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200">
-                                {textLineCount} lines
+                                {getTranslation('up.linesCount', currentLang, { count: String(textLineCount) })}
                             </span>
                         )}
                         <div className="p-1 text-slate-400">
@@ -577,7 +575,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                     <div className="p-4 sm:p-5 border-t border-slate-100 space-y-3 bg-slate-50/40">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <p className="text-[11px] text-slate-500">
-                                Review, edit, or paste blood test parameters directly to re-run clinical parsing.
+                                {getTranslation('up.rawTextEditHint', currentLang)}
                             </p>
                             <button
                                 onClick={handleReRunRawText}
@@ -585,7 +583,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                                 className="bg-slate-900 hover:bg-slate-800 active:scale-95 text-white text-xs font-bold py-1.5 px-3.5 rounded-xl flex items-center space-x-1.5 rtl:space-x-reverse transition-all self-start sm:self-auto flex-shrink-0"
                             >
                                 <RefreshCw className={`w-3.5 h-3.5 ${isAnalyzing ? 'animate-spin' : ''}`} />
-                                <span>Re-Extract Text</span>
+                                <span>{getTranslation('up.reExtractButton', currentLang)}</span>
                             </button>
                         </div>
 
@@ -593,7 +591,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                             value={currentRawText}
                             onChange={(e) => onUpdateRawText(e.target.value)}
                             rows={8}
-                            placeholder="Paste or type lab report text here (e.g. Hemoglobin 14.5 g/dL (Range: 12.0 - 16.0))..."
+                            placeholder={getTranslation('up.rawTextPlaceholder', currentLang)}
                             className="w-full bg-white border border-slate-200 rounded-xl p-3.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 leading-relaxed shadow-inner"
                         />
                     </div>

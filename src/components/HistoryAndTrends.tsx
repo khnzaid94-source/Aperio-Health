@@ -35,6 +35,7 @@ import {
     getTranslation,
     getLocalizedTestName,
     getLocalizedExplanation,
+    getLocalizedCategory,
     generateRetrospectiveTrendSummary
 } from '../utils/language';
 import { CATALOG_INDEX } from '../constants/catalog';
@@ -248,7 +249,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                         className="inline-flex items-center space-x-2 rtl:space-x-reverse bg-gradient-to-r from-teal-500 to-emerald-400 hover:from-teal-400 hover:to-emerald-300 text-slate-950 font-extrabold py-3 px-6 rounded-xl shadow-lg shadow-teal-500/20 transition-all text-xs sm:text-sm transform hover:scale-[1.02]"
                     >
                         <Upload className="w-4 h-4" />
-                        <span>📤 Upload First Lab Report</span>
+                        <span>{getTranslation('hist.emptyCta', currentLang)}</span>
                     </button>
                 </div>
             ) : (
@@ -266,7 +267,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                 }`}
                             >
                                 <LineChartIcon className="w-4 h-4" />
-                                <span>📈 Time-Series Trends</span>
+                                <span>{getTranslation('hist.tabTrends', currentLang)}</span>
                             </button>
                             <button
                                 type="button"
@@ -278,7 +279,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                 }`}
                             >
                                 <GitCompare className="w-4 h-4" />
-                                <span>⚖️ Compare Two Visits</span>
+                                <span>{getTranslation('hist.tabCompare', currentLang)}</span>
                             </button>
                             <button
                                 type="button"
@@ -316,7 +317,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                         <select
                                             value={activeTrendTestId}
                                             onChange={(e) => setSelectedTrendTestId(e.target.value)}
-                                            aria-label="Select lab test parameter to view trend graph"
+                                            aria-label={getTranslation('hist.trendSelectAria', currentLang)}
                                             className="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
                                         >
                                             {eligibleTrendTests.map((tId) => (
@@ -363,13 +364,16 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                                         <div className="bg-slate-900 text-white p-3 rounded-lg text-xs shadow-md space-y-1">
                                                                             <div className="font-bold">{data.date}</div>
                                                                             <div>
-                                                                                Value:{' '}
+                                                                                {getTranslation('hist.tooltipValue', currentLang)}{' '}
                                                                                 <span className="font-bold text-teal-300">
                                                                                     {data.value} {activeTestCatalog.unit}
                                                                                 </span>
                                                                             </div>
                                                                             <div className="text-[10px] text-slate-300">
-                                                                                Normal Range: {activeTestCatalog.min} – {activeTestCatalog.max}
+                                                                                {getTranslation('hist.tooltipRange', currentLang, {
+                                                                                    min: String(activeTestCatalog.min),
+                                                                                    max: String(activeTestCatalog.max)
+                                                                                })}
                                                                             </div>
                                                                         </div>
                                                                     );
@@ -387,23 +391,23 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                             y={activeTestCatalog.min}
                                                             stroke="#059669"
                                                             strokeDasharray="3 3"
-                                                            label={{
-                                                                value: `Min (${activeTestCatalog.min})`,
-                                                                position: 'insideBottomLeft',
-                                                                fill: '#059669',
-                                                                fontSize: 10
-                                                            }}
+                                                             label={{
+                                                                 value: getTranslation('hist.minLine', currentLang, { value: String(activeTestCatalog.min) }),
+                                                                 position: 'insideBottomLeft',
+                                                                 fill: '#059669',
+                                                                 fontSize: 10
+                                                             }}
                                                         />
                                                         <ReferenceLine
                                                             y={activeTestCatalog.max}
                                                             stroke="#059669"
                                                             strokeDasharray="3 3"
-                                                            label={{
-                                                                value: `Max (${activeTestCatalog.max})`,
-                                                                position: 'insideTopLeft',
-                                                                fill: '#059669',
-                                                                fontSize: 10
-                                                            }}
+                                                             label={{
+                                                                 value: getTranslation('hist.maxLine', currentLang, { value: String(activeTestCatalog.max) }),
+                                                                 position: 'insideTopLeft',
+                                                                 fill: '#059669',
+                                                                 fontSize: 10
+                                                             }}
                                                         />
                                                         <Line
                                                             type="monotone"
@@ -443,9 +447,9 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                 <AlertTriangle className="w-8 h-8" />
                             </div>
                             <div className="space-y-2">
-                                <h3 className="text-base font-bold text-slate-900">At least 2 saved lab reports are required to compare visits.</h3>
+                                <h3 className="text-base font-bold text-slate-900">{getTranslation('hist.compareNeedTwoTitle', currentLang)}</h3>
                                 <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-lg mx-auto">
-                                    Please upload another blood test report in the Upload section to enable comparative analysis and trajectory tracking.
+                                    {getTranslation('hist.compareNeedTwoDesc', currentLang)}
                                 </p>
                             </div>
                         </div>
@@ -460,10 +464,10 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                     </div>
                                     <div>
                                         <h2 className="text-base font-bold text-slate-900">
-                                            Dual-Report Side-by-Side Comparison Workspace
+                                            {getTranslation('hist.compareTitle', currentLang)}
                                         </h2>
                                         <p className="text-xs text-slate-500">
-                                            Compare clinical biomarker changes between baseline and follow-up lab visits.
+                                            {getTranslation('hist.compareSub', currentLang)}
                                         </p>
                                     </div>
                                 </div>
@@ -480,7 +484,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                         }`}
                                     >
                                         <LayoutGrid className="w-3.5 h-3.5" />
-                                        <span>🎴 Visual Delta Cards</span>
+                                        <span>{getTranslation('hist.subCards', currentLang)}</span>
                                     </button>
                                     <button
                                         type="button"
@@ -492,7 +496,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                         }`}
                                     >
                                         <Table className="w-3.5 h-3.5" />
-                                        <span>📊 Clinical Table</span>
+                                        <span>{getTranslation('hist.subTable', currentLang)}</span>
                                     </button>
                                 </div>
                             </div>
@@ -501,34 +505,34 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                                        Visit A (Previous Report / Baseline)
+                                        {getTranslation('hist.visitALabel', currentLang)}
                                     </label>
                                     <select
                                         value={activeReportAId}
                                         onChange={(e) => setSelectedReportAId(e.target.value)}
-                                        aria-label="Select Visit A Baseline Report"
+                                        aria-label={getTranslation('hist.visitAAria', currentLang)}
                                         className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs sm:text-sm font-bold rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
                                     >
                                         {savedReports.map((rep, idx) => (
                                             <option key={rep.id} value={rep.id}>
-                                                {rep.label} {idx === 1 ? '(Previous Report)' : idx === 0 ? '(Latest Report)' : ''} — {rep.date || 'Unknown Date'}
+                                                {rep.label} {idx === 1 ? getTranslation('hist.prevReportTag', currentLang) : idx === 0 ? getTranslation('hist.latestReportTag', currentLang) : ''} — {rep.date || getTranslation('hist.unknownDate', currentLang)}
                                             </option>
                                         ))}
                                     </select>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                                        Visit B (Latest Report / Follow-up)
+                                        {getTranslation('hist.visitBLabel', currentLang)}
                                     </label>
                                     <select
                                         value={activeReportBId}
                                         onChange={(e) => setSelectedReportBId(e.target.value)}
-                                        aria-label="Select Visit B Follow-up Report"
+                                        aria-label={getTranslation('hist.visitBAria', currentLang)}
                                         className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs sm:text-sm font-bold rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
                                     >
                                         {savedReports.map((rep, idx) => (
                                             <option key={rep.id} value={rep.id}>
-                                                {rep.label} {idx === 0 ? '(Latest Report)' : idx === 1 ? '(Previous Report)' : ''} — {rep.date || 'Unknown Date'}
+                                                {rep.label} {idx === 0 ? getTranslation('hist.latestReportTag', currentLang) : idx === 1 ? getTranslation('hist.prevReportTag', currentLang) : ''} — {rep.date || getTranslation('hist.unknownDate', currentLang)}
                                             </option>
                                         ))}
                                     </select>
@@ -539,7 +543,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                 <div className="text-[11px] text-amber-800 bg-amber-50 border border-amber-300 rounded-xl p-3.5 text-center font-bold flex items-center justify-center space-x-2">
                                     <Info className="w-4 h-4 text-amber-600 flex-shrink-0" />
                                     <span>
-                                        You've selected the same visit for both sides. Pick two different dates above to see meaningful biomarker changes.
+                                        {getTranslation('hist.selfCompareWarning', currentLang)}
                                     </span>
                                 </div>
                             )}
@@ -553,22 +557,22 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                             <div className="flex items-center space-x-2 rtl:space-x-reverse">
                                                 <Sparkles className="w-4 h-4 text-teal-400" />
                                                 <span className="text-xs sm:text-sm font-bold text-slate-100">
-                                                    Visit-over-Visit Plain-Language Summary
+                                                    {getTranslation('hist.summaryHeader', currentLang)}
                                                 </span>
                                             </div>
                                             {deltaAnalysis && (
                                                 <div className="flex items-center gap-1.5 text-xs">
                                                     <span className="inline-flex items-center space-x-1 rtl:space-x-reverse bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 px-2.5 py-0.5 rounded-full font-medium">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                                        <span>{deltaAnalysis.improvedCount} Improved</span>
+                                                        <span>{getTranslation('hist.chipImproved', currentLang, { count: String(deltaAnalysis.improvedCount) })}</span>
                                                     </span>
                                                     <span className="inline-flex items-center space-x-1 rtl:space-x-reverse bg-rose-950/60 border border-rose-800/60 text-rose-300 px-2.5 py-0.5 rounded-full font-medium">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
-                                                        <span>{deltaAnalysis.varianceCount} New Variances</span>
+                                                        <span>{getTranslation('hist.chipVariances', currentLang, { count: String(deltaAnalysis.varianceCount) })}</span>
                                                     </span>
                                                     <span className="inline-flex items-center space-x-1 rtl:space-x-reverse bg-slate-800 border border-slate-700 text-slate-300 px-2.5 py-0.5 rounded-full font-medium">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                                                        <span>{deltaAnalysis.stableCount} Stable</span>
+                                                        <span>{getTranslation('hist.chipStable', currentLang, { count: String(deltaAnalysis.stableCount) })}</span>
                                                     </span>
                                                 </div>
                                             )}
@@ -578,30 +582,30 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                             {deltaAnalysis && deltaAnalysis.improvedCount > 0 && (
                                                 <li className="flex items-center space-x-2 rtl:space-x-reverse">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
-                                                    <span>
-                                                        <strong className="text-emerald-300 font-semibold">{deltaAnalysis.improvedCount}</strong> biomarker{deltaAnalysis.improvedCount === 1 ? '' : 's'} improved toward healthy targets.
+                                                    <span className="text-emerald-300 font-semibold">
+                                                        {getTranslation('hist.lineImproved', currentLang, { count: String(deltaAnalysis.improvedCount) })}
                                                     </span>
                                                 </li>
                                             )}
                                             {deltaAnalysis && deltaAnalysis.varianceCount > 0 && (
                                                 <li className="flex items-center space-x-2 rtl:space-x-reverse">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-rose-400 flex-shrink-0" />
-                                                    <span>
-                                                        <strong className="text-rose-300 font-semibold">{deltaAnalysis.varianceCount}</strong> new variance{deltaAnalysis.varianceCount === 1 ? '' : 's'} detected.
+                                                    <span className="text-rose-300 font-semibold">
+                                                        {getTranslation('hist.lineVariances', currentLang, { count: String(deltaAnalysis.varianceCount) })}
                                                     </span>
                                                 </li>
                                             )}
                                             {deltaAnalysis && deltaAnalysis.stableCount > 0 && (
                                                 <li className="flex items-center space-x-2 rtl:space-x-reverse">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0" />
-                                                    <span>
-                                                        <strong className="text-slate-200 font-semibold">{deltaAnalysis.stableCount}</strong> biomarker{deltaAnalysis.stableCount === 1 ? '' : 's'} remained steady within normal reference boundaries.
+                                                    <span className="text-slate-200 font-semibold">
+                                                        {getTranslation('hist.lineStable', currentLang, { count: String(deltaAnalysis.stableCount) })}
                                                     </span>
                                                 </li>
                                             )}
                                             {!isSelfComparison && (!deltaAnalysis || deltaAnalysis.totalCompared === 0) && (
                                                 <li className="text-slate-400 text-xs">
-                                                    No overlapping biomarkers found between the selected visits to calculate deltas.
+                                                    {getTranslation('hist.noOverlap', currentLang)}
                                                 </li>
                                             )}
                                         </ul>
@@ -619,7 +623,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                         : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
                                                 }`}
                                             >
-                                                All ({deltaAnalysis.totalCompared})
+                                                {getTranslation('an.allWithCount', currentLang, { count: String(deltaAnalysis.totalCompared) })}
                                             </button>
                                             <button
                                                 type="button"
@@ -630,7 +634,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                         : 'bg-slate-100 text-emerald-700 hover:text-emerald-800 border border-slate-200'
                                                 }`}
                                             >
-                                                🟢 Improved ({deltaAnalysis.improvedCount})
+                                                {getTranslation('hist.filterImprovedCount', currentLang, { count: String(deltaAnalysis.improvedCount) })}
                                             </button>
                                             <button
                                                 type="button"
@@ -641,7 +645,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                         : 'bg-slate-100 text-rose-700 hover:text-rose-800 border border-slate-200'
                                                 }`}
                                             >
-                                                🔴 New Variances ({deltaAnalysis.varianceCount})
+                                                {getTranslation('hist.filterVariancesCount', currentLang, { count: String(deltaAnalysis.varianceCount) })}
                                             </button>
                                             <button
                                                 type="button"
@@ -652,7 +656,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                         : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
                                                 }`}
                                             >
-                                                ⚪ Stable ({deltaAnalysis.stableCount})
+                                                {getTranslation('hist.filterStableCount', currentLang, { count: String(deltaAnalysis.stableCount) })}
                                             </button>
                                         </div>
                                     )}
@@ -705,7 +709,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                                             : 'bg-slate-100 text-slate-700 border-slate-200'
                                                                     }`}
                                                                 >
-                                                                    {isImproved ? '🟢 Improved' : isVariance ? '🔴 New Variance' : '⚪ Stable'}
+                                                                    {isImproved ? getTranslation('hist.badgeImproved', currentLang) : isVariance ? getTranslation('hist.badgeVariance', currentLang) : getTranslation('hist.badgeStable', currentLang)}
                                                                 </span>
                                                             </div>
 
@@ -737,7 +741,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                             {/* Visual Reference Band Indicator */}
                                                             <div className="space-y-1 pt-1">
                                                                 <div className="flex justify-between text-[10px] text-slate-500 font-medium">
-                                                                    <span>Target Range:</span>
+                                                                    <span>{getTranslation('hist.targetRangeLabel', currentLang)}</span>
                                                                     <span className="font-bold text-slate-700">{min} – {max} {d.unit}</span>
                                                                 </div>
                                                                 <div className="relative h-2.5 w-full bg-slate-200/80 rounded-full overflow-hidden border border-slate-200/80">
@@ -750,7 +754,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                                     <div
                                                                         className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-slate-600 border border-white z-10"
                                                                         style={{ left: `${posA}%` }}
-                                                                        title={`Visit A: ${valA}`}
+                                                                        title={getTranslation('hist.visitATitle', currentLang, { value: String(valA) })}
                                                                     />
                                                                     {/* Visit B Marker */}
                                                                     <div
@@ -758,7 +762,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                                             isImproved ? 'bg-emerald-600' : isVariance ? 'bg-rose-600' : 'bg-teal-600'
                                                                         }`}
                                                                         style={{ left: `${posB}%` }}
-                                                                        title={`Visit B: ${valB}`}
+                                                                        title={getTranslation('hist.visitBTitle', currentLang, { value: String(valB) })}
                                                                     />
                                                                 </div>
                                                             </div>
@@ -777,8 +781,17 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                         <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
                                             <p className="text-xs text-slate-600 font-medium">
                                                 {deltaAnalysis && deltaAnalysis.totalCompared === 0
-                                                    ? 'No overlapping biomarkers found between the selected visits to calculate deltas.'
-                                                    : `No biomarkers matching the "${deltaFilter}" filter.`}
+                                                    ? getTranslation('hist.noOverlap', currentLang)
+                                                    : getTranslation('hist.noMatchingFilter', currentLang, {
+                                                          filter:
+                                                              deltaFilter === 'improved'
+                                                                  ? getTranslation('hist.badgeImproved', currentLang)
+                                                                  : deltaFilter === 'variance'
+                                                                  ? getTranslation('hist.badgeVariance', currentLang)
+                                                                  : deltaFilter === 'stable'
+                                                                  ? getTranslation('hist.badgeStable', currentLang)
+                                                                  : getTranslation('an.filterAll', currentLang)
+                                                      })}
                                             </p>
                                         </div>
                                     )}
@@ -790,11 +803,17 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                         <table className="w-full text-left rtl:text-right border-collapse">
                                             <thead>
                                                 <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider bg-slate-50/80">
-                                                    <th className="py-3 px-4">Biomarker & Category</th>
-                                                    <th className="py-3 px-4">Visit A <span className="text-[10px] text-slate-400 font-normal">({reportA?.date || 'Unknown Date'})</span></th>
-                                                    <th className="py-3 px-4">Visit B <span className="text-[10px] text-slate-400 font-normal">({reportB?.date || 'Unknown Date'})</span></th>
-                                                    <th className="py-3 px-4">Net Delta & % Change</th>
-                                                    <th className="py-3 px-4">Trajectory Status</th>
+                                                    <th className="py-3 px-4">{getTranslation('hist.colBiomarker', currentLang)}</th>
+                                                    <th className="py-3 px-4">
+                                                        {getTranslation('hist.colVisitA', currentLang)}{' '}
+                                                        <span className="text-[10px] text-slate-400 font-normal">({reportA?.date || getTranslation('hist.unknownDate', currentLang)})</span>
+                                                    </th>
+                                                    <th className="py-3 px-4">
+                                                        {getTranslation('hist.colVisitB', currentLang)}{' '}
+                                                        <span className="text-[10px] text-slate-400 font-normal">({reportB?.date || getTranslation('hist.unknownDate', currentLang)})</span>
+                                                    </th>
+                                                    <th className="py-3 px-4">{getTranslation('hist.colDelta', currentLang)}</th>
+                                                    <th className="py-3 px-4">{getTranslation('hist.colTrajectory', currentLang)}</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-150 text-xs text-slate-700">
@@ -862,7 +881,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                         } else if (diff < -0.0001) {
                                                             deltaText = `↓ -${formattedDelta} ${unitB} (-${formattedPercent}%)`;
                                                         } else {
-                                                            deltaText = `No Change (0%)`;
+                                                            deltaText = getTranslation('hist.noChange', currentLang);
                                                         }
 
                                                         if (trajectory === 'Improved') {
@@ -879,7 +898,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                             {/* 1. Biomarker & Category */}
                                                             <td className="py-3 px-4 font-bold text-slate-800">
                                                                 <div>{testName}</div>
-                                                                <div className="text-[10px] text-slate-400 font-normal">{categoryName}</div>
+                                                                <div className="text-[10px] text-slate-400 font-normal">{getLocalizedCategory(categoryName, currentLang)}</div>
                                                             </td>
 
                                                             {/* 2. Visit A Value ("Not Tested" Guard) */}
@@ -890,11 +909,15 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                                         <div className={`text-[10px] font-bold ${
                                                                             classA === 'High' ? 'text-rose-600' : classA === 'Low' ? 'text-amber-600' : 'text-emerald-600'
                                                                         }`}>
-                                                                            {classA}
+                                                                            {classA === 'High'
+                                                                                ? getTranslation('highBadge', currentLang)
+                                                                                : classA === 'Low'
+                                                                                ? getTranslation('lowBadge', currentLang)
+                                                                                : getTranslation('normalBadge', currentLang)}
                                                                         </div>
                                                                     </div>
                                                                 ) : (
-                                                                    <span className="text-slate-400 font-medium italic">— Not Tested</span>
+                                                                    <span className="text-slate-400 font-medium italic">{getTranslation('hist.notTested', currentLang)}</span>
                                                                 )}
                                                             </td>
 
@@ -906,11 +929,15 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                                         <div className={`text-[10px] font-bold ${
                                                                             classB === 'High' ? 'text-rose-600' : classB === 'Low' ? 'text-amber-600' : 'text-emerald-600'
                                                                         }`}>
-                                                                            {classB}
+                                                                            {classB === 'High'
+                                                                                ? getTranslation('highBadge', currentLang)
+                                                                                : classB === 'Low'
+                                                                                ? getTranslation('lowBadge', currentLang)
+                                                                                : getTranslation('normalBadge', currentLang)}
                                                                         </div>
                                                                     </div>
                                                                 ) : (
-                                                                    <span className="text-slate-400 font-medium italic">— Not Tested</span>
+                                                                    <span className="text-slate-400 font-medium italic">{getTranslation('hist.notTested', currentLang)}</span>
                                                                 )}
                                                             </td>
 
@@ -936,7 +963,12 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                                         ? 'bg-slate-50 text-slate-700 border-slate-200'
                                                                         : 'bg-slate-50/50 text-slate-400 border-slate-150'
                                                                 }`}>
-                                                                    {trajectory === 'Single Visit' ? 'Not Tested Both' : trajectory}
+                                                                    {trajectory === 'Single Visit' ? getTranslation('hist.notTestedBoth', currentLang)
+                                                                        : trajectory === 'Improved'
+                                                                        ? getTranslation('hist.trajImproved', currentLang)
+                                                                        : trajectory === 'Elevated'
+                                                                        ? getTranslation('hist.trajElevated', currentLang)
+                                                                        : getTranslation('hist.trajStable', currentLang)}
                                                                 </span>
                                                             </td>
                                                         </tr>
@@ -995,7 +1027,11 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                         {report.date}
                                                     </span>
                                                     <span className="text-[10px] px-1.5 py-0.2 rounded font-black tracking-wider bg-slate-200/80 text-slate-700 border border-slate-300/80">
-                                                        {report.sampleCondition?.toLowerCase() === 'non-fasting' ? 'Non-Fasting' : report.sampleCondition?.toLowerCase() === 'post-exercise' ? 'Post-Workout' : 'Fasting'}
+                                                        {report.sampleCondition?.toLowerCase() === 'non-fasting'
+                                                            ? getTranslation('dash.nonFasting', currentLang)
+                                                            : report.sampleCondition?.toLowerCase() === 'post-exercise'
+                                                            ? getTranslation('dash.postWorkout', currentLang)
+                                                            : getTranslation('hist.condFasting', currentLang)}
                                                     </span>
                                                 </div>
 
@@ -1023,7 +1059,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                 <button
                                                     type="button"
                                                     onClick={(e) => handleDeleteReport(e, report.id)}
-                                                    title="Delete this report"
+                                                    title={getTranslation('hist.deleteReportBtnTitle', currentLang)}
                                                     className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -1077,7 +1113,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                                                     translatedName
                                                                                 )
                                                                             }
-                                                                            title={`Remove ${translatedName}`}
+                                                                            title={getTranslation('hist.removeTestBtnTitle', currentLang, { name: translatedName })}
                                                                             className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-600 transition-opacity p-0.5"
                                                                         >
                                                                             <X className="w-3.5 h-3.5" />
@@ -1092,7 +1128,13 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                                                                 : 'bg-emerald-100 text-emerald-800'
                                                                         }`}
                                                                     >
-                                                                        {res.measuredValue} {res.unit} ({res.classification})
+                                                                        {res.measuredValue} {res.unit} (
+                                                                            {res.classification === 'High'
+                                                                                ? getTranslation('highBadge', currentLang)
+                                                                                : res.classification === 'Low'
+                                                                                ? getTranslation('lowBadge', currentLang)
+                                                                                : getTranslation('normalBadge', currentLang)}
+                                                                        )
                                                                     </span>
                                                                 </div>
 
@@ -1117,9 +1159,9 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
 
             <ConfirmDialog
                 open={showClearConfirmModal}
-                title="Permanently Clear History?"
-                message="Are you sure you want to delete all saved lab visits, biomarker tracking history, and trend graphs from this account?"
-                confirmLabel="Yes, Clear All History"
+                title={getTranslation('hist.clearConfirmTitle', currentLang)}
+                message={getTranslation('hist.clearConfirmMessage', currentLang)}
+                confirmLabel={getTranslation('hist.clearConfirmYes', currentLang)}
                 onClose={() => setShowClearConfirmModal(false)}
                 onConfirm={() => {
                     setShowClearConfirmModal(false);
@@ -1129,9 +1171,9 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
 
             <ConfirmDialog
                 open={deleteReportTarget !== null}
-                title="Delete This Report?"
-                message="This saved visit will be permanently removed from your history, trends, and comparisons."
-                confirmLabel="Yes, Delete Report"
+                title={getTranslation('hist.deleteReportTitle', currentLang)}
+                message={getTranslation('hist.deleteReportMessage', currentLang)}
+                confirmLabel={getTranslation('hist.deleteReportYes', currentLang)}
                 onClose={() => setDeleteReportTarget(null)}
                 onConfirm={() => {
                     if (deleteReportTarget !== null) {
@@ -1143,9 +1185,9 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
 
             <ConfirmDialog
                 open={deleteTestTarget !== null}
-                title={`Remove ${deleteTestTarget?.testName ?? 'this biomarker'}?`}
-                message="This biomarker will be permanently removed from this saved visit."
-                confirmLabel="Yes, Remove"
+                title={getTranslation('hist.removeTestTitle', currentLang, { name: deleteTestTarget?.testName ?? '' })}
+                message={getTranslation('hist.removeTestMessage', currentLang)}
+                confirmLabel={getTranslation('hist.removeTestYes', currentLang)}
                 onClose={() => setDeleteTestTarget(null)}
                 onConfirm={() => {
                     if (deleteTestTarget) {
