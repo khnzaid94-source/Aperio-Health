@@ -77,8 +77,8 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 
 **Prod:** https://aperio-health.onrender.com (Render free tier, autoDeploy on push)
 **Repo:** github.com/khnzaid94-source/Aperio-Health (private) · branch `main`
-**HEAD:** Stage 5 code = `1de3095` + docs `c7aa2f5` pushed; **post-sweep i18n defect fixes are LOCAL & UNCOMMITTED** (awaiting owner approval)
-**Next up:** commit+push sweep fixes → prod re-QA → owner manual QA battery (`docs/QA-BATTERY.md`) → native-speaker review → publish gate
+**HEAD:** three commits pushed + deployed & verified 2026-08-25: `07a0a08` (trends single-page layout) → `4620619` (richer demo seeds) → `0d81230` (deletion propagation). Prod bundle `index-T7qpK-e4.js` = fresh local build of HEAD.
+**Next up:** owner manual QA battery (`docs/QA-BATTERY.md`, now incl. propagation + layout checks) on prod → Phase 9 test hardening → native-speaker review → publish gate
 
 ## ✅ Completed work ledger (this chat)
 
@@ -106,9 +106,12 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 | 20 | Stages 1–3 remediation audit: `nav.selectLanguage` aria-labels (sidebar+landing), delete-confirm `<strong>` split, `prof.today` fallback, tier-3 hint casing; scripted sweep clean (+4 keys/lang → 304×10) | `5e728ea` |
 | 21 | **i18n Stage 4**: UploadView + HistoryAndTrends fully localized (110 new keys ×10 langs: `up.*` ×45, `hist.*` ×65); reused `dash.nonFasting/postWorkout`, `an.allWithCount/filterAll`, `normal/high/lowBadge`, `processingText`, `getLocalizedCategory` | `2504c3a` |
 | 22 | **i18n Stage 5**: JournalView + AboutView + misc (MLInsightsCard, RangeGauge, ConfirmDialog defaults) fully localized — 91 new keys ×10 langs (`jrn.*` ×35, `ab.*` ×35, `ml.*` ×14, `gauge.*` ×5, `ui.*` ×2); AboutView HIPAA badge reworded honest; dictionary now 505 keys ×10 | `1de3095` |
-| 23 | **Pre-QA scripted i18n sweep + defect fixes (uncommitted)**: deploy currency verified (prod = HEAD assets). App-wide hardcoded-English scan found 5 user-visible defects, all fixed: (1) LandingView pillar descriptions called `t('pillar1Desc')` etc. missing `landing.` prefix → raw key names rendered on prod since Stage 1b; (2) HistoryAndTrends band caption hardcoded EN → wired existing `hist.bandCaption`; (3) ProfileView "Current Medications & Supplements" hardcoded → wired orphaned `prof.medsLabel`; (4) UploadView CV strip title hardcoded → wired orphaned `up.cvTitle`; (5) `up.processingNofM` called with `{current,total}` but never defined in ANY language → batch progress showed raw key string; added to all 10 langs (dictionary now **506 keys ×10**). Permanent CI hardening in translations.test.ts: `{param}` parity per language + call-site key-existence scan via import.meta.glob (this guard would have auto-caught defects 1 & 5). Vitest 36/36 · tsc build green · ESLint clean · pytest 13/13. Known accepted EN-by-design: brand lockups ("Aperio Health"/"Health Intelligence"), example placeholders, clinical content constants (samples/symptoms/drugInteractions), deltas.ts trajectory explanations + questionGenerator doctor questions + language.ts retrospective summary + client.ts network-error strings (→ Phase 8 Scope B candidates), pdfExport PDF report. | — |
+| 23 | **Pre-QA scripted i18n sweep + defect fixes**: deploy currency verified (prod = HEAD assets). App-wide hardcoded-English scan found 5 user-visible defects, all fixed: (1) LandingView pillar descriptions called `t('pillar1Desc')` etc. missing `landing.` prefix → raw key names rendered on prod since Stage 1b; (2) HistoryAndTrends band caption hardcoded EN → wired existing `hist.bandCaption`; (3) ProfileView "Current Medications & Supplements" hardcoded → wired orphaned `prof.medsLabel`; (4) UploadView CV strip title hardcoded → wired orphaned `up.cvTitle`; (5) `up.processingNofM` called with `{current,total}` but never defined in ANY language → batch progress showed raw key string; added to all 10 langs. Permanent CI hardening in translations.test.ts: `{param}` parity per language + call-site key-existence scan via import.meta.glob (auto-catches defects 1 & 5 classes). Known accepted EN-by-design list documented. Owner QA battery authored at `docs/QA-BATTERY.md`. | `a58eba1` |
+| 24 | **ui(trends) single-page layout**: Trends tab chart panel + written summary restructured into responsive grid — `lg:grid-cols-[minmax(0,1fr)_280px]` renders summary as right-side rail on desktop (two-col only when a summary exists); stacked flex-col below lg; card padding tightened one step. Render-location-only change; no logic/i18n keys touched. Battery §6 laptop-viewport fit check added. | `07a0a08` |
+| 25 | **feat(demo) richer showcase seeds**: demo accounts upgraded for reviewer impact — 4 visits each (~12/100/190/280 days back via new `daysAgo()` helper → seeds never look stale), realistic treatment-response arcs (Sarah FBS 152→108/HbA1c 7.8→6.4; David LDL 178→121/HDL 36→44; Maya TSH 8.9→3.9/ferritin 6→41 with final visit all-Normal showcasing the clean dashboard state), panels widened with catalog-proven in-range analytes, and every account now seeds medication + supplement + **lifestyle** journal entries (no empty ledger cards). Battery §4 badge=4 updated. | `4620619` |
+| 26 | **fix(history) deletion propagation** (owner-reported QA bug: cleared history lingered in Analyze tab): `currentSourceReportId` provenance ties analyzer session to saved-report id — set on save/hydrate, nulled on fresh upload/batch; clear-all resets analyzer + ml insights + provenance; single-report delete resets analyzer only when displaying THAT report; single-biomarker delete removes the testId from the live analyzer too; raw OCR text purges on ANY deletion (strict no-trace per owner directive). Demo resurrection killed via `aperio_democleared_<email>` tombstone blocking auto-seed (history + journal) after explicit clears/last-item deletes — flip-flop across reloads gone; tombstone dies at logout so fresh demo logins reseed intentionally. Non-401 DELETE failures surface amber `ui.syncFail` notice ×10 langs (dictionary 507×10) replacing silent swallow. New pure helpers `src/utils/historyOps.ts` (removeTestFromResults keeps unidentifiable rows — safer deletion semantics; shouldSeedDemoData truth table). Tests: pytest `test_history_api.py` — bulk→GET round-trip, clear-all→`[]`, single report/test deletes, cross-account IDOR no-op guard, auth-required deletes; vitest historyOps suite. Vitest 43/43 · pytest 18/18 · build green · ESLint clean. | `0d81230` |
 
-**Test posture:** Vitest 36/36 (was 26; +9 param-parity, +1 call-site scan) · pytest 13/13 · ESLint clean · tsc build green. Sweep fixes verified: dictionary 506 keys ×10, param parity + call-site scan green.
+**Test posture:** Vitest 43/43 · pytest 18/18 · ESLint clean · tsc build green. Dictionary 507 keys ×10 (param parity + call-site scan green). Prod = HEAD verified.
 
 ## ⛔ Pinned — RESOLVED 2026-08-24: "Saved Reports tab invisible on prod"
 
@@ -223,6 +226,32 @@ Notes: translations are AI-authored (native review recommended pre-promotion); c
 - [x] 7.3 Seed-on-startup verified; cold-start "waking up…" loading state
 - [x] 7.4 Remote QA battery 10/10 on prod + README rewritten (browser-side manual QA handed to owner) · README rewritten honestly
 - [x] 7.5 PROD URL: https://aperio-health.onrender.com (owner adds to Google origins; OAuth publish = owner click) to Google origins; publish OAuth app (non-sensitive scopes)
+
+## Phase 9 — Test Hardening [pre-publish gate]
+
+> Rationale (locked 2026-08-24): the Phase 1–3 audit *fixed* security issues but nothing
+> *guards* them — a regression would ship silently. Formal performance/load testing is
+> deliberately SKIPPED: Render free tier (~50s cold start, 512 MB, shared CPU) makes load
+> numbers noise; revisit only if a paid tier is adopted. Compatibility = light manual pass
+> (Chrome + one WebKit + one Android), folded into the QA battery.
+
+- [ ] 9.1 **IDOR/authz matrix + dependency audit in CI**: pytest matrix proving token A
+      cannot read/write user B's reports / journal / profile / vault-delete routes;
+      stale-session → 401; add `npm audit --omit=dev` + `pip audit` step to GitHub Actions
+- [ ] 9.2 **Core-accuracy unit tests**: `ml_engine.py` robust z-scores, Balance Index
+      weights, age/sex stratum selection, lazy-init singleton; `ocr.py` parser edge cases
+      (match-index slicing, synonym positions, malformed ranges) mirroring parser.ts suite
+- [ ] 9.3 **Integration suite** (FastAPI TestClient + temp SQLite): register→login→
+      authorized fetch; history bulk push/re-fetch round-trip; journal CRUD owner-scoped;
+      upload-file endpoint with fixture files incl. magic-byte reject paths; Google OAuth
+      verify mocked (codifies the manual prod round-trip QA from the pinned investigation)
+- [ ] 9.4 **Post-deploy smoke script**: GET / returns HTML with NEW asset hash, API wake-up
+      check, demo-account login round-trip on prod; local script or post-deploy CI step
+- [ ] 9.5 **Bundle split**: main index chunk 803 kB (>500 kB warning) — evaluate React.lazy
+      route-level splitting for AnalyzeView/HistoryAndTrends; charts/vendor already split
+
+**Verify:** full battery green (vitest + pytest + build + ESLint); IDOR matrix red-green
+proven by reverting one ownership check locally; smoke script passes against prod.
 
 ## Resume Protocol (for new sessions)
 
