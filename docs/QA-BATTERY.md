@@ -39,6 +39,10 @@
 - [ ] Three tabs present: Trends / Compare / 🗂️ Your Saved Reports (Saved Reports list VISIBLE via tab)
 - [ ] Trend chart band caption localized (**fix check: not hardcoded English caption**)
 - [ ] Compare workspace: select visits A/B; delta table renders; trajectory badges localized
+- [ ] Delete ONE saved visit → list updates instantly AND Analyze/Dashboard/Trends/raw-OCR panel show zero trace of it without refresh (propagation fix)
+- [ ] Clear All History → Analyze tab returns to its empty/upload CTA immediately (no refresh)
+- [ ] Throwaway non-demo account: repeat both, then hard-refresh → still gone (server truth confirmed)
+- [ ] DevTools → Network offline → delete something → amber "server did not confirm" notice appears
 - [ ] Known accepted gap: trajectory *explanation* sentences still English (documented Scope B)
 
 ## 7. Journal

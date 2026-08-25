@@ -595,6 +595,7 @@ export const INTERFACE_TRANSLATIONS: Record<SupportedLanguage, Record<string, st
         'gauge.normalZone': 'Normal ({min} – {max} {unit})',
         'gauge.highZone': 'High (> {max})',
         'ui.cancel': 'Cancel',
+        'ui.syncFail': 'Removed here, but the server did not confirm. It will sync automatically on your next visit.',
         'ui.cannotUndo': 'This action cannot be undone.',
     },
     hi: {
@@ -1178,6 +1179,7 @@ export const INTERFACE_TRANSLATIONS: Record<SupportedLanguage, Record<string, st
         'gauge.normalZone': 'सामान्य ({min} – {max} {unit})',
         'gauge.highZone': 'अधिक (> {max})',
         'ui.cancel': 'रद्द करें',
+        'ui.syncFail': 'यहाँ हटा दिया गया, लेकिन सर्वर ने पुष्टि नहीं की। यह आपकी अगली विज़िट पर स्वतः सिंक हो जाएगा।',
         'ui.cannotUndo': 'यह क्रिया पूर्ववत नहीं की जा सकती।',
     },
     mr: {
@@ -1761,6 +1763,7 @@ export const INTERFACE_TRANSLATIONS: Record<SupportedLanguage, Record<string, st
         'gauge.normalZone': 'सामान्य ({min} – {max} {unit})',
         'gauge.highZone': 'जास्त (> {max})',
         'ui.cancel': 'रद्द करा',
+        'ui.syncFail': 'येथे काঢले, पण सर्व्हरने खात्री केली नाही. तुमच्या पुढील भेटीत ते आपोआप संक्रमित होईल.',
         'ui.cannotUndo': 'ही क्रिया पूर्ववत करता येणार नाही.',
     },
     bn: {
@@ -2344,6 +2347,7 @@ export const INTERFACE_TRANSLATIONS: Record<SupportedLanguage, Record<string, st
         'gauge.normalZone': 'স্বাভাবিক ({min} – {max} {unit})',
         'gauge.highZone': 'বেশি (> {max})',
         'ui.cancel': 'বাতিল করুন',
+        'ui.syncFail': 'এখানে মুছে ফেলা হয়েছে, কিন্তু সার্ভার নিশ্চিত করেনি। আপনার পরবর্তী ভিজটে এটি স্বয়ংক্রিয়ভাবে সিঙ্ক হবে।',
         'ui.cannotUndo': 'এই কাজটি আনডো করা যাবে না।',
     },
     te: {
@@ -2927,6 +2931,7 @@ export const INTERFACE_TRANSLATIONS: Record<SupportedLanguage, Record<string, st
         'gauge.normalZone': 'సాధారణ ({min} – {max} {unit})',
         'gauge.highZone': 'ఎక్కువ (> {max})',
         'ui.cancel': 'రద్దు చేయండి',
+        'ui.syncFail': 'ఇక్కడ తೊలగించబడింది, కానీ సర్వర్ ధర్మపరు చేలేదు. మీ తదుపరి సందర్శనలో ఇది స్వయంచాలకంగా సింక్ అవుతుంది.',
         'ui.cannotUndo': 'ఈ చర్యను వెనక్కి తిప్పలేరు.',
     },
     ta: {
@@ -3510,6 +3515,7 @@ export const INTERFACE_TRANSLATIONS: Record<SupportedLanguage, Record<string, st
         'gauge.normalZone': 'இயல்பான ({min} – {max} {unit})',
         'gauge.highZone': 'அதிகம் (> {max})',
         'ui.cancel': 'ரத்து செய்',
+        'ui.syncFail': 'இங்கே அகற்றப்பட்டது, ஆனால் சேவையகம் உறுதிப்படுத்தவில்லை. உங்கள் அடுத்த வருகையில் இது தானாகவே ஒத்திசைக்கும்.',
         'ui.cannotUndo': 'இந்தச் செயலை மீட்டமைக்க முடியாது.',
     },
     gu: {
@@ -4093,6 +4099,7 @@ export const INTERFACE_TRANSLATIONS: Record<SupportedLanguage, Record<string, st
         'gauge.normalZone': 'સામાન્ય ({min} – {max} {unit})',
         'gauge.highZone': 'ઊંચું (> {max})',
         'ui.cancel': 'રદ કરો',
+        'ui.syncFail': 'અહિંં દૂર કર્યું, પરંતુ સર્વરાબે ખાતરી નથી. તમારી આગામીની મુટતાંત તે સ્વાતહેલું સિંક થઈ જશે.',
         'ui.cannotUndo': 'આ ક્રિયા પાછી ફેરવી શકાશે નહીં.',
     },
     es: {
@@ -4676,6 +4683,7 @@ export const INTERFACE_TRANSLATIONS: Record<SupportedLanguage, Record<string, st
         'gauge.normalZone': 'Normal ({min} – {max} {unit})',
         'gauge.highZone': 'Alto (> {max})',
         'ui.cancel': 'Cancelar',
+        'ui.syncFail': 'Eliminado aquí, pero el servidor no lo confirmó. Se sincronizará automáticamente en su próxima visita.',
         'ui.cannotUndo': 'Esta acción no se puede deshacer.',
     },
     fr: {
@@ -5259,6 +5267,7 @@ export const INTERFACE_TRANSLATIONS: Record<SupportedLanguage, Record<string, st
         'gauge.normalZone': 'Normal ({min} – {max} {unit})',
         'gauge.highZone': 'Élevé (> {max})',
         'ui.cancel': 'Annuler',
+        'ui.syncFail': 'Supprimé ici, mais le serveur ne l\'a pas confirmé. La synchronisation se fera automatiquement lors de votre prochaine visite.',
         'ui.cannotUndo': 'Cette action est irréversible.',
     },
     zh: {
@@ -5842,6 +5851,7 @@ export const INTERFACE_TRANSLATIONS: Record<SupportedLanguage, Record<string, st
         'gauge.normalZone': '正常 ({min} – {max} {unit})',
         'gauge.highZone': '偏高 (> {max})',
         'ui.cancel': '取消',
+        'ui.syncFail': '已在此处删除，但服务器未确认。它将在您下次访问时自动同步。',
         'ui.cannotUndo': '此操作无法撤销。',
     }
 };

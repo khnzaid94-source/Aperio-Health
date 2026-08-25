@@ -20,7 +20,8 @@ import {
     UrgencyType
 } from './types';
 import { CATALOG, getUrgency } from './constants/catalog';
-import { getLanguageDirection } from './utils/language';
+import { getLanguageDirection, getTranslation } from './utils/language';
+import { removeTestFromResults, shouldSeedDemoData } from './utils/historyOps';
 import { MLInsightsData } from './components/MLInsightsCard';
 import { apiFetch, ApiError, clearToken, getToken } from './api/client';
 
@@ -434,6 +435,9 @@ const isEmptyStoredArray = (storageKey: string): boolean => {
     }
 };
 
+// Set when a demo-account owner explicitly empties their data; blocks auto-seed resurrection
+const demoClearedKey = (email: string): string => `aperio_democleared_${email}`;
+
 export function App() {
     // Auth State
     const [userEmail, setUserEmail] = useState<string | null>(() => {
@@ -482,6 +486,20 @@ export function App() {
         setCurrentLang(lang);
     }, []);
 
+    const showSyncNotice = useCallback(() => {
+        setSyncNotice(getTranslation('ui.syncFail', currentLang));
+        if (syncNoticeTimer.current) window.clearTimeout(syncNoticeTimer.current);
+        syncNoticeTimer.current = window.setTimeout(() => setSyncNotice(null), 6000);
+    }, [currentLang]);
+
+    const resetAnalyzerSession = useCallback(() => {
+        setCurrentParsedResults([]);
+        setCurrentSourceLabel('No report uploaded');
+        setCurrentMlInsights(null);
+        setCurrentRawText('');
+        setCurrentSourceReportId(null);
+    }, []);
+
     // Data State
     const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
     const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
@@ -491,6 +509,11 @@ export function App() {
     const [currentSourceLabel, setCurrentSourceLabel] = useState<string>('No report uploaded');
     const [currentParsedResults, setCurrentParsedResults] = useState<TestResult[]>([]);
     const [currentMlInsights, setCurrentMlInsights] = useState<MLInsightsData | null>(null);
+    const [currentSourceReportId, setCurrentSourceReportId] = useState<string | null>(null);
+
+    // Honest notice when a deletion could not be confirmed by the server
+    const [syncNotice, setSyncNotice] = useState<string | null>(null);
+    const syncNoticeTimer = useRef<number | null>(null);
 
     // RTL & Language support
     useEffect(() => {
@@ -646,9 +669,17 @@ export function App() {
 
         // 2. Fetch History from backend / localStorage
         const fetchHistory = async () => {
-            // Auto-Seed Rule: only for the 3 preset demo accounts (strict isolation)
+            // Auto-Seed Rule: only for the 3 preset demo accounts (strict isolation).
+            // Skipped when the owner explicitly emptied their data (tombstone flag).
             const presetAccount = DEMO_PRESET_DATA[userEmail];
-            if (presetAccount && isEmptyStoredArray(`aperio_history_${userEmail}`)) {
+            if (
+                presetAccount &&
+                shouldSeedDemoData(
+                    true,
+                    Boolean(localStorage.getItem(demoClearedKey(userEmail))),
+                    isEmptyStoredArray(`aperio_history_${userEmail}`)
+                )
+            ) {
                 setSavedReports(presetAccount.reports);
                 localStorage.setItem(`aperio_history_${userEmail}`, JSON.stringify(presetAccount.reports));
                 return;
@@ -683,11 +714,18 @@ export function App() {
 
         // 3. Fetch Journal Entries
         const fetchJournal = async () => {
-            // Auto-Seed Rule: only for the 3 preset demo accounts (strict isolation)
-            const presetAccount = DEMO_PRESET_DATA[userEmail];
-            if (presetAccount && isEmptyStoredArray(`aperio_journal_${userEmail}`)) {
-                setJournalEntries(presetAccount.journal);
-                localStorage.setItem(`aperio_journal_${userEmail}`, JSON.stringify(presetAccount.journal));
+            // Auto-Seed Rule: only for the 3 preset demo accounts (strict isolation).
+            const journalPreset = DEMO_PRESET_DATA[userEmail];
+            if (
+                journalPreset &&
+                shouldSeedDemoData(
+                    true,
+                    Boolean(localStorage.getItem(demoClearedKey(userEmail))),
+                    isEmptyStoredArray(`aperio_journal_${userEmail}`)
+                )
+            ) {
+                setJournalEntries(journalPreset.journal);
+                localStorage.setItem(`aperio_journal_${userEmail}`, JSON.stringify(journalPreset.journal));
                 return;
             }
 
@@ -729,6 +767,7 @@ export function App() {
             if (latest && latest.results && latest.results.length > 0) {
                 setCurrentParsedResults(latest.results);
                 setCurrentSourceLabel(latest.label || 'Saved Report');
+                setCurrentSourceReportId(latest.id);
             }
         }
     }, [savedReports, currentParsedResults.length]);
@@ -923,16 +962,25 @@ export function App() {
     const handleSaveReport = (newReport: SavedReport) => {
         const updated = [newReport, ...savedReports];
         persistReports(updated);
+        setCurrentSourceReportId(newReport.id);
     };
 
     const handleClearHistory = async () => {
         setSavedReports([]);
+        resetAnalyzerSession();
         if (userEmail) {
             localStorage.removeItem(`aperio_history_${userEmail}`);
+            if (DEMO_PRESET_DATA[userEmail]) {
+                localStorage.setItem(demoClearedKey(userEmail), '1');
+            }
             try {
                 await apiFetch(`/api/history`, { method: 'DELETE' });
             } catch (err) {
-                if (err instanceof ApiError && err.status === 401) handleSignOut();
+                if (err instanceof ApiError && err.status === 401) {
+                    handleSignOut();
+                    return;
+                }
+                showSyncNotice();
             }
         }
     };
@@ -940,12 +988,26 @@ export function App() {
     const handleDeleteSingleReport = async (reportId: string) => {
         const updated = savedReports.filter((r) => r.id !== reportId);
         setSavedReports(updated);
+        setCurrentRawText('');
+        if (currentSourceReportId === reportId) {
+            setCurrentParsedResults([]);
+            setCurrentSourceLabel('No report uploaded');
+            setCurrentMlInsights(null);
+            setCurrentSourceReportId(null);
+        }
         if (userEmail) {
             localStorage.setItem(`aperio_history_${userEmail}`, JSON.stringify(updated));
+            if (DEMO_PRESET_DATA[userEmail] && updated.length === 0) {
+                localStorage.setItem(demoClearedKey(userEmail), '1');
+            }
             try {
                 await apiFetch(`/api/history/report/${encodeURIComponent(reportId)}`, { method: 'DELETE' });
             } catch (err) {
-                if (err instanceof ApiError && err.status === 401) handleSignOut();
+                if (err instanceof ApiError && err.status === 401) {
+                    handleSignOut();
+                    return;
+                }
+                showSyncNotice();
             }
         }
     };
@@ -954,21 +1016,36 @@ export function App() {
         const updated = savedReports
             .map((r) => {
                 if (r.id !== reportId) return r;
-                const filtered = r.results.filter((res) => res.testId !== testId);
-                return { ...r, results: filtered };
+                return { ...r, results: removeTestFromResults(r.results, testId) };
             })
             .filter((r) => r.results.length > 0);
 
         setSavedReports(updated);
+        setCurrentRawText('');
+        if (currentSourceReportId === reportId) {
+            const remainingAnalyzerResults = removeTestFromResults(currentParsedResults, testId);
+            if (remainingAnalyzerResults.length === 0) {
+                resetAnalyzerSession();
+            } else {
+                setCurrentParsedResults(remainingAnalyzerResults);
+            }
+        }
         if (userEmail) {
             localStorage.setItem(`aperio_history_${userEmail}`, JSON.stringify(updated));
+            if (DEMO_PRESET_DATA[userEmail] && updated.length === 0) {
+                localStorage.setItem(demoClearedKey(userEmail), '1');
+            }
             try {
                 await apiFetch(
                     `/api/history/result/${encodeURIComponent(reportId)}/${encodeURIComponent(testId)}`,
                     { method: 'DELETE' }
                 );
             } catch (err) {
-                if (err instanceof ApiError && err.status === 401) handleSignOut();
+                if (err instanceof ApiError && err.status === 401) {
+                    handleSignOut();
+                    return;
+                }
+                showSyncNotice();
             }
         }
     };
@@ -1005,10 +1082,14 @@ export function App() {
         setJournalEntries(updated);
         if (userEmail) {
             localStorage.setItem(`aperio_journal_${userEmail}`, JSON.stringify(updated));
+            if (DEMO_PRESET_DATA[userEmail] && updated.length === 0) {
+                localStorage.setItem(demoClearedKey(userEmail), '1');
+            }
             try {
                 await apiFetch(`/api/journal/${encodeURIComponent(id)}`, { method: 'DELETE' });
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) handleSignOut();
+                else showSyncNotice();
             }
         }
     };
@@ -1025,6 +1106,7 @@ export function App() {
         setCurrentSourceLabel(sourceLabel);
         setCurrentRawText(rawText);
         setCurrentMlInsights(mlInsights);
+        setCurrentSourceReportId(null);
         setCurrentTab('analyze');
     };
 
@@ -1060,6 +1142,7 @@ export function App() {
         setCurrentSourceLabel(primary.sourceLabel);
         setCurrentRawText(primary.rawText);
         setCurrentMlInsights(primary.mlInsights);
+        setCurrentSourceReportId(null);
 
         // Redirect to Dashboard (if multi-report stack) or AnalyzeView (if single report)
         if (reports.length > 1) {
@@ -1099,6 +1182,15 @@ export function App() {
             savedReportsCount={savedReports.length}
             journalCount={journalEntries.length}
         >
+            {syncNotice && (
+                <div
+                    role="status"
+                    className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 shadow-xs"
+                >
+                    {syncNotice}
+                </div>
+            )}
+
             {currentTab === 'dashboard' && (
                 <DashboardView
                     userEmail={userEmail}
