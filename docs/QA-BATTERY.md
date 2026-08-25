@@ -35,6 +35,7 @@
 - [ ] Analyze view: tier headers, filters, symptom chips localized; Tier-1 expanded by default
 
 ## 6. History & Trends
+- [ ] Trends tab fits fully in view on a laptop viewport (~1366×768): written summary visible beside the chart without scrolling (layout fix)
 - [ ] Three tabs present: Trends / Compare / 🗂️ Your Saved Reports (Saved Reports list VISIBLE via tab)
 - [ ] Trend chart band caption localized (**fix check: not hardcoded English caption**)
 - [ ] Compare workspace: select visits A/B; delta table renders; trajectory badges localized

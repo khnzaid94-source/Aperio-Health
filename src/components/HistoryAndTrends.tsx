@@ -298,7 +298,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
 
                     {/* Time-Series Charts View */}
                     {activeView === 'charts' ? (
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-5">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                                 <div className="flex items-center space-x-2 rtl:space-x-reverse">
                                     <div className="p-2 bg-teal-50 text-teal-700 rounded-lg">
@@ -336,7 +336,7 @@ export const HistoryAndTrends: React.FC<HistoryAndTrendsProps> = ({
                                     <p>{getTranslation('noTrendAvailable', currentLang)}</p>
                                 </div>
                             ) : (
-                                <div className="space-y-6">
+                                <div className={`flex flex-col gap-4${trendSummary ? ' lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start' : ''}`}>
                                     {activeTestCatalog && chartData.length >= 2 && (
                                         <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-200">
                                             <div className="h-64 sm:h-72 w-full">
