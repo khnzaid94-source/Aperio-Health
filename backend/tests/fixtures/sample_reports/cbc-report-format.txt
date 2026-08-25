@@ -1,0 +1,137 @@
+--- [Page 1] ---
+HAEMATOLOGY COMPLETE BLOOD COUNT (CBC)
+TEST
+VALUE
+UNIT
+REFERENCE
+HEMOGLOBIN
+15
+g/dl
+13 - 17
+TOTAL LEUKOCYTE COUNT
+5,100
+cumm
+4,800 - 10,800
+DIFFERENTIAL LEUCOCYTE COUNT
+NEUTROPHILS
+79
+%
+40 - 80
+LYMPHOCYTE
+L
+18
+%
+20 - 40
+EOSINOPHILS
+1
+%
+1 - 6
+MONOCYTES
+L
+1
+%
+2 - 10
+BASOPHILS
+1
+%
+< 2
+PLATELET COUNT
+3.5
+lakhs/cumm
+1.5 - 4.1
+TOTAL RBC COUNT
+5
+million/cumm
+4.5 - 5.5
+HEMATOCRIT VALUE, HCT
+42
+%
+40 - 50
+MEAN CORPUSCULAR VOLUME, MCV
+84.0
+fL
+83 - 101
+MEAN CELL HAEMOGLOBIN, MCH
+30.0
+Pg
+27 - 32
+MEAN CELL HAEMOGLOBIN CON, MCHC
+H
+35.7
+%
+31.5 - 34.5
+Clinical Notes:
+A complete blood count (CBC) is used to evaluate overall health and detect a wide range of disorders, including anemia,
+infection, and leukemia. There have been some reports of WBC and platelet counts being lower in venous blood than in
+capillary blood samples, although still within these reference ranges.
+Possible causes of abnormal parameters:
+ 
+High
+Low
+RBC, Hb, or HCT
+Dehydration, polycythemia, shock, chronic hypoxia
+Anemia, thalassemia, and other hemoglobinopathies
+MCV
+Macrocytic anemia, liver disease
+Microcytic anemia
+WBC
+Acute stress, infection, malignancies
+Sepsis, marrow hypoplasia
+Platelets
+Risk of thrombosis
+Risk of bleeding
+[PATIENT]
+Age / Sex
+: 27 YRS / M
+Referred by
+: 
+Self
+Reg. no.
+: [REG_NO]
+Registered on
+: 17/10/2024 04:55 PM
+Collected on
+: 17/10/2024 
+Received on
+: 17/10/2024 
+Reported on
+: 17/10/2024 04:55 PM
+Scan to download
+[LAB_STAFF]
+DMLT, Lab Incharge
+Page 
+1
+ 
+of 
+2
+[PATHOLOGIST]
+MBBS, MD Pathologist
+
+--- [Page 2] ---
+~~~ End of report ~~~
+[PATIENT]
+Age / Sex
+: 27 YRS / M
+Referred by
+: 
+Self
+Reg. no.
+: [REG_NO]
+Registered on
+: 17/10/2024 04:55 PM
+Collected on
+: 17/10/2024 
+Received on
+: 17/10/2024 
+Reported on
+: 17/10/2024 04:55 PM
+Scan to download
+[LAB_STAFF]
+DMLT, Lab Incharge
+Page 
+2
+ 
+of 
+2
+[PATHOLOGIST]
+MBBS, MD Pathologist

@@ -1,0 +1,45 @@
+--- [Page 1] ---
+BIOCHEMISTRY TEST VALUE UNIT REFERENCE
+RANDOM BLOOD SUGAR 82 mg/dl 70 - 140
+According to ADA guidelines 
+Status    
+Random Blood Glucose (mg/dl)
+Random Blood Glucose (mmol/L)
+Normal
+70-140
+4.4-7.8
+Pre-Diabetes
+140-200
+7.8-11.1
+Diabetes
+>200
+>11.1
+The reference values for a Normal Random Glucose test in an average adult are 70-140 mg/dL (4.4-7.8 mmol/i). between 140-200
+mg/L (78-11.1 mmol/l) is considered pre-diabetes, and › 200 mg/dL is considered diabetes according to ADA guidelines (you should
+visit your doctor or a clinic for additional tests)
+~~~ End of report ~~~
+[PATIENT]
+Age / Sex
+: 27 YRS / M
+Referred by
+: [REFERRING_DOCTOR]
+Reg. no.
+: [REG_NO]
+Registered on
+: 11/11/2024 12:28 PM
+Collected on
+: 11/11/2024 
+Received on
+: 11/11/2024 
+Reported on
+: 11/11/2024 12:29 PM
+Scan to download
+[LAB_STAFF]
+DMLT, Lab Incharge
+Page 
+1
+ 
+of 
+1
+[PATHOLOGIST]
+MBBS, MD Pathologist

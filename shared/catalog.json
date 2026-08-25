@@ -386,6 +386,16 @@
    "explanation_high": "Elevated postprandial blood sugar (>140 mg/dL) indicates impaired glucose tolerance or diabetes after meal challenge."
   },
   {
+   "id": "rbs",
+   "name": "Random Blood Sugar",
+   "category": "Blood Sugar",
+   "unit": "mg/dL",
+   "min": 70.0,
+   "max": 140.0,
+   "explanation_low": "Low random blood sugar can cause shakiness, sweating, and dizziness. Immediate sugar intake and a medical review are advised, especially if it occurs without fasting.",
+   "explanation_high": "High random blood sugar (above 140 mg/dL) suggests impaired glucose regulation or diabetes and should be confirmed with follow-up testing per ADA guidelines."
+  },
+  {
    "id": "insulin",
    "name": "Fasting Serum Insulin",
    "category": "Blood Sugar",

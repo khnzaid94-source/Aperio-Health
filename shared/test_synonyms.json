@@ -235,9 +235,14 @@
    "ppbs",
    "post prandial glucose",
    "post-prandial blood sugar",
-   "ppg",
+   "ppg"
+  ],
+  "rbs": [
+   "random blood sugar",
    "rbs",
-   "random blood sugar"
+   "random blood glucose",
+   "rbg",
+   "casual blood sugar"
   ],
   "insulin": [
    "fasting insulin",

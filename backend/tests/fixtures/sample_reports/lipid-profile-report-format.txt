@@ -1,0 +1,144 @@
+--- [Page 1] ---
+BIOCHEMISTRY LIPID PROFILE
+TEST
+VALUE
+UNIT
+REFERENCE
+TOTAL CHOLESTEROL
+180
+mg/dl
+125 - 200
+TRIGLYCERIDES
+172
+mg/dl
+25 - 200
+HDL CHOLESTEROL
+55
+mg/dl
+35 - 80
+LDL CHOLESTEROL
+90.60
+mg/dl
+85 - 130
+VLDL CHOLESTEROL
+34.40
+mg/dl
+5 - 40
+LDL / HDL
+1.65
+1.5 - 3.5
+TOTAL CHOLESTEROL / HDL
+L
+3.27
+3.5 - 5
+TG / HDL
+3.13
+NON-HDL CHOLESTEROL
+125.00
+Abnormalities of lipids are associated with increased risk of coronary artery disease (CAD) in patients with DM. This risk can be
+reduced by intensive treatment of lipid abnormalities. The usual pattern of lipid abnormalities in type 2 DM is elevated
+triglycerides, decreased HDL cholesterol and higher proportion of small, dense LDL particles. Cholesterol is a lipid found in all
+cell membranes and in blood plasma. It is an essential component of the cell membranes, and is necessary for synthesis of
+steroid hormones, and for the formation of bile acids. Cholesterol is synthesized by the liver and many other organs, and is also
+ingested in the diet. Triglycerides are lipids in which three long-chain fatty acids are attached to glycerol. They are present in
+dietary fat and also synthesized by liver and adipose tissue.
+Newer treatment goals and statin initiation thresholds based on the risk categories proposed by Lipid Association of India in
+2020.
+Risk Category 
+Treatment Goal
+Consider Therapy
+ 
+LDL Cholesterol
+(LDL-C) (Mg/dl)
+Non-HDL Cholesterol
+(Non HDL-C) (Mg/dl)
+LDL cholesterol
+(LDL-C) (Mg/dl)
+Non- HDL Cholesterol
+(Non HDL-C) (Mg/dl)
+Extreme Risk Group Category A
+< 50
+(Optional Goal<=30)
+<80
+(Optional Goal<=60)
+>=50
+>=80
+Extreme Risk Group Category A
+<=30
+<=60
+>30
+>60
+Very High
+<50
+<80
+>=50
+>=80
+High
+<70
+<100
+>=70
+>=100
+[PATIENT]
+Age / Sex
+: 27 YRS / M
+Referred by
+: [REFERRING_DOCTOR]
+Reg. no.
+: [REG_NO]
+Registered on
+: 17/10/2024 05:32 PM
+Collected on
+: 17/10/2024 
+Received on
+: 17/10/2024 
+Reported on
+: 17/10/2024 05:33 PM
+Scan to download
+[LAB_STAFF]
+DMLT, Lab Incharge
+Page 
+1
+ 
+of 
+2
+[PATHOLOGIST]
+MBBS, MD Pathologist
+
+--- [Page 2] ---
+Moderate
+<100
+<130
+>=100
+>=130
+Low
+<100
+<130
+>=130*
+>=160*
+*In low risk patient, consider therapy after an initial non-pharmacological intervention for at least 3 months.
+~~~ End of report ~~~
+[PATIENT]
+Age / Sex
+: 27 YRS / M
+Referred by
+: [REFERRING_DOCTOR]
+Reg. no.
+: [REG_NO]
+Registered on
+: 17/10/2024 05:32 PM
+Collected on
+: 17/10/2024 
+Received on
+: 17/10/2024 
+Reported on
+: 17/10/2024 05:33 PM
+Scan to download
+[LAB_STAFF]
+DMLT, Lab Incharge
+Page 
+2
+ 
+of 
+2
+[PATHOLOGIST]
+MBBS, MD Pathologist

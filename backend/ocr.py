@@ -156,13 +156,18 @@ def extract_text_with_gemini_vision(image_bytes: bytes, mime_type: str = "image/
         return None
 
     prompt = (
-        "You are an expert clinical laboratory document parser. "
+        "You are a strict clinical laboratory document transcriber. "
         "Carefully read the provided image. "
         "If this document is NOT a medical lab report or contains no blood test parameters, "
         "respond with exactly: NOT_A_LAB_REPORT. "
-        "If this IS a medical laboratory report, transcribe all clinical test names, measured values, "
-        "units, and reference ranges line-by-line (e.g. 'Hemoglobin: 14.2 g/dL (12.0 - 16.0)')."
+        "If this IS a medical laboratory report, transcribe ONLY the text that is physically "
+        "present on the page, line-by-line (e.g. 'Hemoglobin: 14.2 g/dL (12.0 - 16.0)'). "
+        "NEVER infer, complete, estimate, or add any test name, value, unit, or reference range "
+        "that is not explicitly printed. If a row is partially illegible, omit that entire row. "
+        "Do not merge or reorder rows. Do not add explanatory content."
     )
+
+    generation_config = {"temperature": 0.0}
 
     # 1. Try modern google.genai package
     try:
@@ -174,7 +179,8 @@ def extract_text_with_gemini_vision(image_bytes: bytes, mime_type: str = "image/
             contents=[
                 types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
                 prompt
-            ]
+            ],
+            config=generation_config
         )
         if response and response.text:
             text = response.text.strip()
@@ -190,7 +196,7 @@ def extract_text_with_gemini_vision(image_bytes: bytes, mime_type: str = "image/
         legacy_genai.configure(api_key=api_key)
         model = legacy_genai.GenerativeModel("gemini-1.5-flash")
         image = Image.open(io.BytesIO(image_bytes))
-        response = model.generate_content([image, prompt])
+        response = model.generate_content([image, prompt], generation_config=generation_config)
         if response and response.text:
             text = response.text.strip()
             if "NOT_A_LAB_REPORT" in text:
@@ -280,6 +286,11 @@ def build_synonym_pattern(synonym: str) -> re.Pattern:
     if len(words) > 1:
         inner = r'[\s\.\-_:]*'.join(re.escape(w) for w in words)
         pattern_str = r'(?:\b|\()' + inner + r'(?:\b|\)|:)'
+    elif synonym.strip().lower() in ULTRA_SHORT_SYMBOLS:
+        # Ultra-short symbols must be STANDALONE tokens. A plain \b matches inside
+        # units (mg/dl) or glued values (Mg4), which previously let boilerplate text
+        # fabricate analyte rows (e.g. Magnesium 4.4 from an ADA reference table).
+        pattern_str = r'(?<![\w./+#-])' + re.escape(synonym.strip()) + r'(?![\w/+:.-])'
     else:
         pattern_str = r'(?:\b|\()' + re.escape(synonym) + r'(?:\b|\)|:)'
     return re.compile(pattern_str, re.IGNORECASE)

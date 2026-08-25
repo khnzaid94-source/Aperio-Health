@@ -1,0 +1,92 @@
+--- [Page 1] ---
+BIOCHEMISTRY KIDNEY FUNCTION TEST (KFT)
+TEST
+VALUE
+UNIT
+REFERENCE
+BUN
+15.88
+mg/dl
+7.9 - 20
+SERUM UREA
+34
+mg/dl
+19 - 45
+SERUM CREATININE
+1.17
+mg/dl
+0.72 - 1.18
+EGFR
+Method: Calculated
+L
+87.08
+ml/min/1.73m^2
+> 90
+EGFR CATEGORY
+Method: Calculated
+G2
+SERUM CALCIUM
+10
+mg/dl
+8.8 - 10.6
+SERUM POTASSIUM
+4
+mmol/L
+3.5 - 5.1
+SERUM SODIUM
+142
+mmol/L
+136 - 146
+SERUM URIC ACID
+7.1
+mg/dl
+3.5 - 7.2
+UREA / CREATININE RATIO
+29.06
+BUN / CREATININE RATIO
+13.57
+Creatinine
+ is a nitrogenous waste product formed in muscle from creatine phosphate. Endogenous production of creatinine is
+proportional to muscle mass and body weight.
+Causes of Increased Serum Creatinine Level
+Causes of Decreased Serum Creatinine Level
+1. 
+Pre-renal, renal, and post-renal azotemia
+2. 
+Large amount of dietary meat
+3. 
+Active acromegaly and gigantism
+1. Pregnancy 
+2. Increasing age (reduction in muscle mass)
+GFR
+ is measured to (i) detect suspected incipient kidney disease (i.e. early detection), (ii)monitor the course of established
+kidney disease, (iii) plan renal replacement therapy in advanced renal disease, and (iv) adjust the dosage of certain drugs
+which are nephrotoxic.
+BUN/creatinine ratio
+ is to discriminate pre-renal and post-renal azotemia from renal azotemia. 
+~~~ End of report ~~~
+[PATIENT]
+Age / Sex
+: 28 YRS / M
+Referred by
+: [REFERRING_DOCTOR]
+Reg. no.
+: [REG_NO]
+Registered on
+: 17/10/2024 06:28 PM
+Collected on
+: 17/10/2024 
+Received on
+: 17/10/2024 
+Reported on
+: 23/10/2024 05:09 PM
+Scan to download
+[LAB_STAFF]
+DMLT, Lab Incharge
+Page 
+1
+ 
+of 
+1
+[PATHOLOGIST]
+MBBS, MD Pathologist

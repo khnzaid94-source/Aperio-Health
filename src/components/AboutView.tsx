@@ -179,7 +179,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                 </ul>
             </div>
 
-            {/* Interactive 63-Biomarker Reference Catalog Table */}
+            {/* Interactive 64-Biomarker Reference Catalog Table */}
             <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-5">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                     <div>
