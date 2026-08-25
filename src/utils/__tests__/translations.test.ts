@@ -69,4 +69,28 @@ describe('translation dictionaries', () => {
     }
     expect(missing).toEqual([]);
   });
+
+  it('keys rendered beside component icons carry no icon prefixes', () => {
+    // These values render next to lucide icons in components; a leading emoji or
+    // '+' in the translation value produces a double-icon (QA finding 2026-08-25).
+    const componentIconKeys = [
+      'hist.emptyCta',
+      'jrn.logNewItem',
+      'hist.tabTrends',
+      'hist.tabCompare',
+      'hist.subCards',
+      'hist.subTable'
+    ];
+    const iconPrefix =
+      // eslint-disable-next-line no-misleading-character-class -- intentionally matching variation-selector/ZWJ codepoints individually
+      /^[+\u2190-\u21FF\u2600-\u27BF\uFE0F\u200D\u{1F000}-\u{1FAFF}\s]/u;
+    const offenders: string[] = [];
+    for (const lang of SUPPORTED_LANGUAGES) {
+      const dict = (INTERFACE_TRANSLATIONS as Record<string, Record<string, string>>)[lang.code];
+      for (const key of componentIconKeys) {
+        if (iconPrefix.test(dict[key] ?? '')) offenders.push(`${lang.code}:${key}`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
 });

@@ -97,6 +97,11 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
     const t = (key: string, params?: Record<string, string>): string =>
         getTranslation(key, language || initialLanguage || 'en', params);
 
+    // Live-sync wizard language when the app-level choice changes after mount
+    useEffect(() => {
+        setLanguage(initialLanguage);
+    }, [initialLanguage]);
+
     const genderLabel = (g: GenderType): string => {
         if (g === 'Male') return t('onb.optMale');
         if (g === 'Female') return t('onb.optFemale');

@@ -513,6 +513,7 @@ export function App() {
 
     // Honest notice when a deletion could not be confirmed by the server
     const [syncNotice, setSyncNotice] = useState<string | null>(null);
+    const [sessionEnded, setSessionEnded] = useState<boolean>(false);
     const syncNoticeTimer = useRef<number | null>(null);
 
     // RTL & Language support
@@ -523,7 +524,10 @@ export function App() {
     }, [currentLang]);
 
     // Sign Out Handler
-    const handleSignOut = useCallback(() => {
+    const handleSignOut = useCallback((opts?: { sessionEnded?: boolean }) => {
+        if (opts?.sessionEnded) {
+            setSessionEnded(true);
+        }
         const token = getToken();
         if (token) {
             apiFetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
@@ -545,6 +549,11 @@ export function App() {
         setCurrentTab('dashboard');
     }, []);
 
+    const forceSessionEnd = useCallback(() => {
+        setSessionEnded(true);
+        handleSignOut();
+    }, [handleSignOut]);
+
     // 30-Minute Inactivity Session Timeout
     useEffect(() => {
         if (!userEmail) return;
@@ -555,8 +564,7 @@ export function App() {
             if (lastActive) {
                 const elapsed = Date.now() - parseInt(lastActive, 10);
                 if (elapsed >= SESSION_TIMEOUT_MS) {
-                    alert('Session expired due to 30 minutes of inactivity. For your health privacy, please sign in again.');
-                    handleSignOut();
+                    forceSessionEnd();
                     return true;
                 }
             }
@@ -583,8 +591,7 @@ export function App() {
             if (lastActive) {
                 const elapsed = Date.now() - parseInt(lastActive, 10);
                 if (elapsed >= SESSION_TIMEOUT_MS) {
-                    alert('Session expired due to 30 minutes of inactivity. For your health privacy, please sign in again.');
-                    handleSignOut();
+                    forceSessionEnd();
                 }
             }
         }, 60000);
@@ -593,7 +600,7 @@ export function App() {
             events.forEach((evt) => window.removeEventListener(evt, updateActivity));
             clearInterval(timer);
         };
-    }, [userEmail, handleSignOut]);
+    }, [userEmail, handleSignOut, forceSessionEnd]);
 
     // Load Profile, History, and Journal when user logs in
     useEffect(() => {
@@ -650,7 +657,7 @@ export function App() {
                 return;
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) {
-                    handleSignOut();
+                    handleSignOut({ sessionEnded: true });
                     return;
                 }
                 if (err instanceof ApiError && err.status === 404 && DEMO_PRESET_PROFILES[userEmail]) {
@@ -694,7 +701,7 @@ export function App() {
                 }
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) {
-                    handleSignOut();
+                    handleSignOut({ sessionEnded: true });
                     return;
                 }
                 // Offline / waking up -> fall back to local cache below
@@ -738,7 +745,7 @@ export function App() {
                 }
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) {
-                    handleSignOut();
+                    handleSignOut({ sessionEnded: true });
                     return;
                 }
             }
@@ -790,7 +797,7 @@ export function App() {
                     });
                 } catch (err) {
                     if (err instanceof ApiError && err.status === 401) {
-                        handleSignOut();
+                        handleSignOut({ sessionEnded: true });
                     }
                     // Offline / waking up -> local copy already saved
                 }
@@ -799,6 +806,7 @@ export function App() {
     };
 
     const handleSignIn = (email: string) => {
+        setSessionEnded(false);
         setUserEmail(email);
         localStorage.setItem('aperio_current_user', email);
         localStorage.setItem(`aperio_last_active_${email}`, Date.now().toString());
@@ -834,6 +842,10 @@ export function App() {
     const handleOnboardingComplete = async (profile: UserProfile, targetTab: 'upload' | 'dashboard') => {
         setUserProfile(profile);
         setIsOnboarding(false);
+        if (profile.language) {
+            langChosenRef.current = true;
+            setCurrentLang(profile.language);
+        }
 
         if (userEmail) {
             localStorage.setItem(`aperio_profile_${userEmail}`, JSON.stringify(profile));
@@ -861,7 +873,7 @@ export function App() {
                     }
                 });
             } catch (err) {
-                if (err instanceof ApiError && err.status === 401) handleSignOut();
+                if (err instanceof ApiError && err.status === 401) handleSignOut({ sessionEnded: true });
             }
 
             // Sync medications into health journal
@@ -919,7 +931,7 @@ export function App() {
                     }
                 });
             } catch (err) {
-                if (err instanceof ApiError && err.status === 401) handleSignOut();
+                if (err instanceof ApiError && err.status === 401) handleSignOut({ sessionEnded: true });
             }
         }
     };
@@ -977,7 +989,7 @@ export function App() {
                 await apiFetch(`/api/history`, { method: 'DELETE' });
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) {
-                    handleSignOut();
+                    handleSignOut({ sessionEnded: true });
                     return;
                 }
                 showSyncNotice();
@@ -1004,7 +1016,7 @@ export function App() {
                 await apiFetch(`/api/history/report/${encodeURIComponent(reportId)}`, { method: 'DELETE' });
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) {
-                    handleSignOut();
+                    handleSignOut({ sessionEnded: true });
                     return;
                 }
                 showSyncNotice();
@@ -1042,7 +1054,7 @@ export function App() {
                 );
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) {
-                    handleSignOut();
+                    handleSignOut({ sessionEnded: true });
                     return;
                 }
                 showSyncNotice();
@@ -1072,7 +1084,7 @@ export function App() {
                     }
                 });
             } catch (err) {
-                if (err instanceof ApiError && err.status === 401) handleSignOut();
+                if (err instanceof ApiError && err.status === 401) handleSignOut({ sessionEnded: true });
             }
         }
     };
@@ -1088,7 +1100,7 @@ export function App() {
             try {
                 await apiFetch(`/api/journal/${encodeURIComponent(id)}`, { method: 'DELETE' });
             } catch (err) {
-                if (err instanceof ApiError && err.status === 401) handleSignOut();
+                if (err instanceof ApiError && err.status === 401) handleSignOut({ sessionEnded: true });
                 else showSyncNotice();
             }
         }
@@ -1129,7 +1141,7 @@ export function App() {
                 await apiFetch('/api/history/bulk', { method: 'POST', json: { reports: newReports } });
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) {
-                    handleSignOut();
+                    handleSignOut({ sessionEnded: true });
                     return;
                 }
                 // Offline / waking up -> local copies already saved; server catches up on next save
@@ -1154,7 +1166,14 @@ export function App() {
 
     // 1. Not Logged In -> Show Landing Page
     if (!userEmail) {
-        return <LandingView onSignIn={handleSignIn} currentLang={currentLang} onLanguageChange={chooseLanguage} />;
+        return (
+            <LandingView
+                onSignIn={handleSignIn}
+                currentLang={currentLang}
+                onLanguageChange={chooseLanguage}
+                sessionEndedNotice={sessionEnded}
+            />
+        );
     }
 
     // 2. Logged In, but Needs Onboarding -> Show Onboarding Page

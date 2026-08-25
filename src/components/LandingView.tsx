@@ -26,6 +26,7 @@ interface LandingViewProps {
     onSignIn: (email: string) => void;
     currentLang: SupportedLanguage;
     onLanguageChange: (lang: SupportedLanguage) => void;
+    sessionEndedNotice?: boolean;
 }
 
 type AuthMode = 'login' | 'signup' | null;
@@ -40,7 +41,7 @@ const DEMO_PASSWORD = 'demo1234';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 
-export const LandingView: React.FC<LandingViewProps> = ({ onSignIn, currentLang, onLanguageChange }) => {
+export const LandingView: React.FC<LandingViewProps> = ({ onSignIn, currentLang, onLanguageChange, sessionEndedNotice }) => {
     const t = (key: string) => getTranslation(key, currentLang);
     const [authModal, setAuthModal] = useState<AuthMode>(null);
     const [email, setEmail] = useState('');
@@ -154,7 +155,15 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSignIn, currentLang,
     };
 
     return (
-        <div className="min-h-screen bg-[#070B14] text-slate-100 flex flex-col justify-between relative overflow-hidden font-sans selection:bg-teal-500 selection:text-white">
+                <div className="min-h-screen bg-[#070B14] text-slate-100 flex flex-col justify-between relative overflow-hidden font-sans selection:bg-teal-500 selection:text-white">
+                    {sessionEndedNotice && (
+                        <div
+                            role="alert"
+                            className="absolute top-4 left-1/2 -translate-x-1/2 z-50 max-w-md w-[calc(100%-2rem)] rounded-xl border border-amber-400/40 bg-amber-500/10 backdrop-blur-md px-4 py-3 text-xs font-semibold text-amber-200 shadow-lg shadow-amber-900/20 text-center"
+                        >
+                            {getTranslation('ui.sessionEnded', currentLang)}
+                        </div>
+                    )}
             {/* Ambient Background Glow Mesh */}
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-teal-500/15 rounded-full blur-3xl pointer-events-none -translate-y-1/2" />
             <div className="absolute bottom-10 right-1/4 w-[32rem] h-[32rem] bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />

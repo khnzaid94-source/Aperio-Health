@@ -28,6 +28,8 @@
 ## 4. Dashboard
 - [ ] Welcome banner + KPI widgets localized (spot-check one non-EN language)
 - [ ] Demo account David Chen: 4 saved reports badge visible; Journal shows medication + supplement + lifestyle cards populated
+- [ ] Demo repopulate: clear history (or purge account) → sign OUT → sign back in → seeded data returns (tombstone dies at logout)
+- [ ] Non-demo throwaway: clear history → refresh → stays empty (server truth)
 
 ## 5. Upload & Analyze
 - [ ] Upload ONE photo report → CV Quality strip header localized (**fix check: not English-only "Computer Vision Quality Diagnostics"**)
@@ -59,6 +61,8 @@
 - [ ] Card 4 badge reads "Private Account Isolation" (honest wording)
 
 ## 10. Cross-cutting
+- [ ] Session-expiry UX: after forced 401/timeout, landing page shows translated "session ended" banner (no silent logout)
+- [ ] Trends tab pill icons appear ONCE each (no doubled emoji/icon pairs); Journal "Log New Item" single icon
 - [ ] PDF export opens; content readable (PDF body is English-by-design for now)
 - [ ] No console errors during a full pass in any language
 - [ ] Sign out from a non-EN session → landing returns in that language
