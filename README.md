@@ -25,6 +25,9 @@ Upload a lab report (**PDF / photo / text**) and Aperio Health:
    Forest anomaly check, detects cross-marker patterns (glycemic-lipid synergy,
    iron-deficiency signature, liver/kidney stress pairs), and explains everything in
    plain language across **10 languages**.
+   *Interface translations are AI-authored and verified programmatically (key/parameter
+   parity, call-site audits); they have not been reviewed by native speakers — if you
+   spot an error, please report it at aperiohealth0826@gmail.com.*
 6. **Tracks** history with visit-over-visit delta analysis, trend charts, a health
    journal, doctor-question generation, and a printable clinical summary PDF.
 
