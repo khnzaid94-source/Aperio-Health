@@ -469,6 +469,7 @@ def save_user_report(
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    _assert_report_id_available(db, payload.id, current_user)
     db_report = SavedReportModel(
         id=payload.id,
         user_email=current_user,
@@ -481,12 +482,25 @@ def save_user_report(
     return {"status": "saved", "id": payload.id}
 
 
+def _assert_report_id_available(db: Session, report_id: str, current_user: str) -> None:
+    """Report ids are globally unique PKs; a foreign-owned id must never be merged."""
+    existing = db.query(SavedReportModel).filter(SavedReportModel.id == report_id).first()
+    if existing and existing.user_email != current_user:
+        raise HTTPException(
+            status_code=409,
+            detail="A report with this identifier already exists under another account.",
+        )
+
+
 @app.post("/api/history/bulk")
 def save_reports_bulk(
     payload: BulkHistoryRequest,
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    for report in payload.reports[:50]:
+        _assert_report_id_available(db, report.id, current_user)
+
     saved_ids = []
     for report in payload.reports[:50]:
         db_report = SavedReportModel(
@@ -589,6 +603,17 @@ def create_or_update_journal_entry(
     db: Session = Depends(get_db),
 ):
     entry_id = payload.id or f"jrn-{uuid.uuid4().hex[:8]}"
+    if payload.id:
+        existing_entry = (
+            db.query(JournalEntryModel)
+            .filter(JournalEntryModel.id == entry_id)
+            .first()
+        )
+        if existing_entry and existing_entry.user_email != current_user:
+            raise HTTPException(
+                status_code=409,
+                detail="A journal entry with this identifier already exists under another account.",
+            )
     db_entry = JournalEntryModel(
         id=entry_id,
         user_email=current_user,
