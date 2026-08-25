@@ -22,7 +22,7 @@ jobs:
       - run: npm run build
 
   backend:
-    name: Backend (pytest: parser + history + authz matrix)
+    name: Backend (pytest suite - parser, history, authz matrix)
     runs-on: ubuntu-latest
     defaults:
       run:
