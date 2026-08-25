@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { CATALOG } from '../constants/catalog';
 import { SupportedLanguage } from '../types';
-import { getLocalizedTestName, getLocalizedCategory, getTranslation } from '../utils/language';
+import { getLocalizedTestName, getLocalizedCategory, getLocalizedPurpose, getTranslation } from '../utils/language';
 
 interface AboutViewProps {
     currentLang: SupportedLanguage;
@@ -246,6 +246,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                                 filteredCatalog.map((item) => {
                                     const localizedName = getLocalizedTestName(item.id, currentLang);
                                     const localizedCategory = getLocalizedCategory(item.category, currentLang);
+                                    const localizedPurpose = getLocalizedPurpose(item.id, currentLang);
 
                                     return (
                                         <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
@@ -265,9 +266,9 @@ export const AboutView: React.FC<AboutViewProps> = ({ currentLang }) => {
                                             </td>
                                             <td className="p-3.5 text-slate-500 font-mono text-[11px]">{item.unit}</td>
                                             <td className="p-3.5 text-[11px] text-slate-600 leading-relaxed max-w-xs">
-                                                {item.explanations?.low ? (
-                                                    <span className="line-clamp-2" title={item.explanations.low}>
-                                                        {item.explanations.low}
+                                                {localizedPurpose ? (
+                                                    <span className="line-clamp-2" title={localizedPurpose}>
+                                                        {localizedPurpose}
                                                     </span>
                                                 ) : (
                                                     <span className="text-slate-400 italic">{t('ab.fallbackPurpose')}</span>

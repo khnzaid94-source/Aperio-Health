@@ -1,11 +1,21 @@
 import { describe, it, expect } from 'vitest';
-import { INTERFACE_TRANSLATIONS, SUPPORTED_LANGUAGES } from '../../constants/translations';
+import {
+  INTERFACE_TRANSLATIONS,
+  SUPPORTED_LANGUAGES,
+  PURPOSE_TRANSLATIONS
+} from '../../constants/translations';
+import { CATALOG } from '../../constants/catalog';
 
 const PARAM_RE = /\{(\w+)\}/g;
 
 function paramsOf(value: string): string[] {
   return [...value.matchAll(PARAM_RE)].map((m) => m[1]).sort();
 }
+
+/** Non-English language codes — the keys PURPOSE_TRANSLATIONS carries per test. */
+const NON_EN_CODES = SUPPORTED_LANGUAGES.filter((l) => l.code !== 'en').map(
+  (l) => l.code as Exclude<(typeof SUPPORTED_LANGUAGES)[number]['code'], 'en'>
+);
 
 const sourceFiles = {
   ...import.meta.glob('/src/**/*.tsx', { query: '?raw', import: 'default', eager: true }),
@@ -92,5 +102,34 @@ describe('translation dictionaries', () => {
       }
     }
     expect(offenders).toEqual([]);
+  });
+});
+
+describe('purpose translations (AboutView clinical table)', () => {
+  it('covers exactly the catalog test ids', () => {
+    expect(Object.keys(PURPOSE_TRANSLATIONS).sort()).toEqual(
+      CATALOG.map((c) => c.id).sort()
+    );
+  });
+
+  it.each(NON_EN_CODES.map((code) => [code]))(
+    '%s has a non-empty purpose for every catalog test',
+    (code) => {
+      const missing: string[] = [];
+      for (const entry of CATALOG) {
+        const value = PURPOSE_TRANSLATIONS[entry.id]?.[code];
+        if (!value || !value.trim()) missing.push(entry.id);
+      }
+      expect(missing).toEqual([]);
+    }
+  );
+
+  it('carries no English key and no interpolation placeholders', () => {
+    for (const [id, langs] of Object.entries(PURPOSE_TRANSLATIONS)) {
+      expect('en' in langs).toBe(false);
+      for (const [lang, value] of Object.entries(langs)) {
+        expect(value.includes('{') || value.includes('}'), `${id}.${lang}`).toBe(false);
+      }
+    }
   });
 });

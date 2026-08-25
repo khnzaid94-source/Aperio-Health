@@ -3,7 +3,8 @@ import {
     INTERFACE_TRANSLATIONS,
     CATEGORY_TRANSLATIONS,
     TEST_NAME_TRANSLATIONS,
-    EXPLANATION_TRANSLATIONS
+    EXPLANATION_TRANSLATIONS,
+    PURPOSE_TRANSLATIONS
 } from '../constants/translations';
 import { CATALOG_INDEX } from '../constants/catalog';
 
@@ -36,6 +37,21 @@ export function getLocalizedCategory(category: string, lang: SupportedLanguage):
         return catMap[lang];
     }
     return category;
+}
+
+/**
+ * Localized clinical purpose text for the AboutView reference table.
+ * English (and any missing translation) falls back to the shared catalog's
+ * explanation_low, which is the single source of truth for English copy.
+ */
+export function getLocalizedPurpose(testId: string, lang: SupportedLanguage): string {
+    if (lang !== 'en') {
+        const purpose = PURPOSE_TRANSLATIONS[testId];
+        if (purpose && purpose[lang as Exclude<SupportedLanguage, 'en'>]) {
+            return purpose[lang as Exclude<SupportedLanguage, 'en'>];
+        }
+    }
+    return CATALOG_INDEX.get(testId)?.explanations.low ?? '';
 }
 
 export function getLocalizedExplanation(
