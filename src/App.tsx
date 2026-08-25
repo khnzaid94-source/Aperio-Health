@@ -121,8 +121,15 @@ const buildPresetResult = (
                 ? (entry ? entry.explanations.low : '')
                 : classification === 'High'
                     ? (entry ? entry.explanations.high : '')
-                    : ''
+                : ''
     };
+}
+
+// Demo visit dates are computed relative to "now" so showcase accounts never look stale
+const daysAgo = (n: number): string => {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return d.toISOString().split('T')[0];
 };
 
 const DEMO_PRESET_DATA: Record<string, DemoPresetAccountData> = {
@@ -130,29 +137,59 @@ const DEMO_PRESET_DATA: Record<string, DemoPresetAccountData> = {
         condition: 'Metabolic & Glucose Panel (Type 2 Diabetes & Vitamin D Deficiency)',
         reports: [
             {
-                id: 'demo-sarah-report-recent',
-                date: '2026-01-15',
-                label: 'Metabolic & Glucose Panel (Recent Visit)',
+                id: 'demo-sarah-r4',
+                date: daysAgo(12),
+                label: 'Metabolic & Glucose Panel (Latest Visit)',
                 sampleCondition: 'fasting',
                 results: [
-                    buildPresetResult('fbs', 126, 'High', 'Monitor'),
-                    buildPresetResult('hba1c', 6.8, 'High', 'Monitor'),
-                    buildPresetResult('vitamind', 22, 'Low', 'Monitor'),
-                    buildPresetResult('cholesterol', 195, 'Normal'),
-                    buildPresetResult('creatinine', 0.9, 'Normal'),
+                    buildPresetResult('fbs', 108, 'High', 'Monitor'),
+                    buildPresetResult('hba1c', 6.4, 'High', 'Monitor'),
+                    buildPresetResult('vitamind', 38, 'Normal'),
+                    buildPresetResult('cholesterol', 188, 'Normal'),
+                    buildPresetResult('triglycerides', 135, 'Normal'),
                     buildPresetResult('egfr', 95, 'Normal')
                 ]
             },
             {
-                id: 'demo-sarah-report-prior',
-                date: '2025-10-12',
-                label: 'Metabolic & Glucose Panel (Prior Visit)',
+                id: 'demo-sarah-r3',
+                date: daysAgo(100),
+                label: 'Metabolic & Glucose Panel (Visit 3)',
+                sampleCondition: 'fasting',
+                results: [
+                    buildPresetResult('fbs', 124, 'High', 'Monitor'),
+                    buildPresetResult('hba1c', 6.8, 'High', 'Monitor'),
+                    buildPresetResult('vitamind', 24, 'Low', 'Monitor'),
+                    buildPresetResult('cholesterol', 195, 'Normal'),
+                    buildPresetResult('triglycerides', 148, 'Normal'),
+                    buildPresetResult('egfr', 92, 'Normal')
+                ]
+            },
+            {
+                id: 'demo-sarah-r2',
+                date: daysAgo(190),
+                label: 'Metabolic & Glucose Panel (Visit 2)',
                 sampleCondition: 'fasting',
                 results: [
                     buildPresetResult('fbs', 138, 'High', 'Doctor'),
                     buildPresetResult('hba1c', 7.4, 'High', 'Doctor'),
+                    buildPresetResult('vitamind', 18, 'Low', 'Monitor'),
+                    buildPresetResult('cholesterol', 202, 'High'),
+                    buildPresetResult('triglycerides', 170, 'High'),
+                    buildPresetResult('creatinine', 0.98, 'Normal')
+                ]
+            },
+            {
+                id: 'demo-sarah-r1',
+                date: daysAgo(280),
+                label: 'Metabolic & Glucose Panel (Baseline Visit)',
+                sampleCondition: 'fasting',
+                results: [
+                    buildPresetResult('fbs', 152, 'High', 'Doctor'),
+                    buildPresetResult('hba1c', 7.8, 'High', 'Doctor'),
                     buildPresetResult('vitamind', 14, 'Low', 'Doctor'),
-                    buildPresetResult('cholesterol', 205, 'High')
+                    buildPresetResult('cholesterol', 210, 'High'),
+                    buildPresetResult('triglycerides', 185, 'High'),
+                    buildPresetResult('creatinine', 1.0, 'Normal')
                 ]
             }
         ],
@@ -163,9 +200,9 @@ const DEMO_PRESET_DATA: Record<string, DemoPresetAccountData> = {
                 entry_type: 'medication',
                 name: 'Metformin',
                 dosage: '500mg',
-                start_date: '2025-10-12',
+                start_date: daysAgo(280),
                 notes: 'Daily with breakfast',
-                created_at: '2025-10-12T09:00:00.000Z'
+                created_at: `${daysAgo(280)}T09:00:00.000Z`
             },
             {
                 id: 'demo-sarah-jrn-2',
@@ -173,9 +210,18 @@ const DEMO_PRESET_DATA: Record<string, DemoPresetAccountData> = {
                 entry_type: 'supplement',
                 name: 'Vitamin D3',
                 dosage: '2000 IU',
-                start_date: '2025-10-12',
+                start_date: daysAgo(280),
                 notes: 'Daily',
-                created_at: '2025-10-12T09:05:00.000Z'
+                created_at: `${daysAgo(280)}T09:05:00.000Z`
+            },
+            {
+                id: 'demo-sarah-jrn-3',
+                user_email: 'sarah.jenkins@example.com',
+                entry_type: 'lifestyle',
+                name: 'Daily 30-minute walks',
+                start_date: daysAgo(190),
+                notes: 'Evening walk after dinner; glucose readings steadier since starting',
+                created_at: `${daysAgo(190)}T09:10:00.000Z`
             }
         ]
     },
@@ -183,28 +229,59 @@ const DEMO_PRESET_DATA: Record<string, DemoPresetAccountData> = {
         condition: 'Lipid & Cardiovascular Panel (Dyslipidemia & Hypertension)',
         reports: [
             {
-                id: 'demo-david-report-recent',
-                date: '2026-01-20',
-                label: 'Lipid & Cardiovascular Panel (Recent Visit)',
+                id: 'demo-david-r4',
+                date: daysAgo(12),
+                label: 'Lipid & Cardiovascular Panel (Latest Visit)',
                 sampleCondition: 'fasting',
                 results: [
-                    buildPresetResult('cholesterol', 215, 'High'),
-                    buildPresetResult('ldl', 135, 'High', 'Monitor'),
-                    buildPresetResult('hdl', 42, 'Normal'),
-                    buildPresetResult('triglycerides', 180, 'High'),
-                    buildPresetResult('bun', 16, 'Normal')
+                    buildPresetResult('cholesterol', 196, 'Normal'),
+                    buildPresetResult('ldl', 121, 'High', 'Monitor'),
+                    buildPresetResult('hdl', 44, 'Normal'),
+                    buildPresetResult('triglycerides', 158, 'High', 'Monitor'),
+                    buildPresetResult('bun', 15, 'Normal'),
+                    buildPresetResult('egfr', 90, 'Normal')
                 ]
             },
             {
-                id: 'demo-david-report-prior',
-                date: '2025-09-18',
-                label: 'Lipid & Cardiovascular Panel (Prior Visit)',
+                id: 'demo-david-r3',
+                date: daysAgo(100),
+                label: 'Lipid & Cardiovascular Panel (Visit 3)',
                 sampleCondition: 'fasting',
                 results: [
-                    buildPresetResult('cholesterol', 245, 'High', 'Doctor'),
-                    buildPresetResult('ldl', 165, 'High', 'Doctor'),
+                    buildPresetResult('cholesterol', 214, 'High', 'Monitor'),
+                    buildPresetResult('ldl', 135, 'High', 'Monitor'),
+                    buildPresetResult('hdl', 42, 'Normal'),
+                    buildPresetResult('triglycerides', 180, 'High', 'Monitor'),
+                    buildPresetResult('bun', 16, 'Normal'),
+                    buildPresetResult('egfr', 88, 'Normal')
+                ]
+            },
+            {
+                id: 'demo-david-r2',
+                date: daysAgo(190),
+                label: 'Lipid & Cardiovascular Panel (Visit 2)',
+                sampleCondition: 'fasting',
+                results: [
+                    buildPresetResult('cholesterol', 240, 'High', 'Doctor'),
+                    buildPresetResult('ldl', 160, 'High', 'Doctor'),
                     buildPresetResult('hdl', 38, 'Low', 'Monitor'),
-                    buildPresetResult('triglycerides', 220, 'High')
+                    buildPresetResult('triglycerides', 220, 'High', 'Doctor'),
+                    buildPresetResult('bun', 17, 'Normal'),
+                    buildPresetResult('creatinine', 1.0, 'Normal')
+                ]
+            },
+            {
+                id: 'demo-david-r1',
+                date: daysAgo(280),
+                label: 'Lipid & Cardiovascular Panel (Baseline Visit)',
+                sampleCondition: 'fasting',
+                results: [
+                    buildPresetResult('cholesterol', 262, 'High', 'Doctor'),
+                    buildPresetResult('ldl', 178, 'High', 'Doctor'),
+                    buildPresetResult('hdl', 36, 'Low', 'Monitor'),
+                    buildPresetResult('triglycerides', 245, 'High', 'Doctor'),
+                    buildPresetResult('bun', 16, 'Normal'),
+                    buildPresetResult('creatinine', 1.05, 'Normal')
                 ]
             }
         ],
@@ -215,9 +292,9 @@ const DEMO_PRESET_DATA: Record<string, DemoPresetAccountData> = {
                 entry_type: 'medication',
                 name: 'Atorvastatin',
                 dosage: '20mg',
-                start_date: '2025-09-18',
+                start_date: daysAgo(280),
                 notes: 'Bedtime',
-                created_at: '2025-09-18T09:00:00.000Z'
+                created_at: `${daysAgo(280)}T09:00:00.000Z`
             },
             {
                 id: 'demo-david-jrn-2',
@@ -225,9 +302,28 @@ const DEMO_PRESET_DATA: Record<string, DemoPresetAccountData> = {
                 entry_type: 'medication',
                 name: 'Lisinopril',
                 dosage: '10mg',
-                start_date: '2025-09-18',
+                start_date: daysAgo(280),
                 notes: 'Morning',
-                created_at: '2025-09-18T09:05:00.000Z'
+                created_at: `${daysAgo(280)}T09:05:00.000Z`
+            },
+            {
+                id: 'demo-david-jrn-3',
+                user_email: 'david.chen@example.com',
+                entry_type: 'supplement',
+                name: 'Omega-3 Fish Oil',
+                dosage: '1000mg',
+                start_date: daysAgo(100),
+                notes: 'With dinner',
+                created_at: `${daysAgo(100)}T09:10:00.000Z`
+            },
+            {
+                id: 'demo-david-jrn-4',
+                user_email: 'david.chen@example.com',
+                entry_type: 'lifestyle',
+                name: 'Low-sodium DASH diet',
+                start_date: daysAgo(190),
+                notes: 'Home-cooked meals; tracking blood pressure weekly',
+                created_at: `${daysAgo(190)}T09:15:00.000Z`
             }
         ]
     },
@@ -235,30 +331,61 @@ const DEMO_PRESET_DATA: Record<string, DemoPresetAccountData> = {
         condition: 'Thyroid & Iron Studies (Hypothyroidism & Iron-Deficiency Anemia)',
         reports: [
             {
-                id: 'demo-maya-report-recent',
-                date: '2026-02-02',
-                label: 'Thyroid & Iron Studies (Recent Visit)',
+                id: 'demo-maya-r4',
+                date: daysAgo(12),
+                label: 'Thyroid & Iron Studies (Latest Visit)',
+                sampleCondition: 'fasting',
+                results: [
+                    buildPresetResult('tsh', 3.9, 'Normal'),
+                    buildPresetResult('ft4', 1.3, 'Normal'),
+                    buildPresetResult('ft3', 3.1, 'Normal'),
+                    buildPresetResult('hemoglobin', 12.9, 'Normal'),
+                    buildPresetResult('ferritin', 41, 'Normal'),
+                    buildPresetResult('iron', 82, 'Normal')
+                ]
+            },
+            {
+                id: 'demo-maya-r3',
+                date: daysAgo(100),
+                label: 'Thyroid & Iron Studies (Visit 3)',
                 sampleCondition: 'fasting',
                 results: [
                     buildPresetResult('tsh', 5.1, 'High', 'Monitor'),
                     buildPresetResult('ft4', 1.1, 'Normal'),
-                    buildPresetResult('ft3', 2.8, 'Normal'),
+                    buildPresetResult('ft3', 2.9, 'Normal'),
                     buildPresetResult('hemoglobin', 11.8, 'Normal'),
                     buildPresetResult('ferritin', 24, 'Normal'),
                     buildPresetResult('iron', 68, 'Normal')
                 ]
             },
             {
-                id: 'demo-maya-report-prior',
-                date: '2025-11-05',
-                label: 'Thyroid & Iron Studies (Prior Visit)',
+                id: 'demo-maya-r2',
+                date: daysAgo(190),
+                label: 'Thyroid & Iron Studies (Visit 2)',
                 sampleCondition: 'fasting',
                 results: [
                     buildPresetResult('tsh', 8.2, 'High', 'Doctor'),
                     buildPresetResult('ft4', 0.8, 'Low', 'Doctor'),
+                    buildPresetResult('ft3', 2.7, 'Low', 'Monitor'),
                     buildPresetResult('hemoglobin', 10.2, 'Low', 'Monitor'),
                     buildPresetResult('ferritin', 9, 'Low', 'Doctor'),
-                    buildPresetResult('iron', 42, 'Low')
+                    buildPresetResult('iron', 55, 'Low', 'Monitor'),
+                    buildPresetResult('cholesterol', 212, 'High')
+                ]
+            },
+            {
+                id: 'demo-maya-r1',
+                date: daysAgo(280),
+                label: 'Thyroid & Iron Studies (Baseline Visit)',
+                sampleCondition: 'fasting',
+                results: [
+                    buildPresetResult('tsh', 8.9, 'High', 'Doctor'),
+                    buildPresetResult('ft4', 0.7, 'Low', 'Doctor'),
+                    buildPresetResult('ft3', 2.5, 'Low', 'Monitor'),
+                    buildPresetResult('hemoglobin', 9.8, 'Low', 'Doctor'),
+                    buildPresetResult('ferritin', 6, 'Low', 'Doctor'),
+                    buildPresetResult('iron', 42, 'Low'),
+                    buildPresetResult('cholesterol', 228, 'High', 'Doctor')
                 ]
             }
         ],
@@ -269,9 +396,9 @@ const DEMO_PRESET_DATA: Record<string, DemoPresetAccountData> = {
                 entry_type: 'medication',
                 name: 'Levothyroxine',
                 dosage: '50mcg',
-                start_date: '2025-11-05',
+                start_date: daysAgo(280),
                 notes: '30 mins before breakfast',
-                created_at: '2025-11-05T09:00:00.000Z'
+                created_at: `${daysAgo(280)}T09:00:00.000Z`
             },
             {
                 id: 'demo-maya-jrn-2',
@@ -279,9 +406,18 @@ const DEMO_PRESET_DATA: Record<string, DemoPresetAccountData> = {
                 entry_type: 'supplement',
                 name: 'Ferrous Sulfate',
                 dosage: '325mg',
-                start_date: '2025-11-05',
+                start_date: daysAgo(280),
                 notes: 'With orange juice',
-                created_at: '2025-11-05T09:05:00.000Z'
+                created_at: `${daysAgo(280)}T09:05:00.000Z`
+            },
+            {
+                id: 'demo-maya-jrn-3',
+                user_email: 'maya.patel@example.com',
+                entry_type: 'lifestyle',
+                name: 'Iron-rich meal planning',
+                start_date: daysAgo(190),
+                notes: 'Pairing plant iron with citrus; avoiding tea with meals',
+                created_at: `${daysAgo(190)}T09:10:00.000Z`
             }
         ]
     }

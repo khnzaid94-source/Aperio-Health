@@ -27,7 +27,7 @@
 
 ## 4. Dashboard
 - [ ] Welcome banner + KPI widgets localized (spot-check one non-EN language)
-- [ ] Demo account David Chen: 2 saved reports badge visible
+- [ ] Demo account David Chen: 4 saved reports badge visible; Journal shows medication + supplement + lifestyle cards populated
 
 ## 5. Upload & Analyze
 - [ ] Upload ONE photo report → CV Quality strip header localized (**fix check: not English-only "Computer Vision Quality Diagnostics"**)
