@@ -3,8 +3,6 @@ import {
     INTERFACE_TRANSLATIONS,
     CATEGORY_TRANSLATIONS,
     TEST_NAME_TRANSLATIONS,
-    EXPLANATION_TRANSLATIONS,
-    PURPOSE_TRANSLATIONS
 } from '../constants/translations';
 import { CATALOG_INDEX } from '../constants/catalog';
 
@@ -37,59 +35,6 @@ export function getLocalizedCategory(category: string, lang: SupportedLanguage):
         return catMap[lang];
     }
     return category;
-}
-
-/**
- * Localized clinical purpose text for the AboutView reference table.
- * English (and any missing translation) falls back to the shared catalog's
- * explanation_low, which is the single source of truth for English copy.
- */
-export function getLocalizedPurpose(testId: string, lang: SupportedLanguage): string {
-    if (lang !== 'en') {
-        const purpose = PURPOSE_TRANSLATIONS[testId];
-        if (purpose && purpose[lang as Exclude<SupportedLanguage, 'en'>]) {
-            return purpose[lang as Exclude<SupportedLanguage, 'en'>];
-        }
-    }
-    return CATALOG_INDEX.get(testId)?.explanations.low ?? '';
-}
-
-export function getLocalizedExplanation(
-    testId: string,
-    classification: 'Normal' | 'High' | 'Low',
-    lang: SupportedLanguage
-): string {
-    const catEntry = CATALOG_INDEX.get(testId);
-    const testName = catEntry ? catEntry.name : testId;
-
-    if (classification === 'Normal') {
-        if (lang === 'hi') {
-            return `आपका ${testName} स्तर सामान्य संदर्भ सीमा के भीतर है। यह दर्शाता है कि यह बायोमार्कर संतुलित और स्वस्थ स्थिति में काम कर रहा है।`;
-        }
-        if (lang === 'mr') {
-            return `तुमची ${testName} पातळी सामान्य मर्यादेत आहे. हे दर्शवते की हे बायोमार्कर निरोगी आणि संतुलित स्थितीत आहे.`;
-        }
-        if (lang === 'es') {
-            return `Su nivel de ${testName} se encuentra dentro del rango de referencia estándar, lo que indica un equilibrio biológico saludable y un funcionamiento óptimo.`;
-        }
-        if (lang === 'fr') {
-            return `Votre taux de ${testName} se situe dans la plage de référence normale, ce qui reflète un équilibre physiologique sain et un bon fonctionnement.`;
-        }
-        return `Your ${testName} level is within the standard healthy reference range. This represents balanced biological function with no immediate signs of deficiency or elevation.`;
-    }
-
-    const expObj = EXPLANATION_TRANSLATIONS[testId];
-    const key = classification === 'Low' ? 'low' : 'high';
-
-    if (expObj && expObj[key] && expObj[key][lang]) {
-        return expObj[key][lang];
-    }
-
-    if (catEntry && catEntry.explanations) {
-        return classification === 'Low' ? catEntry.explanations.low : catEntry.explanations.high;
-    }
-
-    return '';
 }
 
 export function getLanguageDirection(_lang: SupportedLanguage): 'ltr' {

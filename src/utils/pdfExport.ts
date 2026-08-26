@@ -1,5 +1,6 @@
 import { SavedReport, SupportedLanguage, UserProfile } from '../types';
-import { getLocalizedTestName, getLocalizedCategory, getLocalizedExplanation } from './language';
+import { getLocalizedTestName, getLocalizedCategory } from './language';
+import { getLocalizedExplanation } from '../constants/explanationTranslations';
 
 const esc = (value: unknown): string =>
     String(value ?? '')

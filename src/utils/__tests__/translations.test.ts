@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   INTERFACE_TRANSLATIONS,
-  SUPPORTED_LANGUAGES,
-  PURPOSE_TRANSLATIONS
+  SUPPORTED_LANGUAGES
 } from '../../constants/translations';
+import { PURPOSE_TRANSLATIONS } from '../../constants/purposeTranslations';
 import { CATALOG } from '../../constants/catalog';
 
 const PARAM_RE = /\{(\w+)\}/g;

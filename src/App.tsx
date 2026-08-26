@@ -1,14 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { SidebarLayout } from './components/SidebarLayout';
 import { LandingView } from './components/LandingView';
-import { OnboardingView } from './components/OnboardingView';
-import { ProfileView } from './components/ProfileView';
 import { DashboardView } from './components/DashboardView';
-import { UploadView, ExtractedReportItem } from './components/UploadView';
-import { AnalyzeView } from './components/AnalyzeView';
-import { HistoryAndTrends } from './components/HistoryAndTrends';
-import { JournalView } from './components/JournalView';
-import { AboutView } from './components/AboutView';
+import type { ExtractedReportItem } from './components/UploadView';
 import {
     SidebarTab,
     SupportedLanguage,
@@ -26,6 +20,35 @@ import { MLInsightsData } from './components/MLInsightsCard';
 import { apiFetch, ApiError, clearToken, getToken } from './api/client';
 
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+const OnboardingView = lazy(() =>
+    import('./components/OnboardingView').then((m) => ({ default: m.OnboardingView }))
+);
+const UploadView = lazy(() =>
+    import('./components/UploadView').then((m) => ({ default: m.UploadView }))
+);
+const AnalyzeView = lazy(() =>
+    import('./components/AnalyzeView').then((m) => ({ default: m.AnalyzeView }))
+);
+const HistoryAndTrends = lazy(() =>
+    import('./components/HistoryAndTrends').then((m) => ({ default: m.HistoryAndTrends }))
+);
+const JournalView = lazy(() =>
+    import('./components/JournalView').then((m) => ({ default: m.JournalView }))
+);
+const ProfileView = lazy(() =>
+    import('./components/ProfileView').then((m) => ({ default: m.ProfileView }))
+);
+const AboutView = lazy(() =>
+    import('./components/AboutView').then((m) => ({ default: m.AboutView }))
+);
+
+const ViewLoader = () => (
+    <div className="flex min-h-[40vh] items-center justify-center" role="status">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-teal-600" />
+        <span className="sr-only">Loading</span>
+    </div>
+);
 
 const DEMO_PRESET_PROFILES: Record<string, UserProfile> = {
     'sarah.jenkins@example.com': {
@@ -443,6 +466,23 @@ export function App() {
     const [userEmail, setUserEmail] = useState<string | null>(() => {
         return localStorage.getItem('aperio_current_user') || null;
     });
+
+    // Prefetch the lazily-split views once signed in, after first paint, so
+    // tab switches never show the loader while keeping them out of the
+    // critical main bundle for initial load.
+    useEffect(() => {
+        if (!userEmail) return undefined;
+        const timer = window.setTimeout(() => {
+            void import('./components/OnboardingView');
+            void import('./components/UploadView');
+            void import('./components/AnalyzeView');
+            void import('./components/HistoryAndTrends');
+            void import('./components/JournalView');
+            void import('./components/ProfileView');
+            void import('./components/AboutView');
+        }, 1500);
+        return () => window.clearTimeout(timer);
+    }, [userEmail]);
 
     // Profile & Onboarding State
     const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
@@ -1210,6 +1250,7 @@ export function App() {
                 </div>
             )}
 
+            <Suspense fallback={<ViewLoader />}>
             {currentTab === 'dashboard' && (
                 <DashboardView
                     userEmail={userEmail}
@@ -1282,6 +1323,7 @@ export function App() {
             )}
 
             {currentTab === 'about' && <AboutView currentLang={currentLang} />}
+            </Suspense>
         </SidebarLayout>
     );
 }

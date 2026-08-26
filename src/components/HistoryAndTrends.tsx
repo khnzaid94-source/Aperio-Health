@@ -34,10 +34,10 @@ import { computeDeltaAnalysis } from '../utils/deltas';
 import {
     getTranslation,
     getLocalizedTestName,
-    getLocalizedExplanation,
     getLocalizedCategory,
     generateRetrospectiveTrendSummary
 } from '../utils/language';
+import { getLocalizedExplanation } from '../constants/explanationTranslations';
 import { CATALOG_INDEX } from '../constants/catalog';
 
 interface HistoryAndTrendsProps {

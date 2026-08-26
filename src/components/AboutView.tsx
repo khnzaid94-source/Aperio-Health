@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 import { CATALOG } from '../constants/catalog';
 import { SupportedLanguage } from '../types';
-import { getLocalizedTestName, getLocalizedCategory, getLocalizedPurpose, getTranslation } from '../utils/language';
+import { getLocalizedTestName, getLocalizedCategory, getTranslation } from '../utils/language';
+import { getLocalizedPurpose } from '../constants/purposeTranslations';
 
 interface AboutViewProps {
     currentLang: SupportedLanguage;

@@ -33,9 +33,9 @@ import { SYMPTOMS, findSymptomPromptsForBiomarker, MatchedSymptomPrompt } from '
 import {
     getTranslation,
     getLocalizedTestName,
-    getLocalizedCategory,
-    getLocalizedExplanation
+    getLocalizedCategory
 } from '../utils/language';
+import { getLocalizedExplanation } from '../constants/explanationTranslations';
 import { RangeGauge } from './RangeGauge';
 import { exportDoctorSummaryPDF } from '../utils/pdfExport';
 import { MLInsightsCard, MLInsightsData } from './MLInsightsCard';
