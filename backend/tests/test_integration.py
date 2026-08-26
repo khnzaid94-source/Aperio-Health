@@ -555,4 +555,8 @@ def test_spa_path_traversal_never_escapes_dist(client):
 def test_unknown_api_route_returns_json_404_not_spa(client):
     resp = client.get("/api/nonexistent")
     assert resp.status_code == 404
-    assert resp.json()["detail"] == "Not found"
+    # With dist/ present the SPA catch-all raises "Not found"; without it
+    # FastAPI's default handler answers "Not Found". Either way it must be
+    # JSON, never the SPA HTML fallback.
+    assert "application/json" in resp.headers["content-type"]
+    assert resp.json()["detail"].lower() == "not found"
