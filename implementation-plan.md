@@ -77,8 +77,23 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 
 **Prod:** https://aperio-health.onrender.com (Render free tier, autoDeploy on push)
 **Repo:** github.com/khnzaid94-source/Aperio-Health (private) · branch `main`
-**HEAD:** QA-remediation session 2026-08-25 shipped: `a58eba1` (i18n sweep fixes) → `07a0a08` (trends layout) → `4620619` (demo seeds) → `0d81230` (deletion propagation) → `7c6e337` (parser integrity) → `266a51b` (UX battery round 1). **Batch C DONE (ecd805) + Phase 9.1 DONE (9fc6729) 2026-08-26** (ledger #29, #30). **Phase 9.2 shipped `bd09ce3` 2026-08-26** (ledger #31, CI green). **Phase 9.3 shipped `98c7009`+`e479103` 2026-08-26** (ledger #32, CI green incl. one dist-less-runner fix). **Phase 9.4 shipped `365d26d` 2026-08-26** (ledger #33, CI green). **Phase 9.5 DONE 2026-08-26, uncommitted pending owner approval** (ledger #34) — **Phase 9 test-hardening complete pending this commit.**
-**Next up:** continue Phase 9 hardening (9.3 integration suite → 9.4 prod smoke script → 9.5 bundle split); owner re-runs `docs/QA-BATTERY.md` on prod independently when convenient. ~~Native-speaker review~~ REMOVED 2026-08-25: owner has no native reviewers available — replaced by honest disclosure (README states translations are AI-authored; automated guards: key/param parity, call-site scan, icon-prefix + partial-English audits) and post-launch feedback channel via support email.
+**HEAD:** QA-remediation session 2026-08-25 shipped: `a58eba1` (i18n sweep fixes) → `07a0a08` (trends layout) → `4620619` (demo seeds) → `0d81230` (deletion propagation) → `7c6e337` (parser integrity) → `266a51b` (UX battery round 1). **Batch C DONE (ecd805) + Phase 9.1 DONE (9fc6729) 2026-08-26** (ledger #29, #30). **Phase 9.2 shipped `bd09ce3` 2026-08-26** (ledger #31, CI green). **Phase 9.3 shipped `98c7009`+`e479103` 2026-08-26** (ledger #32, CI green incl. one dist-less-runner fix). **Phase 9.4 shipped `365d26d` 2026-08-26** (ledger #33, CI green). **Phase 9.5 shipped `6b189ec` 2026-08-26** (ledger #34, CI green; prod smoke-verified post-deploy). **PHASE 9 TEST-HARDENING COMPLETE.**
+**Next up:** owner-side publish gate — re-run QA on prod (`docs/QA-BATTERY-Simple.md`, the new plain-language rewrite of the battery) and flip repo public after final pass. Then Post-Publish Roadmap below becomes active (R1 first candidate).
+~~Native-speaker review~~ REMOVED 2026-08-25: owner has no native reviewers available — replaced by honest disclosure (README states translations are AI-authored; automated guards: key/param parity, call-site scan, icon-prefix + partial-English audits) and post-launch feedback channel via support email.
+
+## 🗺️ Post-Publish Roadmap (candidate features — NOT committed phases)
+
+> Locked 2026-08-26. Do not start any item before: (1) owner completes the QA battery
+> pass on prod, (2) repo flipped public, (3) explicit owner approval per item.
+> These also form the Future Scope slide of the capstone deck (same order).
+
+| # | Item | Notes |
+|---|---|---|
+| R1 | **Family & Caregiver Multi-Profile Hub** ("Feature 10", owner-planned) | One trusted login manages multiple member profiles (Self/Mom/Dad-style switcher in Header); reports & journal entries gain `patient_id` (default `'self'`). Spec highlights + review refinements from 2026-08-26 assessment: startup migration guard needed on **both** `saved_reports` AND `journal_entries` (try/except ALTER TABLE ADD COLUMN); PUT/DELETE must follow token-derived identity + `_assert_report_id_available`-style ownership prechecks (PK-hijack class already closed once — do not reopen); patient switching must reset analyzer session + provenance like deletion propagation does; **synergy:** per-member DOB/gender feeds NHANES strata so ranges become per-person correct. Privacy framing for deck/README: "with per-member consent controls" — one password unlocking relatives' PHI is a real posture shift vs today's single-human vault claim. Endpoints: GET/POST `/api/patients`, PUT/DELETE `/api/patients/{id}`. |
+| R2 | Persistent production tier | Paid Render tier or equivalent: PostgreSQL replaces ephemeral SQLite disk, no ~50s cold starts; revisit load testing only then (per Phase 9 rationale). |
+| R3 | Wider ingestion coverage | More lab-report templates, handwritten/scanned reports, non-English report OCR; FHIR/EHR + wearable correlation downstream. |
+| R4 | Predictive health trajectories | Evolve strictly-retrospective trend summaries into forward-looking risk forecasting with explicit medical disclaimers (honest-AI posture preserved). |
+| R5 | Regional reference populations | South Asian / ICMR cohort distributions alongside NHANES so reference ranges match Indian lab-report demographics (sample corpus is Indian labs). |
 
 ## ✅ Completed work ledger (this chat)
 
