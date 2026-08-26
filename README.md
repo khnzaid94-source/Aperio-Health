@@ -13,7 +13,7 @@ Upload a lab report (**PDF / photo / text**) and Aperio Health:
 
 1. **Extracts** values via a hybrid OCR pipeline — Google Gemini Vision when configured,
    local Tesseract + OpenCV preprocessing (deskew, Otsu binarization, quality grading) as automatic fallback.
-2. **Parses** up to **63 clinical biomarkers** across CBC, lipid, thyroid, liver, kidney,
+2. **Parses** up to **64 clinical biomarkers** across CBC, lipid, thyroid, liver, kidney,
    glucose, iron, vitamin, hormone, inflammatory, and pancreatic panels — including
    multi-line tables, OCR word-collisions (`TotalCholesterol`), comma thousands, and
    unit-scale normalization (lakhs/cumm).

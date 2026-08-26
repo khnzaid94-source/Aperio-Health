@@ -1,7 +1,7 @@
 {
- "_meta": {
+   "_meta": {
   "source": "single source of truth for test definitions",
-  "count": 63,
+  "count": 64,
   "explanations_from": "frontend rich texts"
  },
  "tests": [
