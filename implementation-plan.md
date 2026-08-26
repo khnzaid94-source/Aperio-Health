@@ -76,16 +76,16 @@ allowed (:648–684); RTL dead code (language.ts:78–80); ml_engine import-time
 # 📌 STATUS SNAPSHOT & WORK LOG — Session continuing 2026-08-26
 
 **Prod:** https://aperio-health.onrender.com (Render free tier, autoDeploy on push)
-**Repo:** github.com/khnzaid94-source/Aperio-Health (private) · branch `main`
-**HEAD:** QA-remediation session 2026-08-25 shipped: `a58eba1` (i18n sweep fixes) → `07a0a08` (trends layout) → `4620619` (demo seeds) → `0d81230` (deletion propagation) → `7c6e337` (parser integrity) → `266a51b` (UX battery round 1). **Batch C DONE (ecd805) + Phase 9.1 DONE (9fc6729) 2026-08-26** (ledger #29, #30). **Phase 9.2 shipped `bd09ce3` 2026-08-26** (ledger #31, CI green). **Phase 9.3 shipped `98c7009`+`e479103` 2026-08-26** (ledger #32, CI green incl. one dist-less-runner fix). **Phase 9.4 shipped `365d26d` 2026-08-26** (ledger #33, CI green). **Phase 9.5 shipped `6b189ec` 2026-08-26** (ledger #34, CI green; prod smoke-verified post-deploy). **PHASE 9 TEST-HARDENING COMPLETE.** **Fix Batch DONE 2026-08-26** (ledger #35) — demo refill + teal success banners + password auth allowlist (build 467.68 kB, Vitest 55/55 · pytest 128/128 · ESLint clean).
-**Next up:** Fix Batch DONE 2026-08-26 (ledger #35) — demo refill, success banners, password auth all shipped, battery green (`docs/QA-BATTERY-Simple.md` §5e/§8c/§9b). Post-publish Roadmap R1–R5 remains blocked until publish + approval. Awaiting owner QA pass + publish approval.
+**Repo:** github.com/khnzaid94-source/Aperio-Health (public) · branch `main`
+**HEAD:** QA-remediation session 2026-08-25 shipped: `a58eba1` (i18n sweep fixes) → `07a0a08` (trends layout) → `4620619` (demo seeds) → `0d81230` (deletion propagation) → `7c6e337` (parser integrity) → `266a51b` (UX battery round 1). **Batch C DONE (ecd805) + Phase 9.1 DONE (9fc6729) 2026-08-26** (ledger #29, #30). **Phase 9.2 shipped `bd09ce3` 2026-08-26** (ledger #31, CI green). **Phase 9.3 shipped `98c7009`+`e479103` 2026-08-26** (ledger #32, CI green incl. one dist-less-runner fix). **Phase 9.4 shipped `365d26d` 2026-08-26** (ledger #33, CI green). **Phase 9.5 shipped `6b189ec` 2026-08-26** (ledger #34, CI green; prod smoke-verified post-deploy). **PHASE 9 TEST-HARDENING COMPLETE.** **Fix Batch DONE 2026-08-26** `13ba446` (ledger #35) — demo refill + teal success banners + password auth allowlist (build 467.68 kB, Vitest 55/55 · pytest 128/128 · ESLint clean). **Docs fix `f09451f` 2026-08-26** — `README 63→64`, `catalog _meta 63→64`, delete stale `Functional_specification.md`; `implementation-plan.md` stays as local resume file per owner choice. **STOPPED 2026-08-27** — battery 11/11 pass, repo public, purge=by-design confirmed; **Future Scope frozen: R1 Family Hub, R2 Paid Render, R3 ingestion, R4 predictive, R5 ICMR cohorts** — all remain candidate, not committed, require explicit owner `yes` per item.
+**Next up:** ⏸️ **STOPPED — Portfolio complete.** No further code. Resume only on explicit owner approval for any `R1–R5`. Keep `implementation-plan.md` as local resume; do not start roadmap autonomously.
 ~~Native-speaker review~~ REMOVED 2026-08-25: owner has no native reviewers available — replaced by honest disclosure (README states translations are AI-authored; automated guards: key/param parity, call-site scan, icon-prefix + partial-English audits) and post-launch feedback channel via support email.
 
-## 🗺️ Post-Publish Roadmap (candidate features — NOT committed phases)
+## 🗺️ Post-Publish Roadmap — FUTURE SCOPE (frozen 2026-08-27 per owner “stop here”)
 
-> Locked 2026-08-26. Do not start any item before: (1) owner completes the QA battery
-> pass on prod, (2) repo flipped public, (3) explicit owner approval per item.
-> These also form the Future Scope slide of the capstone deck (same order).
+> Locked 2026-08-26, re-confirmed 2026-08-27 STOPPED. Do not start any item before: (1) owner completes the QA battery
+> pass on prod, (2) repo flipped public ✅ DONE, (3) explicit owner approval per item — **all R1–R5 remain on hold as Future Scope**.
+> These also form the Future Scope slide of the capstone deck (same order). No autonomous start.
 
 | # | Item | Notes |
 |---|---|---|
