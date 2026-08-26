@@ -42,8 +42,9 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
     }
 
     const token = getToken();
-    const isAuthEndpoint = path.startsWith('/api/auth/');
-    if (token && !isAuthEndpoint) {
+    const PUBLIC_AUTH_PATHS = ['/api/auth/register', '/api/auth/login', '/api/auth/google'];
+    const isPublicAuth = PUBLIC_AUTH_PATHS.includes(path);
+    if (token && !isPublicAuth) {
         finalHeaders['Authorization'] = `Bearer ${token}`;
     }
 
@@ -54,7 +55,7 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
         throw new ApiError(0, 'Cannot reach the server. It may be offline or waking up — please try again.');
     }
 
-    if (res.status === 401 && token && !isAuthEndpoint) {
+    if (res.status === 401 && token && !isPublicAuth) {
         clearToken();
     }
 

@@ -459,7 +459,7 @@ const isEmptyStoredArray = (storageKey: string): boolean => {
 };
 
 // Set when a demo-account owner explicitly empties their data; blocks auto-seed resurrection
-const demoClearedKey = (email: string): string => `aperio_democleared_${email}`;
+const demoClearedKey = (email: string): string => `aperio_democleared_${email.toLowerCase()}`;
 
 export function App() {
     // Auth State
@@ -532,6 +532,12 @@ export function App() {
         syncNoticeTimer.current = window.setTimeout(() => setSyncNotice(null), 6000);
     }, [currentLang]);
 
+    const showSuccessNotice = useCallback((key: string) => {
+        setSuccessNotice(getTranslation(key, currentLang));
+        if (successNoticeTimer.current) window.clearTimeout(successNoticeTimer.current);
+        successNoticeTimer.current = window.setTimeout(() => setSuccessNotice(null), 4000);
+    }, [currentLang]);
+
     const resetAnalyzerSession = useCallback(() => {
         setCurrentParsedResults([]);
         setCurrentSourceLabel('No report uploaded');
@@ -553,8 +559,10 @@ export function App() {
 
     // Honest notice when a deletion could not be confirmed by the server
     const [syncNotice, setSyncNotice] = useState<string | null>(null);
+    const [successNotice, setSuccessNotice] = useState<string | null>(null);
     const [sessionEnded, setSessionEnded] = useState<boolean>(false);
     const syncNoticeTimer = useRef<number | null>(null);
+    const successNoticeTimer = useRef<number | null>(null);
 
     // RTL & Language support
     useEffect(() => {
@@ -718,7 +726,7 @@ export function App() {
         const fetchHistory = async () => {
             // Auto-Seed Rule: only for the 3 preset demo accounts (strict isolation).
             // Skipped when the owner explicitly emptied their data (tombstone flag).
-            const presetAccount = DEMO_PRESET_DATA[userEmail];
+            const presetAccount = DEMO_PRESET_DATA[userEmail.toLowerCase()] ?? DEMO_PRESET_DATA[userEmail];
             if (
                 presetAccount &&
                 shouldSeedDemoData(
@@ -729,12 +737,40 @@ export function App() {
             ) {
                 setSavedReports(presetAccount.reports);
                 localStorage.setItem(`aperio_history_${userEmail}`, JSON.stringify(presetAccount.reports));
+                // Persist seeded reports to server so next reload's GET returns them (Sarah/Maya refill fix)
+                apiFetch('/api/history/bulk', { method: 'POST', json: { reports: presetAccount.reports } }).catch(() => undefined);
                 return;
             }
 
             try {
                 const serverReports = await apiFetch<any[]>(`/api/history`);
                 if (Array.isArray(serverReports)) {
+                    // Guard: empty server must not overwrite a valid preset when not tombstoned
+                    if (
+                        serverReports.length === 0 &&
+                        presetAccount &&
+                        !localStorage.getItem(demoClearedKey(userEmail))
+                    ) {
+                        const localRaw = localStorage.getItem(`aperio_history_${userEmail}`);
+                        if (localRaw) {
+                            try {
+                                const parsed = JSON.parse(localRaw);
+                                if (Array.isArray(parsed) && parsed.length > 0) {
+                                    setSavedReports(parsed);
+                                    // backfill server in background
+                                    apiFetch('/api/history/bulk', { method: 'POST', json: { reports: parsed } }).catch(() => undefined);
+                                    return;
+                                }
+                            } catch {
+                                // fall through to seed
+                            }
+                        }
+                        // No valid local (first login after server wipe) — reseed locally + persist
+                        setSavedReports(presetAccount.reports);
+                        localStorage.setItem(`aperio_history_${userEmail}`, JSON.stringify(presetAccount.reports));
+                        apiFetch('/api/history/bulk', { method: 'POST', json: { reports: presetAccount.reports } }).catch(() => undefined);
+                        return;
+                    }
                     setSavedReports(serverReports);
                     localStorage.setItem(`aperio_history_${userEmail}`, JSON.stringify(serverReports));
                     return;
@@ -762,7 +798,7 @@ export function App() {
         // 3. Fetch Journal Entries
         const fetchJournal = async () => {
             // Auto-Seed Rule: only for the 3 preset demo accounts (strict isolation).
-            const journalPreset = DEMO_PRESET_DATA[userEmail];
+            const journalPreset = DEMO_PRESET_DATA[userEmail.toLowerCase()] ?? DEMO_PRESET_DATA[userEmail];
             if (
                 journalPreset &&
                 shouldSeedDemoData(
@@ -773,12 +809,74 @@ export function App() {
             ) {
                 setJournalEntries(journalPreset.journal);
                 localStorage.setItem(`aperio_journal_${userEmail}`, JSON.stringify(journalPreset.journal));
+                // Persist seeded journal entries to server (per-entry POST; bulk endpoint not available)
+                for (const entry of journalPreset.journal) {
+                    apiFetch('/api/journal', {
+                        method: 'POST',
+                        json: {
+                            id: entry.id,
+                            entry_type: entry.entry_type,
+                            name: entry.name,
+                            dosage: (entry as any).dosage ?? null,
+                            start_date: (entry as any).start_date ?? null,
+                            notes: (entry as any).notes ?? null
+                        }
+                    }).catch(() => undefined);
+                }
                 return;
             }
 
             try {
                 const serverEntries = await apiFetch<any[]>(`/api/journal`);
                 if (Array.isArray(serverEntries)) {
+                    // Guard: empty server must not overwrite a valid preset when not tombstoned
+                    if (
+                        serverEntries.length === 0 &&
+                        journalPreset &&
+                        !localStorage.getItem(demoClearedKey(userEmail))
+                    ) {
+                        const localRaw = localStorage.getItem(`aperio_journal_${userEmail}`);
+                        if (localRaw) {
+                            try {
+                                const parsed = JSON.parse(localRaw);
+                                if (Array.isArray(parsed) && parsed.length > 0) {
+                                    setJournalEntries(parsed);
+                                    for (const entry of parsed) {
+                                        apiFetch('/api/journal', {
+                                            method: 'POST',
+                                            json: {
+                                                id: (entry as any).id,
+                                                entry_type: (entry as any).entry_type,
+                                                name: (entry as any).name,
+                                                dosage: (entry as any).dosage ?? null,
+                                                start_date: (entry as any).start_date ?? null,
+                                                notes: (entry as any).notes ?? null
+                                            }
+                                        }).catch(() => undefined);
+                                    }
+                                    return;
+                                }
+                            } catch {
+                                // fall through
+                            }
+                        }
+                        setJournalEntries(journalPreset.journal);
+                        localStorage.setItem(`aperio_journal_${userEmail}`, JSON.stringify(journalPreset.journal));
+                        for (const entry of journalPreset.journal) {
+                            apiFetch('/api/journal', {
+                                method: 'POST',
+                                json: {
+                                    id: entry.id,
+                                    entry_type: entry.entry_type,
+                                    name: entry.name,
+                                    dosage: (entry as any).dosage ?? null,
+                                    start_date: (entry as any).start_date ?? null,
+                                    notes: (entry as any).notes ?? null
+                                }
+                            }).catch(() => undefined);
+                        }
+                        return;
+                    }
                     setJournalEntries(serverEntries);
                     localStorage.setItem(`aperio_journal_${userEmail}`, JSON.stringify(serverEntries));
                     return;
@@ -1022,11 +1120,12 @@ export function App() {
         resetAnalyzerSession();
         if (userEmail) {
             localStorage.removeItem(`aperio_history_${userEmail}`);
-            if (DEMO_PRESET_DATA[userEmail]) {
+            if (DEMO_PRESET_DATA[userEmail.toLowerCase()] ?? DEMO_PRESET_DATA[userEmail]) {
                 localStorage.setItem(demoClearedKey(userEmail), '1');
             }
             try {
                 await apiFetch(`/api/history`, { method: 'DELETE' });
+                showSuccessNotice('hist.historyCleared');
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) {
                     handleSignOut({ sessionEnded: true });
@@ -1049,11 +1148,12 @@ export function App() {
         }
         if (userEmail) {
             localStorage.setItem(`aperio_history_${userEmail}`, JSON.stringify(updated));
-            if (DEMO_PRESET_DATA[userEmail] && updated.length === 0) {
+            if ((DEMO_PRESET_DATA[userEmail.toLowerCase()] ?? DEMO_PRESET_DATA[userEmail]) && updated.length === 0) {
                 localStorage.setItem(demoClearedKey(userEmail), '1');
             }
             try {
                 await apiFetch(`/api/history/report/${encodeURIComponent(reportId)}`, { method: 'DELETE' });
+                showSuccessNotice('hist.reportDeleted');
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) {
                     handleSignOut({ sessionEnded: true });
@@ -1084,7 +1184,7 @@ export function App() {
         }
         if (userEmail) {
             localStorage.setItem(`aperio_history_${userEmail}`, JSON.stringify(updated));
-            if (DEMO_PRESET_DATA[userEmail] && updated.length === 0) {
+            if ((DEMO_PRESET_DATA[userEmail.toLowerCase()] ?? DEMO_PRESET_DATA[userEmail]) && updated.length === 0) {
                 localStorage.setItem(demoClearedKey(userEmail), '1');
             }
             try {
@@ -1092,6 +1192,7 @@ export function App() {
                     `/api/history/result/${encodeURIComponent(reportId)}/${encodeURIComponent(testId)}`,
                     { method: 'DELETE' }
                 );
+                showSuccessNotice('hist.testRemoved');
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) {
                     handleSignOut({ sessionEnded: true });
@@ -1102,7 +1203,6 @@ export function App() {
         }
     };
 
-    // Journal Handlers
     const handleAddJournalEntry = async (entry: Omit<JournalEntry, 'id'>) => {
         const newEntry: JournalEntry = {
             ...entry,
@@ -1134,11 +1234,12 @@ export function App() {
         setJournalEntries(updated);
         if (userEmail) {
             localStorage.setItem(`aperio_journal_${userEmail}`, JSON.stringify(updated));
-            if (DEMO_PRESET_DATA[userEmail] && updated.length === 0) {
+            if ((DEMO_PRESET_DATA[userEmail.toLowerCase()] ?? DEMO_PRESET_DATA[userEmail]) && updated.length === 0) {
                 localStorage.setItem(demoClearedKey(userEmail), '1');
             }
             try {
                 await apiFetch(`/api/journal/${encodeURIComponent(id)}`, { method: 'DELETE' });
+                showSuccessNotice('jrn.entryDeleted');
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) handleSignOut({ sessionEnded: true });
                 else showSyncNotice();
@@ -1247,6 +1348,14 @@ export function App() {
                     className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 shadow-xs"
                 >
                     {syncNotice}
+                </div>
+            )}
+            {successNotice && (
+                <div
+                    role="status"
+                    className="mb-4 rounded-xl border border-teal-300 bg-teal-50 px-4 py-3 text-xs font-semibold text-teal-900 shadow-xs"
+                >
+                    {successNotice}
                 </div>
             )}
 

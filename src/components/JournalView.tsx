@@ -14,6 +14,7 @@ import {
 import { JournalEntry } from '../types';
 import { SupportedLanguage } from '../types';
 import { getTranslation } from '../utils/language';
+import { ConfirmDialog } from './ConfirmDialog';
 
 interface JournalViewProps {
     userEmail: string;
@@ -33,6 +34,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
     const t = (key: string, params?: Record<string, string>): string =>
         getTranslation(key, currentLang, params);
     const [entryType, setEntryType] = useState<'medication' | 'supplement' | 'lifestyle'>('medication');
+    const [deleteEntryTarget, setDeleteEntryTarget] = useState<JournalEntry | null>(null);
     const [name, setName] = useState('');
     const [dosage, setDosage] = useState('');
     const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
@@ -323,7 +325,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
 
                                         <button
                                             type="button"
-                                            onClick={() => onDeleteEntry(item.id)}
+                                            onClick={() => setDeleteEntryTarget(item)}
                                             title={t('jrn.delMedTitle')}
                                             className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
                                         >
@@ -395,7 +397,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
 
                                         <button
                                             type="button"
-                                            onClick={() => onDeleteEntry(item.id)}
+                                            onClick={() => setDeleteEntryTarget(item)}
                                             title={t('jrn.delSuppTitle')}
                                             className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
                                         >
@@ -467,7 +469,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
 
                                         <button
                                             type="button"
-                                            onClick={() => onDeleteEntry(item.id)}
+                                            onClick={() => setDeleteEntryTarget(item)}
                                             title={t('jrn.delCtxTitle')}
                                             className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
                                         >
@@ -480,6 +482,20 @@ export const JournalView: React.FC<JournalViewProps> = ({
                     </div>
                 </div>
             </div>
+
+            <ConfirmDialog
+                open={deleteEntryTarget !== null}
+                title={t('jrn.deleteConfirmTitle')}
+                message={t('jrn.deleteConfirmMessage')}
+                confirmLabel={t('jrn.deleteConfirmYes')}
+                subtitle={t('ui.cannotUndo')}
+                cancelLabel={t('ui.cancel')}
+                onClose={() => setDeleteEntryTarget(null)}
+                onConfirm={() => {
+                    if (deleteEntryTarget) onDeleteEntry(deleteEntryTarget.id);
+                    setDeleteEntryTarget(null);
+                }}
+            />
         </div>
     );
 };
