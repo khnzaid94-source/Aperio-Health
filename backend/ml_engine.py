@@ -116,7 +116,7 @@ class ClinicalMLEngine:
             "analyzed_markers_count": len([k for k in self.feature_keys if k in result_map]),
             "markers_with_population_data": len(penalties),
             "population_source": self.population.source,
-            "patient_stratum": f"{sex} {age_band}".strip() if (sex or age_band) else "population average",
+            "patient_stratum": " ".join(p for p in (sex, age_band) if p) or "population average",
             "risk_clusters": risk_clusters,
             "z_scores": z_scores,
         }

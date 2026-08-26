@@ -75,10 +75,12 @@ def extract_specimen_date(text: str) -> Optional[str]:
     if not text:
         return None
 
-    # Contextual regex pattern looking for common specimen/collection date labels
+    # Contextual regex pattern looking for common specimen/collection date labels.
+    # (?<!\d) prevents the DD/MM matcher from biting into the year of ISO dates
+    # (e.g. "2025-03-04" previously misparsed as day=25/month=03/year=2004).
     context_patterns = [
-        r'(?:specimen|collection|collected|sample|drawn|report|visit|test|dated?|date)[\s\w:\.\-\/]*?(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})',
-        r'(?:specimen|collection|collected|sample|drawn|report|visit|test|dated?|date)[\s\w:\.\-\/]*?(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})'
+        r'(?:specimen|collection|collected|sample|drawn|report|visit|test|dated?|date)[\s\w:\.\-\/]*?(?<!\d)(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})',
+        r'(?:specimen|collection|collected|sample|drawn|report|visit|test|dated?|date)[\s\w:\.\-\/]*?(?<!\d)(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})'
     ]
 
     for pattern in context_patterns:
